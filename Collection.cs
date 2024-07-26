@@ -16,24 +16,15 @@ using Newtonsoft.Json;
 namespace ClipsOrganizer.Collections {
 
     public class CollectionFiles : Item {
-        public uint FileIndexHigh { get; set; }
-        public uint FileIndexLow { get; set; }
+        public uint? FileIndexHigh { get; set; }
+        public uint? FileIndexLow { get; set; }
     }
 
         [JsonObject]
-    public class Collection : IEnumerable<CollectionFiles> {
+    public class Collection {
         public string CollectionTag { get; set; }
         public Color Color { get; set; }
         public List<CollectionFiles> Files { get; set; }
-
-        #region IEnumerable
-        public IEnumerator<CollectionFiles> GetEnumerator() {
-            return Files.GetEnumerator();
-        }
-        IEnumerator IEnumerable.GetEnumerator() {
-            return GetEnumerator();
-        }
-        #endregion
 
         //for json parsing
         public Collection() {

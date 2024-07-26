@@ -18,6 +18,9 @@ using System.Windows.Threading;
 using ClipsOrganizer.Settings;
 using ClipsOrganizer.Collections;
 using System.Runtime.InteropServices;
+using System.Runtime.Remoting.Channels;
+using System.Windows.Controls.Primitives;
+using System.IO;
 
 namespace ClipsOrganizer {
     /// <summary>
@@ -32,27 +35,35 @@ namespace ClipsOrganizer {
 
             itemProvider = new ItemProvider();
             var items = itemProvider.GetItemsFromFolder("H:\\nrtesting");
-            List<Collection> CL = new List<Collection>();
-            foreach (DirectoryItem item in items) {
-                CL.Add(new Collection(item));
-            }
-            settings = new Settings.Settings("H:\\nrtesting", CL);
+
+            settings = new Settings.Settings("H:\\nrtesting");
+
             settings.SettingsFile.LoadSettings();
 
-            var test = itemProvider.GetItemsFromCollections(settings.collections);
-
-            //settings = new Settings.Settings("H:\\nrtesting");
 
             InitializeComponent();
+            if (settings.collections.Count == 0) {
+                Btn_Mark.ContextMenu.Items.Add("No Collections");
+            }
+            else {
+                settings.collections.ForEach(x =>
+                {
+                    var MI = new MenuItem { Header = x.CollectionTag };
+                    MI.Tag = x;
+                    MI.Click += MI_CT_mark_Click;
+                    Btn_Mark.ContextMenu.Items.Add(MI);
+                });
+                }
 
+            TV_clips_collections.ItemsSource = settings.collections;
+
+            TV_clips.ItemsSource = items;
+
+            #region slider timer init
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromMilliseconds(400);
             timer.Tick += VideoDurationUpdate;
-            var test3 = new CollectionUIProvider();
-            test3.collections = CL;
-            TV_clips_collections.ItemsSource = test3;
-            TV_clips.DataContext = items;
-
+            #endregion
         }
 
         #region sliders events
@@ -103,18 +114,27 @@ namespace ClipsOrganizer {
         #endregion
 
         private void CB_ParsedFileName_Checked(object sender, RoutedEventArgs e) {
-            TV_clips.DataContext = itemProvider.GetItemsFromFolder("H:\\nrtesting", true);
+            TV_clips.ItemsSource = itemProvider.GetItemsFromFolder("H:\\nrtesting", true);
+            TV_clips_collections.ItemsSource = itemProvider.GetItemsFromCollections(settings.collections, true);
         }
         private void CB_ParsedFileName_Unchecked(object sender, RoutedEventArgs e) {
-            TV_clips.DataContext = itemProvider.GetItemsFromFolder("H:\\nrtesting");
-        }
+            TV_clips.ItemsSource = itemProvider.GetItemsFromFolder("H:\\nrtesting");
+            TV_clips_collections.ItemsSource = itemProvider.GetItemsFromCollections(settings.collections);
 
+        }
+        #region Clip selection
         private void TV_clips_MouseDoubleClick(object sender, MouseButtonEventArgs e) {
-            if (TV_clips.SelectedItem == null) return;
-            if (TV_clips.SelectedItem.GetType() == typeof(FileItem)) {
-                ME_main.Source = new Uri((TV_clips.SelectedItem as FileItem).Path);
+            TreeView tv = sender as TreeView;
+            if (tv.SelectedItem == null) return;
+            if (tv.SelectedItem.GetType() == typeof(CollectionFiles)) {
+                ME_main.Source = new Uri((tv.SelectedItem as CollectionFiles).Path);
             }
-            if (TV_clips.SelectedItem.GetType() == typeof(DirectoryItem)) { }
+            if (tv.SelectedItem.GetType() == typeof(FileItem)) {
+                ME_main.Source = new Uri((tv.SelectedItem as FileItem).Path);
+            }
+            //TODO USE OR DELETE LATER
+            if (tv.SelectedItem.GetType() == typeof(DirectoryItem)) { }
+            if (tv.SelectedItem.GetType() == typeof(Collection)) { }
         }
 
         private void CB_sortType_SelectionChanged(object sender, SelectionChangedEventArgs e) {
@@ -123,5 +143,29 @@ namespace ClipsOrganizer {
                 TV_clips.Items.Refresh();
             }
         }
+        #endregion
+        #region Marking clips
+        private void Btn_Mark_Click(object sender, RoutedEventArgs e) {
+
+        }
+
+        private void MI_CT_mark_Click(object sender, RoutedEventArgs e) {
+            var clickeditem = sender as MenuItem;
+            //construct new collectionfile and write it to this file
+            ME_main.Volume = 0;
+            var utils = new FileUtils.FileUtils();
+
+            //var fileinfo = utils.GetFileinfo(ME_main.Source.LocalPath);
+
+            (clickeditem.Tag as Collection).Files.Add(new CollectionFiles
+            {
+                Date = new FileInfo(ME_main.Source.LocalPath).CreationTime,
+                Path = ME_main.Source.LocalPath,
+                FileIndexHigh = null,
+                FileIndexLow = null,
+                Name = ME_main.Source.AbsolutePath.Split('/')[0]
+            });
+        }
+        #endregion
     }
 }

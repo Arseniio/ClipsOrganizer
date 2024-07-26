@@ -46,7 +46,9 @@ namespace ClipsOrganizer.FileUtils {
             if (hFile == IntPtr.Zero) {
                 throw new IOException("Unable to open file.", Marshal.GetLastWin32Error());
             }
-
+            if(hFile.ToInt64() == -1) {
+                throw new IOException("Unable to open file.", Marshal.GetLastWin32Error());
+            }
             BY_HANDLE_FILE_INFORMATION fileInfo;
             if (!GetFileInformationByHandle(hFile, out fileInfo)) {
                 CloseHandle(hFile);

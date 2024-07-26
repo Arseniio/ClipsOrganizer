@@ -18,13 +18,16 @@ namespace ClipsOrganizer.Settings {
         public List<Collection> collections { get; set; }
         [JsonIgnore]
         virtual public SettingsFile SettingsFile { get; set; }
-        public Settings(string ClipsFolder, List<Collection> collections = null, string settingsPath = "./settings.json") {
+        public Settings(string ClipsFolder, string settingsPath = "./settings.json") {
             this.SettingsFile = this.SettingsFile ?? new SettingsFile(settingsPath, ClipsFolder, this);
             collections = collections ?? new List<Collection>();
             this.ClipsFolder = ClipsFolder;
-            this.collections = collections;
 
             //SettingsFile.LoadSettings();
+        }
+        public void UpdateSettings(Settings ChangedSettings) {
+            this.collections = ChangedSettings.collections;
+            this.ClipsFolder = ChangedSettings.ClipsFolder;
         }
     }
     public class SettingsFile {
@@ -38,6 +41,16 @@ namespace ClipsOrganizer.Settings {
         }
 
         public bool WriteSettings() {
+            foreach (var collection in this.Settings.collections){
+                foreach (var file in collection.Files) {
+                    if(file.FileIndexLow == null || file.FileIndexHigh == null) {
+                        var utils = new FileUtils.FileUtils();
+                        FileUtils.FileUtils.BY_HANDLE_FILE_INFORMATION FileInfo = utils.GetFileinfo(file.Path);
+                        file.FileIndexHigh = FileInfo.FileIndexHigh;
+                        file.FileIndexLow = FileInfo.FileIndexLow;
+                    }
+                }
+            }
             string contents = JsonConvert.SerializeObject(this.Settings);
             File.WriteAllText("./settings.json", contents);
             return false;
@@ -50,7 +63,7 @@ namespace ClipsOrganizer.Settings {
             }
             // parsing settings file
             var lines = File.ReadAllText(settingsFile);
-            this.Settings = JsonConvert.DeserializeObject<Settings>(lines); 
+            Settings.UpdateSettings(JsonConvert.DeserializeObject<Settings>(lines)); 
             return false;
         }
     }
