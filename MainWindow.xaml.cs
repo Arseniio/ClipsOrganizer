@@ -53,7 +53,11 @@ namespace ClipsOrganizer {
                     MI.Click += MI_CT_mark_Click;
                     Btn_Mark.ContextMenu.Items.Add(MI);
                 });
-                }
+            }
+            var MI_create = new MenuItem { Header = "Create new collection" };
+            MI_create.Click += create_collection;
+            Btn_Mark.ContextMenu.Items.Add(new Separator());
+            Btn_Mark.ContextMenu.Items.Add(MI_create);
 
             TV_clips_collections.ItemsSource = settings.collections;
 
@@ -120,7 +124,6 @@ namespace ClipsOrganizer {
         private void CB_ParsedFileName_Unchecked(object sender, RoutedEventArgs e) {
             TV_clips.ItemsSource = itemProvider.GetItemsFromFolder("H:\\nrtesting");
             TV_clips_collections.ItemsSource = itemProvider.GetItemsFromCollections(settings.collections);
-
         }
         #region Clip selection
         private void TV_clips_MouseDoubleClick(object sender, MouseButtonEventArgs e) {
@@ -146,7 +149,7 @@ namespace ClipsOrganizer {
         #endregion
         #region Marking clips
         private void Btn_Mark_Click(object sender, RoutedEventArgs e) {
-
+            settings.SettingsFile.WriteSettings();
         }
 
         private void MI_CT_mark_Click(object sender, RoutedEventArgs e) {
@@ -156,16 +159,21 @@ namespace ClipsOrganizer {
             var utils = new FileUtils.FileUtils();
 
             //var fileinfo = utils.GetFileinfo(ME_main.Source.LocalPath);
-
             (clickeditem.Tag as Collection).Files.Add(new CollectionFiles
             {
                 Date = new FileInfo(ME_main.Source.LocalPath).CreationTime,
                 Path = ME_main.Source.LocalPath,
                 FileIndexHigh = null,
                 FileIndexLow = null,
-                Name = ME_main.Source.AbsolutePath.Split('/')[0]
+                Name = ME_main.Source.AbsolutePath.Split('/').Last()
             });
+
+        }
+        private void create_collection(object sender, RoutedEventArgs e) {
+            Window window = new CollectionCreatorWindow();
+            window.Show();
         }
         #endregion
+
     }
 }

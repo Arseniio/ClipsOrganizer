@@ -41,12 +41,13 @@ namespace ClipsOrganizer.FileUtils {
         const uint OPEN_EXISTING = 3;
         const uint FILE_ATTRIBUTE_NORMAL = 0x80;
 
-        private static BY_HANDLE_FILE_INFORMATION GetFileInformation(string filePath) {
+        private static BY_HANDLE_FILE_INFORMATION? GetFileInformation(string filePath) {
             IntPtr hFile = CreateFile(filePath, GENERIC_READ, 0, IntPtr.Zero, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, IntPtr.Zero);
             if (hFile == IntPtr.Zero) {
                 throw new IOException("Unable to open file.", Marshal.GetLastWin32Error());
             }
             if(hFile.ToInt64() == -1) {
+                return null;
                 throw new IOException("Unable to open file.", Marshal.GetLastWin32Error());
             }
             BY_HANDLE_FILE_INFORMATION fileInfo;
@@ -59,7 +60,7 @@ namespace ClipsOrganizer.FileUtils {
             return fileInfo;
         }
 
-        public BY_HANDLE_FILE_INFORMATION GetFileinfo(string filePath) {
+        public BY_HANDLE_FILE_INFORMATION? GetFileinfo(string filePath) {
             return GetFileInformation(filePath);
         }
     }

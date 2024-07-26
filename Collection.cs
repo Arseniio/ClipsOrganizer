@@ -42,8 +42,8 @@ namespace ClipsOrganizer.Collections {
                     Name = item.Name,
                     Date = item.Date,
                     Path = item.Path,
-                    FileIndexHigh = fileInfo.FileIndexHigh,
-                    FileIndexLow = fileInfo.FileIndexLow,
+                    FileIndexHigh = fileInfo.Value.FileIndexHigh,
+                    FileIndexLow = fileInfo.Value.FileIndexLow,
                 });
             }
         }

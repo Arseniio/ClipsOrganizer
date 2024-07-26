@@ -10,6 +10,8 @@ using System.Collections.ObjectModel;
 using System.Runtime.CompilerServices;
 using Newtonsoft.Json;
 using ClipsOrganizer.Properties;
+using System.Diagnostics.Contracts;
+using System.Windows;
 
 namespace ClipsOrganizer.Settings {
     [Serializable]
@@ -41,18 +43,31 @@ namespace ClipsOrganizer.Settings {
         }
 
         public bool WriteSettings() {
-            foreach (var collection in this.Settings.collections){
+            StringBuilder ErrorFiles = new StringBuilder();
+            var errors = 0;
+            foreach (var collection in this.Settings.collections) {
                 foreach (var file in collection.Files) {
-                    if(file.FileIndexLow == null || file.FileIndexHigh == null) {
+                    if (file.FileIndexLow == null || file.FileIndexHigh == null) {
                         var utils = new FileUtils.FileUtils();
-                        FileUtils.FileUtils.BY_HANDLE_FILE_INFORMATION FileInfo = utils.GetFileinfo(file.Path);
-                        file.FileIndexHigh = FileInfo.FileIndexHigh;
-                        file.FileIndexLow = FileInfo.FileIndexLow;
+                        FileUtils.FileUtils.BY_HANDLE_FILE_INFORMATION? FileInfo = utils.GetFileinfo(file.Path);
+                        if (FileInfo == null) {
+                            ErrorFiles.Append(string.Format("Unable to save file indexes for {0}", file.Name));
+                            errors++;
+                        }
+                        else {
+                            file.FileIndexHigh = FileInfo.Value.FileIndexHigh;
+                            file.FileIndexLow = FileInfo.Value.FileIndexLow;
+                        }
                     }
                 }
             }
-            string contents = JsonConvert.SerializeObject(this.Settings);
-            File.WriteAllText("./settings.json", contents);
+            if (errors > 0) {
+                MessageBoxResult result = MessageBox.Show(string.Format("Found {0} errors on files\n {1} \n Continue saving without file ids?", errors, ErrorFiles.ToString()), "Error", MessageBoxButton.YesNo);
+                if (MessageBoxResult.Yes == result) {
+                    string contents = JsonConvert.SerializeObject(this.Settings);
+                    File.WriteAllText("./settings.json", contents);
+                }
+            }
             return false;
         }
 
@@ -63,7 +78,7 @@ namespace ClipsOrganizer.Settings {
             }
             // parsing settings file
             var lines = File.ReadAllText(settingsFile);
-            Settings.UpdateSettings(JsonConvert.DeserializeObject<Settings>(lines)); 
+            Settings.UpdateSettings(JsonConvert.DeserializeObject<Settings>(lines));
             return false;
         }
     }
