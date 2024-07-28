@@ -42,6 +42,12 @@ namespace ClipsOrganizer {
 
 
             InitializeComponent();
+            ContextMenu CT_mark = new ContextMenu() { Name = "CT_mark" };
+            Btn_Mark.ContextMenu = CT_mark;
+            TV_clips.ContextMenu = CT_mark;
+            //Костыль?
+            Btn_Mark.ContextMenu.Tag = Btn_Mark;
+            TV_clips.ContextMenu.Tag = TV_clips;
             if (settings.collections.Count == 0) {
                 Btn_Mark.ContextMenu.Items.Add("No Collections");
             }
@@ -58,6 +64,7 @@ namespace ClipsOrganizer {
             MI_create.Click += create_collection;
             Btn_Mark.ContextMenu.Items.Add(new Separator());
             Btn_Mark.ContextMenu.Items.Add(MI_create);
+
 
             TV_clips_collections.ItemsSource = settings.collections;
 
@@ -154,19 +161,34 @@ namespace ClipsOrganizer {
 
         private void MI_CT_mark_Click(object sender, RoutedEventArgs e) {
             var clickeditem = sender as MenuItem;
+            ContextMenu contextMenu = (sender as MenuItem).Parent as ContextMenu;
+            var clickedItem = sender as MenuItem;
+            var sourceElement = (clickedItem.Parent as ContextMenu)?.Tag as FrameworkElement;
             //construct new collectionfile and write it to this file
             ME_main.Volume = 0;
             var utils = new FileUtils.FileUtils();
-
-            //var fileinfo = utils.GetFileinfo(ME_main.Source.LocalPath);
-            (clickeditem.Tag as Collection).Files.Add(new CollectionFiles
-            {
-                Date = new FileInfo(ME_main.Source.LocalPath).CreationTime,
-                Path = ME_main.Source.LocalPath,
-                FileIndexHigh = null,
-                FileIndexLow = null,
-                Name = ME_main.Source.AbsolutePath.Split('/').Last()
-            });
+            if (sourceElement == Btn_Mark) {
+                (clickeditem.Tag as Collection).Files.Add(new CollectionFiles
+                {
+                    Date = new FileInfo(ME_main.Source.LocalPath).CreationTime,
+                    Path = ME_main.Source.LocalPath,
+                    FileIndexHigh = null,
+                    FileIndexLow = null,
+                    Name = ME_main.Source.AbsolutePath.Split('/').Last()
+                });
+            }
+            else if (sourceElement == TV_clips) {
+                if (TV_clips.SelectedItem == null) return;
+                FileItem SelectedItem = TV_clips.SelectedItem as FileItem;
+                (clickeditem.Tag as Collection).Files.Add(new CollectionFiles
+                {
+                    Path = SelectedItem.Path,
+                    Date = SelectedItem.Date,
+                    Name = SelectedItem.Name,
+                    FileIndexHigh = null,
+                    FileIndexLow = null,
+                });
+            }
 
         }
         private void create_collection(object sender, RoutedEventArgs e) {
