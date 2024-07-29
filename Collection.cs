@@ -15,45 +15,34 @@ using Newtonsoft.Json;
 
 namespace ClipsOrganizer.Collections {
 
-    public class CollectionFiles : Item {
-        public uint? FileIndexHigh { get; set; }
-        public uint? FileIndexLow { get; set; }
-    }
-
         [JsonObject]
     public class Collection {
         public string CollectionTag { get; set; }
-        public Color Color { get; set; }
-        public List<CollectionFiles> Files { get; set; }
+        public string Color { get; set; }
+        public List<Item> Files { get; set; }
 
         //for json parsing
         public Collection() {
-
+            this.Files = new List<Item>();
         }
 
         public Collection(DirectoryItem directoryItem) {
-            this.Color = Color.FromRgb(255, 255, 255);
+            //placeholders
+            this.Color = "#000000";
             this.CollectionTag = "test1";
-            Files = new List<CollectionFiles>();
+            Files = new List<Item>();
             foreach (var item in directoryItem.Items) {
                 var fileInfo = new FileUtils.FileUtils().GetFileinfo(item.Path);
-                Files.Add(new CollectionFiles
+                Files.Add(new Item
                 {
                     Name = item.Name,
                     Date = item.Date,
-                    Path = item.Path,
-                    FileIndexHigh = fileInfo.Value.FileIndexHigh,
-                    FileIndexLow = fileInfo.Value.FileIndexLow,
+                    Path = item.Path
                 });
             }
         }
 
     }
-    public class CollectionUIProvider : Collection {
-        public List<Collection> collections { get; set; }
-        public CollectionUIProvider() {
-            collections = new List<Collection>();
-        }
-    }
+
 }
 

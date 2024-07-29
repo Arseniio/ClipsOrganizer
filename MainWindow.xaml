@@ -51,7 +51,7 @@
                                 <TextBlock Text="{Binding Path=CollectionTag}" ToolTip="{Binding Path=Files}" />
                             </HierarchicalDataTemplate>
 
-                            <DataTemplate DataType="{x:Type Collection:CollectionFiles}">
+                            <DataTemplate DataType="{x:Type Model:Item}">
                                 <TextBlock Text="{Binding Path=Name}" ToolTip="{Binding Path=Name}" />
                             </DataTemplate>
 
@@ -67,11 +67,12 @@
                                 <TextBlock Text="{Binding Path=Name}" ToolTip="{Binding Path=Path}" />
                             </HierarchicalDataTemplate>
 
-                            <DataTemplate DataType="{x:Type Model:FileItem}">
-                                <TextBlock Text="{Binding Path=Name}" ToolTip="{Binding Path=Path}" />
-                            </DataTemplate>
+                        <DataTemplate DataType="{x:Type Model:Item}">
+                            <TextBlock Background="{Binding Path=Color}" Text="{Binding Path=Name}" ToolTip="{Binding Path=Path}">
+                            </TextBlock>
+                        </DataTemplate>
 
-                        </TreeView.Resources>
+                    </TreeView.Resources>
 
                     </TreeView>
                 </Grid>

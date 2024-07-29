@@ -12,12 +12,16 @@ using System.Windows.Media;
 using System.Windows.Forms;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using ClipsOrganizer.Collections;
+using System.Text.RegularExpressions;
+using System.Drawing;
 
 namespace ClipsOrganizer {
     /// <summary>
     /// Логика взаимодействия для CollectionCreatorWindow.xaml
     /// </summary>
     public partial class CollectionCreatorWindow : Window {
+        public Collection Collection { get; private set; }
         public CollectionCreatorWindow() {
             InitializeComponent();
         }
@@ -27,6 +31,20 @@ namespace ClipsOrganizer {
             if (colorDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
                 TB_color.Text = $"#{colorDialog.Color.R:X2}{colorDialog.Color.G:X2}{colorDialog.Color.B:X2}";
             }
+        }
+
+        private void Btn_createCollection_Click(object sender, RoutedEventArgs e) {
+            StringBuilder err = new StringBuilder();
+            if (string.IsNullOrWhiteSpace(TB_color.Text)) TB_color.Text = "#FFFFFF"; //default color to not trip regex check if field is empty
+            if (string.IsNullOrWhiteSpace(TB_CollName.Text)) err.AppendLine("Неверное название коллекции");
+            if (!Regex.Match(TB_color.Text, @"^#?[0-9a-fA-F]{6}").Success) err.Append("Неверный цвет");
+            if (err.Length > 0) {
+                System.Windows.MessageBox.Show(err.ToString(), "Ошибка создания коллекции");
+                return;
+            }
+            Collection = new Collection() { CollectionTag = TB_CollName.Text, Color=TB_color.Text };
+            this.DialogResult = true;
+            this.Close();
         }
     }
 }

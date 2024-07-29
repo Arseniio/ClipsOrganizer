@@ -21,6 +21,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Remoting.Channels;
 using System.Windows.Controls.Primitives;
 using System.IO;
+using System.Security.Principal;
 
 namespace ClipsOrganizer {
     /// <summary>
@@ -30,51 +31,65 @@ namespace ClipsOrganizer {
         DispatcherTimer timer;
         ItemProvider itemProvider = null;
         Settings.Settings settings = null;
+        ContextMenu CT_mark = null;
+        List<Item> Items = null;
         public MainWindow() {
             //constructing collection
 
             itemProvider = new ItemProvider();
-            var items = itemProvider.GetItemsFromFolder("H:\\nrtesting");
-
             settings = new Settings.Settings("H:\\nrtesting");
 
             settings.SettingsFile.LoadSettings();
 
+            Items = itemProvider.GetItemsFromFolder("H:\\nrtesting", collections: settings.collections);
+
 
             InitializeComponent();
-            ContextMenu CT_mark = new ContextMenu() { Name = "CT_mark" };
+            CT_mark = new ContextMenu() { Name = "CT_mark" };
+
+            if (settings.collections.Count == 0) {
+                CT_mark.Items.Add("No Collections");
+            }
+            else {
+                UpdateCollections();
+            }
+
+
             Btn_Mark.ContextMenu = CT_mark;
             TV_clips.ContextMenu = CT_mark;
             //Костыль?
             Btn_Mark.ContextMenu.Tag = Btn_Mark;
             TV_clips.ContextMenu.Tag = TV_clips;
-            if (settings.collections.Count == 0) {
-                Btn_Mark.ContextMenu.Items.Add("No Collections");
-            }
-            else {
-                settings.collections.ForEach(x =>
-                {
-                    var MI = new MenuItem { Header = x.CollectionTag };
-                    MI.Tag = x;
-                    MI.Click += MI_CT_mark_Click;
-                    Btn_Mark.ContextMenu.Items.Add(MI);
-                });
-            }
-            var MI_create = new MenuItem { Header = "Create new collection" };
-            MI_create.Click += create_collection;
-            Btn_Mark.ContextMenu.Items.Add(new Separator());
-            Btn_Mark.ContextMenu.Items.Add(MI_create);
-
 
             TV_clips_collections.ItemsSource = settings.collections;
 
-            TV_clips.ItemsSource = items;
+            TV_clips.ItemsSource = Items;
 
             #region slider timer init
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromMilliseconds(400);
             timer.Tick += VideoDurationUpdate;
             #endregion
+        }
+
+        private void UpdateCollections() {
+            CT_mark.Items.Clear();
+            settings.collections.ForEach(x =>
+            {
+                var MI = new MenuItem { Header = x.CollectionTag };
+                MI.Tag = x;
+                MI.Click += MI_CT_mark_Click;
+                CT_mark.Items.Add(MI);
+            });
+            var MI_create = new MenuItem { Header = "Create new collection" };
+            MI_create.Click += create_collection;
+            CT_mark.Items.Add(new Separator());
+            CT_mark.Items.Add(MI_create);
+        }
+
+        private void UpdateColors() {
+            Items = itemProvider.GetItemsFromFolder("H:\\nrtesting", collections: settings.collections);
+            TV_clips.Items.Refresh();
         }
 
         #region sliders events
@@ -136,8 +151,8 @@ namespace ClipsOrganizer {
         private void TV_clips_MouseDoubleClick(object sender, MouseButtonEventArgs e) {
             TreeView tv = sender as TreeView;
             if (tv.SelectedItem == null) return;
-            if (tv.SelectedItem.GetType() == typeof(CollectionFiles)) {
-                ME_main.Source = new Uri((tv.SelectedItem as CollectionFiles).Path);
+            if (tv.SelectedItem.GetType() == typeof(Item)) {
+                ME_main.Source = new Uri((tv.SelectedItem as Item).Path);
             }
             if (tv.SelectedItem.GetType() == typeof(FileItem)) {
                 ME_main.Source = new Uri((tv.SelectedItem as FileItem).Path);
@@ -161,39 +176,42 @@ namespace ClipsOrganizer {
 
         private void MI_CT_mark_Click(object sender, RoutedEventArgs e) {
             var clickeditem = sender as MenuItem;
-            ContextMenu contextMenu = (sender as MenuItem).Parent as ContextMenu;
             var clickedItem = sender as MenuItem;
             var sourceElement = (clickedItem.Parent as ContextMenu)?.Tag as FrameworkElement;
             //construct new collectionfile and write it to this file
             ME_main.Volume = 0;
             var utils = new FileUtils.FileUtils();
             if (sourceElement == Btn_Mark) {
-                (clickeditem.Tag as Collection).Files.Add(new CollectionFiles
+                (clickeditem.Tag as Collection).Files.Add(new Item
                 {
                     Date = new FileInfo(ME_main.Source.LocalPath).CreationTime,
                     Path = ME_main.Source.LocalPath,
-                    FileIndexHigh = null,
-                    FileIndexLow = null,
+                    Color = itemProvider.FindColorByCollections(clickeditem.Tag as Collection, ME_main.Source.AbsolutePath.Split('/').Last()),
                     Name = ME_main.Source.AbsolutePath.Split('/').Last()
                 });
             }
             else if (sourceElement == TV_clips) {
                 if (TV_clips.SelectedItem == null) return;
                 FileItem SelectedItem = TV_clips.SelectedItem as FileItem;
-                (clickeditem.Tag as Collection).Files.Add(new CollectionFiles
+                (clickeditem.Tag as Collection).Files.Add(new Item
                 {
                     Path = SelectedItem.Path,
                     Date = SelectedItem.Date,
                     Name = SelectedItem.Name,
-                    FileIndexHigh = null,
-                    FileIndexLow = null,
+                    Color = (clickeditem.Tag as Collection).Color,
                 });
             }
-
+            TV_clips_collections.Items.Refresh();
+            UpdateColors();
         }
         private void create_collection(object sender, RoutedEventArgs e) {
             Window window = new CollectionCreatorWindow();
-            window.Show();
+            if (window.ShowDialog() == true) {
+                Collection collection = (window as CollectionCreatorWindow).Collection;
+                settings.collections.Add(collection);
+                UpdateCollections();
+                TV_clips_collections.Items.Refresh();
+            }
         }
         #endregion
 

@@ -26,5 +26,6 @@
             <TextBox Name="TB_color" Width="114" Margin="0 0 5 0" Height="32px"/>
             <Button Width="32" Height="32" Name="Btn_ColorPicker" Click="Btn_ColorPicker_Click"/>
         </StackPanel>
+        <Button Grid.Row="3" Width="120" Height="32" Content="Создать" Name="Btn_createCollection" Click="Btn_createCollection_Click"/>
     </Grid>
 </Window>

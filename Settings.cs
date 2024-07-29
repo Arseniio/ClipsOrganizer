@@ -42,36 +42,40 @@ namespace ClipsOrganizer.Settings {
             this.settingsFile = settingsFile; //maybe delete later if not used
         }
 
+        //public bool WriteSettings() {
+        //    StringBuilder ErrorFiles = new StringBuilder();
+        //    var errors = 0;
+        //    foreach (var collection in this.Settings.collections) {
+        //        foreach (var file in collection.Files) {
+        //            if (file.FileIndexLow == null || file.FileIndexHigh == null) {
+        //                var utils = new FileUtils.FileUtils();
+        //                FileUtils.FileUtils.BY_HANDLE_FILE_INFORMATION? FileInfo = utils.GetFileinfo(file.Path);
+        //                if (FileInfo == null) {
+        //                    ErrorFiles.Append(string.Format("Unable to save file indexes for {0}", file.Name));
+        //                    errors++;
+        //                }
+        //                else {
+        //                    file.FileIndexHigh = FileInfo.Value.FileIndexHigh;
+        //                    file.FileIndexLow = FileInfo.Value.FileIndexLow;
+        //                }
+        //            }
+        //        }
+        //    }
+        //    if (errors > 0) {
+        //        MessageBoxResult result = MessageBox.Show(string.Format("Found {0} errors on files\n {1} \n Continue saving without file ids?", errors, ErrorFiles.ToString()), "Error", MessageBoxButton.YesNo);
+        //        if (MessageBoxResult.Yes == result) {
+        //            string contents = JsonConvert.SerializeObject(this.Settings);
+        //            File.WriteAllText("./settings.json", contents);
+        //        }
+        //    }
+        //    return false;
+        //}
+
         public bool WriteSettings() {
-            StringBuilder ErrorFiles = new StringBuilder();
-            var errors = 0;
-            foreach (var collection in this.Settings.collections) {
-                foreach (var file in collection.Files) {
-                    if (file.FileIndexLow == null || file.FileIndexHigh == null) {
-                        var utils = new FileUtils.FileUtils();
-                        FileUtils.FileUtils.BY_HANDLE_FILE_INFORMATION? FileInfo = utils.GetFileinfo(file.Path);
-                        if (FileInfo == null) {
-                            ErrorFiles.Append(string.Format("Unable to save file indexes for {0}", file.Name));
-                            errors++;
-                        }
-                        else {
-                            file.FileIndexHigh = FileInfo.Value.FileIndexHigh;
-                            file.FileIndexLow = FileInfo.Value.FileIndexLow;
-                        }
-                    }
-                }
-            }
-            if (errors > 0) {
-                MessageBoxResult result = MessageBox.Show(string.Format("Found {0} errors on files\n {1} \n Continue saving without file ids?", errors, ErrorFiles.ToString()), "Error", MessageBoxButton.YesNo);
-                if (MessageBoxResult.Yes == result) {
-                    string contents = JsonConvert.SerializeObject(this.Settings);
-                    File.WriteAllText("./settings.json", contents);
-                }
-            }
+            string contents = JsonConvert.SerializeObject(this.Settings);
+            File.WriteAllText("./settings.json", contents);
             return false;
         }
-
-
         public bool LoadSettings(string settingsFile = "./settings.json") {
             if (string.IsNullOrWhiteSpace(settingsFile)) {
                 return false;

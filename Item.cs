@@ -1,6 +1,8 @@
 ﻿using ClipsOrganizer.Collections;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Drawing;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -22,34 +24,32 @@ namespace ClipsOrganizer.Model {
         public string Name { get; set; }
         public string Path { get; set; }
         public DateTime Date { get; set; }
+        [JsonIgnore]
+        public string Color { get; set; }
     }
 
     public class FileItem : Item {
-
     }
     public class DirectoryItem : Item {
         public List<Item> Items { get; set; }
-
         public DirectoryItem() {
             Items = new List<Item>();
         }
     }
     public class ItemProvider {
         public bool ParsedFileNames = false;
-        public List<Item> GetItemsFromCollections(List<Collections.Collection> collections,bool parsedFileNames = false, Sorts sortMethod = Sorts.Default) {
+        public List<Item> GetItemsFromCollections(List<Collections.Collection> collections, bool parsedFileNames = false, Sorts sortMethod = Sorts.Default) {
             var items = new List<Item>();
             //foreach (Collection collectiontest in collections)
             //    items.Add(new DirectoryItem()
             //    {
             //        Date = DateTime.MinValue,
             //        Items = collectiontest.Files,
-                    
-
             //    });
 
             return items;
         }
-        public List<Item> GetItemsFromFolder(string path, bool parsedFileNames = false, Sorts sortMethod = Sorts.Default) {
+        public List<Item> GetItemsFromFolder(string path, bool parsedFileNames = false, Sorts sortMethod = Sorts.Default, List<Collection> collections = null) {
             var items = new List<Item>();
             var dirInfo = new DirectoryInfo(path);
 
@@ -58,16 +58,16 @@ namespace ClipsOrganizer.Model {
                 {
                     Name = directory.Name,
                     Path = directory.FullName,
-                    Items = GetItemsFromFolder(directory.FullName, parsedFileNames, sortMethod)
+                    Items = GetItemsFromFolder(directory.FullName, parsedFileNames, sortMethod, collections)
                 };
                 items.Add(item);
             }
 
             if (parsedFileNames) {
-                items.AddRange(GetParsedFileItems(dirInfo));
+                items.AddRange(GetParsedFileItems(dirInfo, collections));
             }
             else {
-                items.AddRange(GetFileItems(dirInfo));
+                items.AddRange(GetFileItems(dirInfo, collections));
             }
 
             items = SortItems(sortMethod, items);
@@ -75,33 +75,56 @@ namespace ClipsOrganizer.Model {
         }
 
 
+        private static string PlaceholderColor = "#808080";
 
-
-        private List<Item> GetParsedFileItems(DirectoryInfo dirInfo) {
+        private List<Item> GetParsedFileItems(DirectoryInfo dirInfo, List<Collection> collections = null) {
             var items = new List<Item>();
-
             foreach (var file in dirInfo.GetFiles()) {
                 var splitfn = file.Name.Split(' ');
+                string color = null;
+                color = FindColorByCollections(collections ?? null, file.Name);
                 items.Add(new FileItem
                 {
                     Name = splitfn[0] + " " + splitfn[1],
                     Path = file.FullName,
-                    Date = file.CreationTime
+                    Date = file.CreationTime,
+                    Color = color ?? PlaceholderColor
                 });
             }
 
             return items;
         }
 
-        private List<Item> GetFileItems(DirectoryInfo dirInfo) {
-            var items = new List<Item>();
+        public string FindColorByCollections(List<Collection> collection, string filename) {
+            if (collection == null) return null;
+            foreach (var p in collection) {
+                var file = p.Files.Find(x => x.Name == filename);
+                if (file != null) {
+                    return p.Color;
+                }
+            }
+            return null; 
+        }
+        public string FindColorByCollections(Collection collection, string filename) {
+            if (collection == null) return null;
+            var file = collection.Files.Find(x => x.Name == filename);
+            if (file != null) {
+                return collection.Color;
+            }
+            return null; 
+        }
 
+        private List<Item> GetFileItems(DirectoryInfo dirInfo, List<Collection> collections = null) {
+            var items = new List<Item>();
             foreach (var file in dirInfo.GetFiles()) {
+                string color = null;
+                color = FindColorByCollections(collections ?? null, file.Name);
                 items.Add(new FileItem
                 {
                     Name = file.Name,
                     Path = file.FullName,
-                    Date = file.CreationTime
+                    Date = file.CreationTime,
+                    Color = color ?? PlaceholderColor
                 });
             }
 
