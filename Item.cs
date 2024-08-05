@@ -26,6 +26,18 @@ namespace ClipsOrganizer.Model {
         public DateTime Date { get; set; }
         [JsonIgnore]
         public string Color { get; set; }
+        public bool Equals(Item other) {
+            if (other == null) return false;
+
+            return this.Name == other.Name && this.Path == other.Path && this.Date == other.Date && this.Color == other.Color;
+        }
+
+        public override bool Equals(object obj) {
+            if (obj is Item otherItem) {
+                return Equals(otherItem);
+            }
+            return false;
+        }
     }
 
     public class FileItem : Item {
@@ -38,18 +50,8 @@ namespace ClipsOrganizer.Model {
     }
     public class ItemProvider {
         public bool ParsedFileNames = false;
-        public List<Item> GetItemsFromCollections(List<Collections.Collection> collections, bool parsedFileNames = false, Sorts sortMethod = Sorts.Default) {
-            var items = new List<Item>();
-            //foreach (Collection collectiontest in collections)
-            //    items.Add(new DirectoryItem()
-            //    {
-            //        Date = DateTime.MinValue,
-            //        Items = collectiontest.Files,
-            //    });
 
-            return items;
-        }
-        public List<Item> GetItemsFromFolder(string path, bool parsedFileNames = false, Sorts sortMethod = Sorts.Default, List<Collection> collections = null) {
+        public List<Item> GetItemsFromFolder(string path, Sorts sortMethod = Sorts.Default, List<Collection> collections = null) {
             var items = new List<Item>();
             var dirInfo = new DirectoryInfo(path);
 
@@ -58,19 +60,15 @@ namespace ClipsOrganizer.Model {
                 {
                     Name = directory.Name,
                     Path = directory.FullName,
-                    Items = GetItemsFromFolder(directory.FullName, parsedFileNames, sortMethod, collections)
+                    Items = GetItemsFromFolder(directory.FullName, sortMethod, collections)
                 };
                 items.Add(item);
             }
 
-            if (parsedFileNames) {
-                items.AddRange(GetParsedFileItems(dirInfo, collections));
-            }
-            else {
-                items.AddRange(GetFileItems(dirInfo, collections));
-            }
+            items.AddRange(GetFileItems(dirInfo, collections));
 
             items = SortItems(sortMethod, items);
+
             return items;
         }
 
@@ -103,7 +101,7 @@ namespace ClipsOrganizer.Model {
                     return p.Color;
                 }
             }
-            return null; 
+            return null;
         }
         public string FindColorByCollections(Collection collection, string filename) {
             if (collection == null) return null;
@@ -111,7 +109,7 @@ namespace ClipsOrganizer.Model {
             if (file != null) {
                 return collection.Color;
             }
-            return null; 
+            return null;
         }
 
         private List<Item> GetFileItems(DirectoryInfo dirInfo, List<Collection> collections = null) {

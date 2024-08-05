@@ -35,7 +35,9 @@ namespace ClipsOrganizer {
         List<Item> Items = null;
         public MainWindow() {
             //constructing collection
+            if (!File.Exists("./settings.json")) {
 
+            }
             itemProvider = new ItemProvider();
             settings = new Settings.Settings("H:\\nrtesting");
 
@@ -89,6 +91,8 @@ namespace ClipsOrganizer {
 
         private void UpdateColors() {
             Items = itemProvider.GetItemsFromFolder("H:\\nrtesting", collections: settings.collections);
+            TV_clips.ItemsSource = null;
+            TV_clips.ItemsSource = Items;
             TV_clips.Items.Refresh();
         }
 
@@ -128,7 +132,7 @@ namespace ClipsOrganizer {
         }
 
         private void ME_main_MediaOpened(object sender, RoutedEventArgs e) {
-            if (!ME_main.NaturalDuration.HasTimeSpan) {
+            if (ME_main.NaturalDuration.HasTimeSpan) {
                 SL_duration.Maximum = ME_main.NaturalDuration.TimeSpan.TotalSeconds;
                 timer.Start();
             }
@@ -140,12 +144,14 @@ namespace ClipsOrganizer {
         #endregion
 
         private void CB_ParsedFileName_Checked(object sender, RoutedEventArgs e) {
-            TV_clips.ItemsSource = itemProvider.GetItemsFromFolder("H:\\nrtesting", true);
-            TV_clips_collections.ItemsSource = itemProvider.GetItemsFromCollections(settings.collections, true);
+            //TV_clips.ItemsSource = itemProvider.GetItemsFromFolder("H:\\nrtesting");
+            //TV_clips_collections.ItemsSource = itemProvider.GetItemsFromCollections(settings.collections);
+            throw new NotImplementedException("NE");
         }
         private void CB_ParsedFileName_Unchecked(object sender, RoutedEventArgs e) {
-            TV_clips.ItemsSource = itemProvider.GetItemsFromFolder("H:\\nrtesting");
-            TV_clips_collections.ItemsSource = itemProvider.GetItemsFromCollections(settings.collections);
+            //TV_clips.ItemsSource = itemProvider.GetItemsFromFolder("H:\\nrtesting");
+            //TV_clips_collections.ItemsSource = itemProvider.GetItemsFromCollections(settings.collections);
+            throw new NotImplementedException("NE");
         }
         #region Clip selection
         private void TV_clips_MouseDoubleClick(object sender, MouseButtonEventArgs e) {
@@ -163,10 +169,10 @@ namespace ClipsOrganizer {
         }
 
         private void CB_sortType_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            if (this.IsLoaded) {
-                DataContext = itemProvider.GetItemsFromFolder("H:\\nrtesting", (bool)CB_ParsedFileName.IsChecked, (Sorts)(CB_sortType.SelectedItem as ComboBoxItem).Tag);
-                TV_clips.Items.Refresh();
-            }
+            //if (this.IsLoaded) {
+            //    DataContext = itemProvider.GetItemsFromFolder("H:\\nrtesting", (bool)CB_ParsedFileName.IsChecked, (Sorts)(CB_sortType.SelectedItem as ComboBoxItem).Tag);
+            //    TV_clips.Items.Refresh();
+            //}
         }
         #endregion
         #region Marking clips
@@ -211,9 +217,18 @@ namespace ClipsOrganizer {
                 settings.collections.Add(collection);
                 UpdateCollections();
                 TV_clips_collections.Items.Refresh();
+                UpdateColors();
             }
         }
         #endregion
 
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
+            if (!settings.SettingsFile.CheckIfChanged()) {
+                e.Cancel = true;
+            }
+            else {
+                e.Cancel = false;
+            }
+        }
     }
 }

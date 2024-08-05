@@ -9,7 +9,6 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Forms;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
 using ClipsOrganizer.Collections;
@@ -29,9 +28,27 @@ namespace ClipsOrganizer {
         private void Btn_ColorPicker_Click(object sender, RoutedEventArgs e) {
             System.Windows.Forms.ColorDialog colorDialog = new System.Windows.Forms.ColorDialog();
             if (colorDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
-                TB_color.Text = $"#{colorDialog.Color.R:X2}{colorDialog.Color.G:X2}{colorDialog.Color.B:X2}";
+                var color = colorDialog.Color;
+                double luminance = 0.2126 * color.R + 0.7152 * color.G + 0.0722 * color.B;
+
+                if (luminance < 50) {
+                    var result = MessageBox.Show("Выбранный цвет слишком тёмный. Вы уверены, что хотите использовать этот цвет?", "Предупреждение", MessageBoxButton.YesNo);
+                    if (result == MessageBoxResult.Yes) {
+                        TB_color.Text = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+                    }
+                }
+                else if (luminance > 200) {
+                    var result = MessageBox.Show("Выбранный цвет слишком яркий. Вы уверены, что хотите использовать этот цвет?", "Предупреждение", MessageBoxButton.YesNo);
+                    if (result == MessageBoxResult.Yes) {
+                        TB_color.Text = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+                    }
+                }
+                else {
+                    TB_color.Text = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+                }
             }
         }
+
 
         private void Btn_createCollection_Click(object sender, RoutedEventArgs e) {
             StringBuilder err = new StringBuilder();

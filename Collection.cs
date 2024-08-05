@@ -15,7 +15,7 @@ using Newtonsoft.Json;
 
 namespace ClipsOrganizer.Collections {
 
-        [JsonObject]
+    [JsonObject]
     public class Collection {
         public string CollectionTag { get; set; }
         public string Color { get; set; }
@@ -40,6 +40,22 @@ namespace ClipsOrganizer.Collections {
                     Path = item.Path
                 });
             }
+        }
+        public bool Equals(Collection other) {
+            if (other == null) return false;
+
+            bool areFilesEqual = this.Files.SequenceEqual(other.Files);
+            bool areTagsEqual = this.CollectionTag == other.CollectionTag;
+            bool areColorsEqual = this.Color == other.Color;
+
+            return areFilesEqual && areTagsEqual && areColorsEqual;
+        }
+
+        public override bool Equals(object obj) {
+            if (obj is Collection otherCollection) {
+                return Equals(otherCollection);
+            }
+            return false;
         }
 
     }

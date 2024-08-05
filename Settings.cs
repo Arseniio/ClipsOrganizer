@@ -31,6 +31,14 @@ namespace ClipsOrganizer.Settings {
             this.collections = ChangedSettings.collections;
             this.ClipsFolder = ChangedSettings.ClipsFolder;
         }
+        public bool Equals(Settings other) {
+            if (other == null) return false;
+
+            bool areCollectionsEqual = this.collections.SequenceEqual(other.collections);
+            bool areFoldersEqual = this.ClipsFolder == other.ClipsFolder;
+
+            return areCollectionsEqual && areFoldersEqual;
+        }
     }
     public class SettingsFile {
         //settings file properties
@@ -76,14 +84,46 @@ namespace ClipsOrganizer.Settings {
             File.WriteAllText("./settings.json", contents);
             return false;
         }
-        public bool LoadSettings(string settingsFile = "./settings.json") {
+        public void LoadSettings(string settingsFile = "./settings.json") {
+            if (string.IsNullOrWhiteSpace(settingsFile)) {
+                return;
+            }
+            // parsing settings file
+            if (!File.Exists(settingsFile)) {
+                File.Create(settingsFile);
+            }
+            if (!File.OpenRead(settingsFile).CanRead) return;
+            var lines = File.ReadAllText(settingsFile);
+            var settings = JsonConvert.DeserializeObject<Settings>(lines);
+            settings.collections.ForEach(s => s.Files.ForEach(f => f.Color = s.Color));
+            Settings.UpdateSettings(settings);
+        }
+        public bool CheckIfChanged(string settingsFile = "./settings.json") {
             if (string.IsNullOrWhiteSpace(settingsFile)) {
                 return false;
             }
-            // parsing settings file
             var lines = File.ReadAllText(settingsFile);
-            Settings.UpdateSettings(JsonConvert.DeserializeObject<Settings>(lines));
-            return false;
+            var oldsettings = JsonConvert.DeserializeObject<Settings>(lines);
+            oldsettings.collections.ForEach(s => s.Files.ForEach(f => f.Color = s.Color));
+
+            bool changed = !this.Settings.Equals(oldsettings);
+
+            if (changed) {
+                var result = MessageBox.Show("В коллекции были добавлены новые файлы, хотите сохранить их?", "Подтверждение", MessageBoxButton.YesNoCancel);
+                if (result == MessageBoxResult.Yes) {
+                    if (File.Exists("./settingsOld.json")) File.Delete("./settingsOld.json");
+                    File.Move(settingsFile, "./settingsOld.json");
+                    this.WriteSettings();
+                    return true;
+                }
+                if (result == MessageBoxResult.No) {
+                    return true;
+                }
+                if (result == MessageBoxResult.Cancel) {
+                    return false;
+                }
+            }
+            return true;
         }
     }
 }
