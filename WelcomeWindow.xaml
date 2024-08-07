@@ -1,0 +1,23 @@
+﻿<Window x:Class="ClipsOrganizer.WelcomeWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ClipsOrganizer"
+        mc:Ignorable="d"
+        Title="WelcomeWindow" Height="300" Width="400" WindowStyle="ToolWindow">
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition/>
+            <RowDefinition/>
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+            <TextBlock Text="Путь до папки с клипами:" VerticalAlignment="Center" FontSize="18" Margin="0 0 10 0"/>
+            <TextBox Name="TB_Path" Width="120" Height="32px" Text="H:\nrtesting"/>
+        </StackPanel>
+        <Button Grid.Row="3" Width="120" Height="32" Content="Продолжить" Name="Btn_Continue" Click="Btn_Continue_Click" />
+
+        
+    </Grid>
+</Window>

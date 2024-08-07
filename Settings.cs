@@ -12,6 +12,7 @@ using Newtonsoft.Json;
 using ClipsOrganizer.Properties;
 using System.Diagnostics.Contracts;
 using System.Windows;
+using System.Threading;
 
 namespace ClipsOrganizer.Settings {
     [Serializable]
@@ -90,10 +91,13 @@ namespace ClipsOrganizer.Settings {
             }
             // parsing settings file
             if (!File.Exists(settingsFile)) {
-                File.Create(settingsFile);
+                (File.Create(settingsFile) as FileStream).Close();
+                this.WriteSettings();
+                return;
             }
             if (!File.OpenRead(settingsFile).CanRead) return;
             var lines = File.ReadAllText(settingsFile);
+            if (string.IsNullOrWhiteSpace(lines)) return;
             var settings = JsonConvert.DeserializeObject<Settings>(lines);
             settings.collections.ForEach(s => s.Files.ForEach(f => f.Color = s.Color));
             Settings.UpdateSettings(settings);

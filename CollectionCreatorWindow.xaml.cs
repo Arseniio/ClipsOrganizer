@@ -21,8 +21,11 @@ namespace ClipsOrganizer {
     /// </summary>
     public partial class CollectionCreatorWindow : Window {
         public Collection Collection { get; private set; }
-        public CollectionCreatorWindow() {
+
+        public CollectionCreatorWindow(Collection collection = null) {
             InitializeComponent();
+            Collection = collection;
+            DataContext = Collection;
         }
 
         private void Btn_ColorPicker_Click(object sender, RoutedEventArgs e) {
@@ -59,7 +62,11 @@ namespace ClipsOrganizer {
                 System.Windows.MessageBox.Show(err.ToString(), "Ошибка создания коллекции");
                 return;
             }
-            Collection = new Collection() { CollectionTag = TB_CollName.Text, Color=TB_color.Text };
+            Collection = Collection ?? new Collection();
+            Collection.CollectionTag = TB_CollName.Text;
+            Collection.Color = TB_color.Text;
+            Collection.Files = Collection.Files ?? new List<Model.Item>();
+
             this.DialogResult = true;
             this.Close();
         }

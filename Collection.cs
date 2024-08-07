@@ -25,7 +25,6 @@ namespace ClipsOrganizer.Collections {
         public Collection() {
             this.Files = new List<Item>();
         }
-
         public Collection(DirectoryItem directoryItem) {
             //placeholders
             this.Color = "#000000";
@@ -49,6 +48,9 @@ namespace ClipsOrganizer.Collections {
             bool areColorsEqual = this.Color == other.Color;
 
             return areFilesEqual && areTagsEqual && areColorsEqual;
+        }
+        public System.Collections.Generic.IEnumerator<Item> GetEnumerator() {
+            return this.Files.GetEnumerator();
         }
 
         public override bool Equals(object obj) {
