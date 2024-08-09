@@ -27,7 +27,6 @@ namespace ClipsOrganizer {
 
         public List<Collection> selectedCollections = new List<Collection>();
         private void Btn_Delete_Click(object sender, RoutedEventArgs e) {
-            List<Collection> selectedCollections = new List<Collection>();
             foreach (var item in LB_Collections.Items) {
                 if (item is CheckBox checkBox && checkBox.IsChecked == true) {
                     selectedCollections.Add(checkBox.Tag as Collection);

@@ -57,7 +57,7 @@ namespace ClipsOrganizer {
                 AddNewCollectionMI();
             }
             else {
-                UpdateCollections();
+                UpdateCollectionsMI();
             }
             CT_mark.Opened += CT_mark_Opened;
 
@@ -87,13 +87,11 @@ namespace ClipsOrganizer {
             if (sender is ContextMenu contextMenu) {
                 if (contextMenu.PlacementTarget is FrameworkElement placementTarget) {
                     if (placementTarget.Tag != TV_clips_collections) {
-                        UpdateCollections();
+                        UpdateCollectionsMI();
                         return;
                     }
                     if (!(TV_clips_collections.SelectedItem is null)) {
                         if (TV_clips_collections.SelectedItem.GetType() == typeof(Item)) {
-                            ///тут жесть тупняк надо получить коллекцию элемента в которой он сидит что бы не костылять с поиском этого элемента в разных коллекциях
-                            ///Но можно пока в целом забить и удалять из всех или сделать выбор
                             var sel_item = TV_clips_collections.SelectedItem as Item;
                             var MI = new MenuItem { Header = "Remove" };
 
@@ -101,7 +99,7 @@ namespace ClipsOrganizer {
                             MI.Click += MI_CT_remove_Click;
                             CT_mark.Items.Add(MI);
                         }
-                        if(TV_clips_collections.SelectedItem.GetType() == typeof(Collection)) {
+                        if (TV_clips_collections.SelectedItem.GetType() == typeof(Collection)) {
                             var sel_item = TV_clips_collections.SelectedItem as Collection;
                             var MI = new MenuItem { Header = "Edit" };
 
@@ -119,6 +117,7 @@ namespace ClipsOrganizer {
             window.ShowDialog();
             if (window.DialogResult.HasValue) {
                 UpdateColors();
+                UpdateCollectionsUI();
             }
         }
 
@@ -132,16 +131,19 @@ namespace ClipsOrganizer {
                 if (!(item is null)) foundCollections.Add(collection);
             }
             if (foundCollections.Count > 2) {
-                //open new window with deletion options
                 Window window = new CollectionDeletionWindow(foundCollections);
-                if (window.ShowDialog() == true) {
-                    //clipsPath = (window as CollectionDeletionWindow);
+                bool? dialogResult = window.ShowDialog();
+                if (dialogResult == true && (window as CollectionDeletionWindow).selectedCollections.Count > 0) {
+                    foreach (var collection in (window as CollectionDeletionWindow).selectedCollections) {
+                        item = null;
+                        settings.collections.Find(p => p.CollectionTag == collection.CollectionTag).Files.RemoveAll(i => i.Name == ItemToDelete.Name);
+                    }
+                    UpdateCollectionsUI();
                 }
             }
         }
 
-
-        private void UpdateCollections() {
+        private void UpdateCollectionsMI() {
             CT_mark.Items.Clear();
             settings.collections.ForEach(x =>
             {
@@ -158,6 +160,37 @@ namespace ClipsOrganizer {
             MI_create.Click += create_collection;
             CT_mark.Items.Add(new Separator());
             CT_mark.Items.Add(MI_create);
+        }
+
+        private void UpdateCollectionsUI() {
+            var expandedItems = new List<object>();
+            SaveExpandedItems(TV_clips_collections.Items, expandedItems);
+
+            TV_clips_collections.Items.Refresh();
+
+            RestoreExpandedItems(TV_clips_collections.Items, expandedItems);
+        }
+
+        private void SaveExpandedItems(ItemCollection items, List<object> expandedItems) {
+            foreach (var item in items) {
+                var treeViewItem = TV_clips_collections.ItemContainerGenerator.ContainerFromItem(item) as TreeViewItem;
+                if (treeViewItem != null && treeViewItem.IsExpanded) {
+                    expandedItems.Add(item);
+                    SaveExpandedItems(treeViewItem.Items, expandedItems);
+                }
+            }
+        }
+
+        private void RestoreExpandedItems(ItemCollection items, List<object> expandedItems) {
+            foreach (var item in items) {
+                if (expandedItems.Contains(item)) {
+                    var treeViewItem = TV_clips_collections.ItemContainerGenerator.ContainerFromItem(item) as TreeViewItem;
+                    if (treeViewItem != null) {
+                        treeViewItem.IsExpanded = true;
+                        RestoreExpandedItems(treeViewItem.Items, expandedItems);
+                    }
+                }
+            }
         }
 
         private void UpdateColors() {
@@ -250,7 +283,7 @@ namespace ClipsOrganizer {
 
         #region Marking clips
         private void Btn_Mark_Click(object sender, RoutedEventArgs e) {
-            settings.SettingsFile.WriteSettings();
+            settings.SettingsFile.WriteSettings(); //PLACEHOLDER
         }
 
         private void MI_CT_mark_Click(object sender, RoutedEventArgs e) {
@@ -288,7 +321,7 @@ namespace ClipsOrganizer {
             if (window.ShowDialog() == true) {
                 Collection collection = (window as CollectionCreatorWindow).Collection;
                 settings.collections.Add(collection);
-                UpdateCollections();
+                UpdateCollectionsMI();
                 TV_clips_collections.Items.Refresh();
                 UpdateColors();
             }
