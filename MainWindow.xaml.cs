@@ -121,16 +121,22 @@ namespace ClipsOrganizer {
                 UpdateColors();
             }
         }
+
         private void MI_CT_remove_Click(object sender, RoutedEventArgs e) {
             var ItemToDelete = (sender as MenuItem).Tag as Item;
             Item item = new Item();
-            int entries = 0;
+            List<Collection> foundCollections = new List<Collection>();
             foreach (var collection in settings.collections) {
-                item = collection.Files.Find(p => p == ItemToDelete);
-                if (item.Name != null) entries++;
+                item = null;
+                item = collection.Files.Find(p => p.Name == ItemToDelete.Name); //not sure if need to check only name,date or entire object
+                if (!(item is null)) foundCollections.Add(collection);
             }
-            if (entries > 2) {
-                
+            if (foundCollections.Count > 2) {
+                //open new window with deletion options
+                Window window = new CollectionDeletionWindow(foundCollections);
+                if (window.ShowDialog() == true) {
+                    //clipsPath = (window as CollectionDeletionWindow);
+                }
             }
         }
 

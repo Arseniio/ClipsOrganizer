@@ -66,12 +66,19 @@
     <Compile Include="CollectionCreatorWindow.xaml.cs">
       <DependentUpon>CollectionCreatorWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="CollectionDeletionWindow.xaml.cs">
+      <DependentUpon>CollectionDeletionWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="FileUtils.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="WelcomeWindow.xaml.cs">
       <DependentUpon>WelcomeWindow.xaml</DependentUpon>
     </Compile>
     <Page Include="CollectionCreatorWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="CollectionDeletionWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
