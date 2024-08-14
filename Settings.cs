@@ -34,7 +34,7 @@ namespace ClipsOrganizer.Settings {
         }
         public bool Equals(Settings other) {
             if (other == null) return false;
-
+            
             bool areCollectionsEqual = this.collections.SequenceEqual(other.collections);
             bool areFoldersEqual = this.ClipsFolder == other.ClipsFolder;
 
@@ -80,7 +80,7 @@ namespace ClipsOrganizer.Settings {
         //    return false;
         //}
 
-        public bool WriteSettings() {
+        protected bool WriteSettings() {
             string contents = JsonConvert.SerializeObject(this.Settings);
             File.WriteAllText("./settings.json", contents);
             return false;
@@ -112,22 +112,13 @@ namespace ClipsOrganizer.Settings {
 
             bool changed = !this.Settings.Equals(oldsettings);
 
-            if (changed) {
-                var result = MessageBox.Show("В коллекции были добавлены новые файлы, хотите сохранить их?", "Подтверждение", MessageBoxButton.YesNoCancel);
-                if (result == MessageBoxResult.Yes) {
-                    if (File.Exists("./settingsOld.json")) File.Delete("./settingsOld.json");
-                    File.Move(settingsFile, "./settingsOld.json");
-                    this.WriteSettings();
-                    return true;
-                }
-                if (result == MessageBoxResult.No) {
-                    return true;
-                }
-                if (result == MessageBoxResult.Cancel) {
-                    return false;
-                }
-            }
-            return true;
+            return changed;
+        }
+
+        public void WriteAndCreateBackupSettings(string settingsFile = "./settings.json") {
+            if (File.Exists("./settingsOld.json")) File.Delete("./settingsOld.json");
+            File.Move(settingsFile, "./settingsOld.json");
+            this.WriteSettings();
         }
     }
 }

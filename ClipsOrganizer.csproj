@@ -69,6 +69,9 @@
     <Compile Include="CollectionDeletionWindow.xaml.cs">
       <DependentUpon>CollectionDeletionWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ExportWindow.xaml.cs">
+      <DependentUpon>ExportWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="FileUtils.cs" />
     <Compile Include="Settings.cs" />
     <Compile Include="WelcomeWindow.xaml.cs">
@@ -79,6 +82,10 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="CollectionDeletionWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ExportWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

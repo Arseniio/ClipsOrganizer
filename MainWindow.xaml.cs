@@ -35,7 +35,6 @@ namespace ClipsOrganizer {
         List<Item> Items = null;
         string clipsPath;
         public MainWindow() {
-            //constructing collection
             if (!File.Exists("./settings.json")) {
                 Window window = new WelcomeWindow();
                 if (window.ShowDialog() == true) {
@@ -92,14 +91,15 @@ namespace ClipsOrganizer {
                     }
                     if (!(TV_clips_collections.SelectedItem is null)) {
                         if (TV_clips_collections.SelectedItem.GetType() == typeof(Item)) {
+                            UpdateCollectionsMI();
                             var sel_item = TV_clips_collections.SelectedItem as Item;
                             var MI = new MenuItem { Header = "Remove" };
-
                             MI.Tag = sel_item;
                             MI.Click += MI_CT_remove_Click;
                             CT_mark.Items.Add(MI);
                         }
                         if (TV_clips_collections.SelectedItem.GetType() == typeof(Collection)) {
+                            UpdateCollectionsMI();
                             var sel_item = TV_clips_collections.SelectedItem as Collection;
                             var MI = new MenuItem { Header = "Edit" };
 
@@ -283,7 +283,7 @@ namespace ClipsOrganizer {
 
         #region Marking clips
         private void Btn_Mark_Click(object sender, RoutedEventArgs e) {
-            settings.SettingsFile.WriteSettings(); //PLACEHOLDER
+            MessageBox.Show("Пока не работает :)");
         }
 
         private void MI_CT_mark_Click(object sender, RoutedEventArgs e) {
@@ -329,12 +329,36 @@ namespace ClipsOrganizer {
         #endregion
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
-            if (!settings.SettingsFile.CheckIfChanged()) {
-                e.Cancel = true;
+            bool settingsChanged = settings.SettingsFile.CheckIfChanged();
+            if (settingsChanged) {
+                var result = MessageBox.Show("В коллекциях были изменены/добавлены файлы, хотите сохранить их?", "Подтверждение", MessageBoxButton.YesNoCancel);
+                if (result == MessageBoxResult.Yes) {
+                    this.settings.SettingsFile.WriteAndCreateBackupSettings();
+                    e.Cancel = false;
+                }
+                if (result == MessageBoxResult.No) {
+                    e.Cancel = false;
+
+                }
+                if (result == MessageBoxResult.Cancel) {
+                    e.Cancel = true;
+                }
             }
             else {
                 e.Cancel = false;
             }
+        }
+
+        private void Btn_export_Click(object sender, RoutedEventArgs e) {
+            Window window = new ExportWindow(this.settings);
+            window.ShowDialog();
+            Settings.Settings settingsAfterMoving = (window as ExportWindow).Settings;
+            var result = MessageBox.Show("Хотите ли вы сохранить пути для перемещённых файлов в коллекциях?\n(Не позволит далее работать с ними в программе (Относительные пути файлов))", "Подтверждение", MessageBoxButton.YesNo);
+            if (result == MessageBoxResult.Yes) {
+                settings.UpdateSettings(settingsAfterMoving);
+                settings.SettingsFile.WriteAndCreateBackupSettings();
+            }
+            else if (result == MessageBoxResult.No) { }
         }
     }
 }
