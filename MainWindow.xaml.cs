@@ -34,6 +34,10 @@ namespace ClipsOrganizer {
         ContextMenu CT_mark = null;
         List<Item> Items = null;
         string clipsPath;
+
+        private TreeView _lastSelectedTreeView;
+        private object _lastSelectedItem;
+
         public MainWindow() {
             if (!File.Exists("./settings.json")) {
                 Window window = new WelcomeWindow();
@@ -52,7 +56,7 @@ namespace ClipsOrganizer {
             InitializeComponent();
             CT_mark = new ContextMenu() { Name = "CT_mark" };
             if (settings.collections.Count == 0) {
-                CT_mark.Items.Add("No Collections");
+                CT_mark.Items.Add("Нет коллекций");
                 AddNewCollectionMI();
             }
             else {
@@ -117,7 +121,7 @@ namespace ClipsOrganizer {
             window.ShowDialog();
             if (window.DialogResult.HasValue) {
                 UpdateColors();
-                UpdateCollectionsUI();
+                UpdateCollectionsUI(TV_clips_collections);
             }
         }
 
@@ -130,7 +134,7 @@ namespace ClipsOrganizer {
                 item = collection.Files.Find(p => p.Name == ItemToDelete.Name); //not sure if need to check only name,date or entire object
                 if (!(item is null)) foundCollections.Add(collection);
             }
-            if (foundCollections.Count > 2) {
+            if (foundCollections.Count >= 2) {
                 Window window = new CollectionDeletionWindow(foundCollections);
                 bool? dialogResult = window.ShowDialog();
                 if (dialogResult == true && (window as CollectionDeletionWindow).selectedCollections.Count > 0) {
@@ -138,9 +142,15 @@ namespace ClipsOrganizer {
                         item = null;
                         settings.collections.Find(p => p.CollectionTag == collection.CollectionTag).Files.RemoveAll(i => i.Name == ItemToDelete.Name);
                     }
-                    UpdateCollectionsUI();
+                    UpdateCollectionsUI(TV_clips_collections);
                 }
             }
+            else {
+                foreach (var collection in settings.collections) {
+                    collection.Files.RemoveAll(p => p.Name == ItemToDelete.Name);
+                }
+            }
+            UpdateCollectionsUI(TV_clips_collections);
         }
 
         private void UpdateCollectionsMI() {
@@ -162,13 +172,13 @@ namespace ClipsOrganizer {
             CT_mark.Items.Add(MI_create);
         }
 
-        private void UpdateCollectionsUI() {
+        private void UpdateCollectionsUI(TreeView treeView) {
             var expandedItems = new List<object>();
-            SaveExpandedItems(TV_clips_collections.Items, expandedItems);
+            SaveExpandedItems(treeView.Items, expandedItems);
 
-            TV_clips_collections.Items.Refresh();
+            treeView.Items.Refresh();
 
-            RestoreExpandedItems(TV_clips_collections.Items, expandedItems);
+            RestoreExpandedItems(treeView.Items, expandedItems);
         }
 
         private void SaveExpandedItems(ItemCollection items, List<object> expandedItems) {
@@ -194,10 +204,11 @@ namespace ClipsOrganizer {
         }
 
         private void UpdateColors() {
-            Items = itemProvider.GetItemsFromFolder("H:\\nrtesting", collections: settings.collections);
+            Items = itemProvider.GetItemsFromFolder(settings.ClipsFolder, collections: settings.collections);
+            //maybe wrong implementation
             TV_clips.ItemsSource = null;
             TV_clips.ItemsSource = Items;
-            TV_clips.Items.Refresh();
+            UpdateCollectionsUI(TV_clips);
         }
 
         #region sliders events
@@ -211,6 +222,7 @@ namespace ClipsOrganizer {
                 SL_duration.Width = MainGrid.ActualWidth - 700;
             }
         }
+
         bool is_dragging = false;
         private void SL_duration_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
             if (!is_dragging) ME_main.Position = TimeSpan.FromSeconds((double)SL_duration.Value);
@@ -260,6 +272,7 @@ namespace ClipsOrganizer {
 
         #region Clip selection
         private void TV_clips_MouseDoubleClick(object sender, MouseButtonEventArgs e) {
+            //TODO: since all TV uses FileItem so this code is redundand, need to delete it and test... but i'll do it later someday
             TreeView tv = sender as TreeView;
             if (tv.SelectedItem == null) return;
             if (tv.SelectedItem.GetType() == typeof(Item)) {
@@ -312,8 +325,7 @@ namespace ClipsOrganizer {
                     Color = (clickeditem.Tag as Collection).Color,
                 });
             }
-
-            TV_clips_collections.Items.Refresh();
+            UpdateCollectionsUI(TV_clips_collections);
             UpdateColors();
         }
         private void create_collection(object sender, RoutedEventArgs e) {
@@ -322,8 +334,8 @@ namespace ClipsOrganizer {
                 Collection collection = (window as CollectionCreatorWindow).Collection;
                 settings.collections.Add(collection);
                 UpdateCollectionsMI();
-                TV_clips_collections.Items.Refresh();
                 UpdateColors();
+                TV_clips_collections.Items.Refresh();
             }
         }
         #endregion
@@ -338,7 +350,6 @@ namespace ClipsOrganizer {
                 }
                 if (result == MessageBoxResult.No) {
                     e.Cancel = false;
-
                 }
                 if (result == MessageBoxResult.Cancel) {
                     e.Cancel = true;
@@ -353,12 +364,25 @@ namespace ClipsOrganizer {
             Window window = new ExportWindow(this.settings);
             window.ShowDialog();
             Settings.Settings settingsAfterMoving = (window as ExportWindow).Settings;
-            var result = MessageBox.Show("Хотите ли вы сохранить пути для перемещённых файлов в коллекциях?\n(Не позволит далее работать с ними в программе (Относительные пути файлов))", "Подтверждение", MessageBoxButton.YesNo);
-            if (result == MessageBoxResult.Yes) {
+            bool result = (window as ExportWindow).bresult;
+            if (result == true) {
                 settings.UpdateSettings(settingsAfterMoving);
                 settings.SettingsFile.WriteAndCreateBackupSettings();
             }
-            else if (result == MessageBoxResult.No) { }
+            else if (result == false) { }
+        }
+
+        private void Window_KeyDown(object sender, KeyEventArgs e) {
+            if (e.Key == Key.Enter) {
+                if(_lastSelectedItem is Item) {
+                    ME_main.Source = new Uri((_lastSelectedItem as Item).Path);
+                }
+            }
+        }
+
+        private void TV_UpdateLastUsed(object sender, RoutedPropertyChangedEventArgs<object> e) {
+            _lastSelectedTreeView = sender as TreeView;
+            _lastSelectedItem = e.NewValue;
         }
     }
 }
