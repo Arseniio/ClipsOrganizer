@@ -22,6 +22,10 @@ namespace ClipsOrganizer {
         }
         public string ClipsPath = string.Empty;
         private void Btn_Continue_Click(object sender, RoutedEventArgs e) {
+            if (!TB_ffmpeg.Text.EndsWith("ffmpeg.exe")) {
+                var result = MessageBox.Show("Вы не указали путь к ffmpeg, точно хотите продолжить?", "Ошибка", MessageBoxButton.YesNo);
+            }
+
             if (!string.IsNullOrWhiteSpace(TB_Path.Text)) {
                 ClipsPath = TB_Path.Text;
                 this.DialogResult = true;

@@ -35,9 +35,11 @@ namespace ClipsOrganizer {
         List<Item> Items = null;
         string clipsPath;
 
+        private Log log = new Log();
+
         private TreeView _lastSelectedTreeView;
         private object _lastSelectedItem;
-
+        private Collection _lastSelectedCollection;
         public MainWindow() {
             if (!File.Exists("./settings.json")) {
                 Window window = new WelcomeWindow();
@@ -52,8 +54,8 @@ namespace ClipsOrganizer {
 
             Items = itemProvider.GetItemsFromFolder(settings.ClipsFolder, collections: settings.collections);
 
-
             InitializeComponent();
+            Log.TB_log = TB_log;
             CT_mark = new ContextMenu() { Name = "CT_mark" };
             if (settings.collections.Count == 0) {
                 CT_mark.Items.Add("Нет коллекций");
@@ -325,6 +327,7 @@ namespace ClipsOrganizer {
                     Color = (clickeditem.Tag as Collection).Color,
                 });
             }
+            _lastSelectedCollection = clickeditem.Tag as Collection;
             UpdateCollectionsUI(TV_clips_collections);
             UpdateColors();
         }
@@ -371,18 +374,43 @@ namespace ClipsOrganizer {
             }
             else if (result == false) { }
         }
-
+        TimeSpan StartTime = TimeSpan.Zero;
         private void Window_KeyDown(object sender, KeyEventArgs e) {
             if (e.Key == Key.Enter) {
-                if(_lastSelectedItem is Item) {
+                if (_lastSelectedItem is Item) {
                     ME_main.Source = new Uri((_lastSelectedItem as Item).Path);
                 }
             }
-        }
+            if (e.Key == Key.M) {
+                if (_lastSelectedItem is Item) {
+                    if (_lastSelectedCollection != null) {
+                        _lastSelectedCollection.Files.Add(_lastSelectedItem as Item);
+                    }
+                }
+            }
+            if (e.Key == Key.C) {
+                StartTime = ME_main.Position;
+                log.Update(string.Format("Cut from {0}", StartTime.TotalMilliseconds));
+            }
+            if (e.Key == Key.E) {
+                log.Update("Cut dropped");
+                if (StartTime != TimeSpan.Zero && ME_main.Position > StartTime) {
+                    //MessageBox.Show(string.Format("Clip Will be cutted from {0} to {1}; {2}",StartTime.TotalMilliseconds, ME_main.Position.TotalMilliseconds , ME_main.Position));
+                    log.Update(string.Format("Cut to {0}", ME_main.Position));
 
+                }
+            }
+        }
         private void TV_UpdateLastUsed(object sender, RoutedPropertyChangedEventArgs<object> e) {
             _lastSelectedTreeView = sender as TreeView;
             _lastSelectedItem = e.NewValue;
+        }
+
+        private void Btn_settings_Click(object sender, RoutedEventArgs e) {
+            //Window window = new ();
+            //if (window.ShowDialog() == true) {
+            //    clipsPath = (window as WelcomeWindow).ClipsPath;
+            //}
         }
     }
 }

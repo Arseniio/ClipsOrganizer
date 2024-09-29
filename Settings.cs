@@ -17,10 +17,14 @@ using System.Threading;
 namespace ClipsOrganizer.Settings {
     [Serializable]
     public class Settings {
+        //in order in json file
         public string ClipsFolder { get; set; }
+        public string ffmpegPath { get; set; }
         public List<Collection> collections { get; set; }
+        
         [JsonIgnore]
         virtual public SettingsFile SettingsFile { get; set; }
+        
         public Settings(string ClipsFolder, string settingsPath = "./settings.json") {
             this.SettingsFile = this.SettingsFile ?? new SettingsFile(settingsPath, ClipsFolder, this);
             collections = collections ?? new List<Collection>();
@@ -28,6 +32,7 @@ namespace ClipsOrganizer.Settings {
 
             //SettingsFile.LoadSettings();
         }
+
         public void UpdateSettings(Settings ChangedSettings) {
             this.collections = ChangedSettings.collections;
             this.ClipsFolder = ChangedSettings.ClipsFolder;

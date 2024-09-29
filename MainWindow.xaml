@@ -9,7 +9,7 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="550" Width="1018" Closing="Window_Closing"
         KeyDown="Window_KeyDown">
-    
+
     <Grid Name="MainGrid" SizeChanged="MainGrid_SizeChanged" >
         <Grid.RowDefinitions>
         </Grid.RowDefinitions>
@@ -21,7 +21,10 @@
 
         <Menu Height="22.35" VerticalAlignment="Top" Panel.ZIndex="99" Grid.ColumnSpan="1">
             <Grid>
+                <StackPanel Orientation="Horizontal">
                 <Button Width="50" Height="20" Content="Экспорт" Name="Btn_export" Click="Btn_export_Click"/>
+                <Button Width="70" Margin="10 0 0 0" Height="20" Content="Настройки" Name="Btn_settings" Click="Btn_settings_Click"/>
+                </StackPanel>
             </Grid>
         </Menu>
 
@@ -45,10 +48,11 @@
             </StackPanel> -->
             <Grid Grid.Row="1">
                 <Grid.RowDefinitions>
-                    <RowDefinition/>
-                    <RowDefinition/>
+                    <RowDefinition Height="17*"/>
+                    <RowDefinition Height="31*"/>
+                    <RowDefinition Height="26"/>
                 </Grid.RowDefinitions>
-                <GridSplitter Grid.Row="1" VerticalAlignment="Top" Width="auto" Height="1" HorizontalAlignment="Stretch" Panel.ZIndex="10" Background="Gray"/>
+                <GridSplitter VerticalAlignment="Top" Width="auto" Height="1" HorizontalAlignment="Stretch" Panel.ZIndex="10" Background="Gray" Grid.Row="1"/>
 
                 <TreeView ItemsSource="{Binding}" Grid.Row="0" Name="TV_clips_collections" MouseDoubleClick="TV_clips_MouseDoubleClick" SelectedItemChanged="TV_UpdateLastUsed">
                     <TreeView.Resources>
@@ -65,7 +69,7 @@
 
                 </TreeView>
 
-                <TreeView ItemsSource="{Binding}" Grid.Row="2" Name="TV_clips" MouseDoubleClick="TV_clips_MouseDoubleClick" SelectedItemChanged="TV_UpdateLastUsed">
+                <TreeView ItemsSource="{Binding}" Grid.Row="1" Name="TV_clips" MouseDoubleClick="TV_clips_MouseDoubleClick" SelectedItemChanged="TV_UpdateLastUsed" Margin="0,125,0,0" Grid.RowSpan="2">
                     <TreeView.Resources>
 
                         <HierarchicalDataTemplate DataType="{x:Type Model:DirectoryItem}"
@@ -81,6 +85,7 @@
                     </TreeView.Resources>
 
                 </TreeView>
+                <TextBlock d:Text="asdas" Name="TB_log" Grid.Row="3" VerticalAlignment="Center"/>
             </Grid>
 
         </Grid>
@@ -107,8 +112,8 @@
                         Thumb.DragStarted="SL_duration_DragStarted"
                         Thumb.DragCompleted="SL_duration_DragCompleted" Maximum="1" LargeChange="0.4"/>
             </StackPanel>
+
         </Grid>
         <!--#endregion-->
-
     </Grid>
 </Window>
