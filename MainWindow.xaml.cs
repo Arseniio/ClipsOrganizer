@@ -34,6 +34,7 @@ namespace ClipsOrganizer {
         ContextMenu CT_mark = null;
         List<Item> Items = null;
         string clipsPath;
+        string ffmpegPath;
 
         private Log log = new Log();
 
@@ -45,12 +46,14 @@ namespace ClipsOrganizer {
                 Window window = new WelcomeWindow();
                 if (window.ShowDialog() == true) {
                     clipsPath = (window as WelcomeWindow).ClipsPath;
+                    ffmpegPath = (window as WelcomeWindow).ffmpegPath;
                 }
             }
             itemProvider = new ItemProvider();
-            settings = new Settings.Settings(clipsPath);
+            settings = new Settings.Settings(clipsPath,ffmpegPath);
 
             settings.SettingsFile.LoadSettings();
+            settings.ffmpegInit(); //maybe change it to init when cut was being made
 
             Items = itemProvider.GetItemsFromFolder(settings.ClipsFolder, collections: settings.collections);
 
@@ -396,7 +399,7 @@ namespace ClipsOrganizer {
                 log.Update("Cut dropped");
                 if (StartTime != TimeSpan.Zero && ME_main.Position > StartTime) {
                     //MessageBox.Show(string.Format("Clip Will be cutted from {0} to {1}; {2}",StartTime.TotalMilliseconds, ME_main.Position.TotalMilliseconds , ME_main.Position));
-                    log.Update(string.Format("Cut to {0}", ME_main.Position));
+                    log.Update(string.Format("Cut to {0}", ME_main.Position.TotalMilliseconds));
 
                 }
             }
@@ -407,10 +410,9 @@ namespace ClipsOrganizer {
         }
 
         private void Btn_settings_Click(object sender, RoutedEventArgs e) {
-            //Window window = new ();
-            //if (window.ShowDialog() == true) {
-            //    clipsPath = (window as WelcomeWindow).ClipsPath;
-            //}
+            Window window = new SettingsWindow(this.settings);
+            if (window.ShowDialog() == true) {
+            }
         }
     }
 }

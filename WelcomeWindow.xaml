@@ -14,11 +14,11 @@
         <StackPanel VerticalAlignment="Center" Height="84">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <TextBlock Text="Путь до папки с клипами:" VerticalAlignment="Center" FontSize="18" Margin="0 0 10 0"/>
-                <TextBox Name="TB_Path" Width="120" Height="32px" Text="H:\nrtesting"/>
+                <TextBox Name="TB_Path" Width="120" VerticalContentAlignment="Center" Height="32px" Text="H:\nrtesting" TextChanged="TB_Path_TextChanged"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 20 0 0">
-                <TextBlock Text="Путь до файла с ffmpeg:" VerticalAlignment="Center" FontSize="18" Margin="0 0 10 0"/>
-                <TextBox Name="TB_ffmpeg" Width="120" Height="32px" Text="H:\code\cs\ClipsOrganizer\ffmpeg.exe"/>
+                <TextBlock Text="Путь до exe файла ffmpeg:" VerticalAlignment="Center" FontSize="18" Margin="0 0 10 0"/>
+                <TextBox Name="TB_ffmpeg" Width="120" Height="32px" VerticalContentAlignment="Center" Text="H:\code\cs\ClipsOrganizer\ffmpeg.exe"/>
             </StackPanel>
         </StackPanel>
         <Button Grid.Row="1" Content="Продолжить" Name="Btn_Continue" Click="Btn_Continue_Click" Width="130" Height="32" />

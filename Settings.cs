@@ -13,33 +13,56 @@ using ClipsOrganizer.Properties;
 using System.Diagnostics.Contracts;
 using System.Windows;
 using System.Threading;
+using System.Runtime;
 
 namespace ClipsOrganizer.Settings {
     [Serializable]
     public class Settings {
         //in order in json file
         public string ClipsFolder { get; set; }
-        public string ffmpegPath { get; set; }
+        public string ffmpegpath { get; set; }
+        public VideoCodec _lastUsedCodec { get; set; }
+        public string _lastUsedQuality { get; set; }
+        public string _lastUsedEncoderPath { get; set; }
+
+
+
         public List<Collection> collections { get; set; }
-        
+
+
         [JsonIgnore]
         virtual public SettingsFile SettingsFile { get; set; }
-        
-        public Settings(string ClipsFolder, string settingsPath = "./settings.json") {
+        [JsonIgnore]
+        public ffmpegManager ffmpegManager { get; set; }
+
+        public Settings(string ClipsFolder, string ffmpegpath, string settingsPath = "./settings.json") {
             this.SettingsFile = this.SettingsFile ?? new SettingsFile(settingsPath, ClipsFolder, this);
             collections = collections ?? new List<Collection>();
             this.ClipsFolder = ClipsFolder;
+            this.ffmpegpath = ffmpegpath;
+        }
 
-            //SettingsFile.LoadSettings();
+        public void ffmpegInit() {
+            try {
+                this.ffmpegManager = new ffmpegManager(this.ffmpegpath);
+            }
+            catch (Exception e) {
+                MessageBox.Show(e.Message);
+            }
         }
 
         public void UpdateSettings(Settings ChangedSettings) {
+            //TODO add more changed args after finishing settings window
             this.collections = ChangedSettings.collections;
             this.ClipsFolder = ChangedSettings.ClipsFolder;
+            this.ffmpegpath = ChangedSettings.ffmpegpath;
+            this._lastUsedCodec = ChangedSettings._lastUsedCodec;
+            this._lastUsedEncoderPath = ChangedSettings._lastUsedEncoderPath;
+            this._lastUsedQuality = ChangedSettings._lastUsedQuality;
         }
         public bool Equals(Settings other) {
             if (other == null) return false;
-            
+
             bool areCollectionsEqual = this.collections.SequenceEqual(other.collections);
             bool areFoldersEqual = this.ClipsFolder == other.ClipsFolder;
 
@@ -105,6 +128,7 @@ namespace ClipsOrganizer.Settings {
             if (string.IsNullOrWhiteSpace(lines)) return;
             var settings = JsonConvert.DeserializeObject<Settings>(lines);
             settings.collections.ForEach(s => s.Files.ForEach(f => f.Color = s.Color));
+
             Settings.UpdateSettings(settings);
         }
         public bool CheckIfChanged(string settingsFile = "./settings.json") {
@@ -119,7 +143,6 @@ namespace ClipsOrganizer.Settings {
 
             return changed;
         }
-
         public void WriteAndCreateBackupSettings(string settingsFile = "./settings.json") {
             if (File.Exists("./settingsOld.json")) File.Delete("./settingsOld.json");
             File.Move(settingsFile, "./settingsOld.json");
