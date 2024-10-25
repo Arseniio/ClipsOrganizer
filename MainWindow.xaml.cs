@@ -400,7 +400,10 @@ namespace ClipsOrganizer {
                 if (StartTime != TimeSpan.Zero && ME_main.Position > StartTime) {
                     //MessageBox.Show(string.Format("Clip Will be cutted from {0} to {1}; {2}",StartTime.TotalMilliseconds, ME_main.Position.TotalMilliseconds , ME_main.Position));
                     log.Update(string.Format("Cut to {0}", ME_main.Position.TotalMilliseconds));
-
+                    Window rendererwindow = new RendererWindow(this.settings,StartTime,ME_main.Position,ME_main.Source);
+                    if (rendererwindow.ShowDialog() == true) {
+                        
+                    }
                 }
             }
         }

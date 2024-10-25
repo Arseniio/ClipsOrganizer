@@ -24,17 +24,11 @@ namespace ClipsOrganizer {
         public string LastUsedEncoderPath { get; set; }
         public SettingsWindow(Settings.Settings settings) {
             InitializeComponent();
-            CB_codec.ItemsSource = Enum.GetValues(typeof(VideoCodec)).Cast<VideoCodec>();
+            //CB_codec.ItemsSource = Enum.GetValues(typeof(VideoCodec)).Cast<VideoCodec>();
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
-            ComboBoxItem selectedItem = CB_codec.SelectedItem as ComboBoxItem;
 
-            if (selectedItem != null && selectedItem.Tag is VideoCodec codec) {
-                LastUsedCodec = codec;
-            }
-            //LastUsedQuality = 
-            //LastUsedEncoderPath =
         }
 
     }

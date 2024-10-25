@@ -39,7 +39,7 @@ namespace ClipsOrganizer {
             }
 
         }
-        public bool ConvertVideo(string inputVideo, string outputVideo, VideoCodec codec) {
+        public bool ConvertVideo(string inputVideo, string outputVideo, VideoCodec codec, int quality) {
             return false;
         }
 

@@ -16,22 +16,6 @@
             <ColumnDefinition/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <GroupBox Header="Encoding" Margin="10" Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2">
-            <StackPanel Orientation="Vertical" VerticalAlignment="Top">
-                <StackPanel Margin="0 5 0 0" Orientation="Horizontal" VerticalAlignment="Top">
-                    <TextBlock Text="Энкодер видео: " VerticalAlignment="Center"/>
-                    <ComboBox Name="CB_codec" Width="130" Margin="5 0 0 0" VerticalContentAlignment="Center" Height="30"/>
-                </StackPanel>
-                <StackPanel Margin="0 5 0 0" Orientation="Horizontal" VerticalAlignment="Top">
-                    <TextBlock Text="Качество видео: " VerticalAlignment="Center"/>
-                    <TextBox  Width="70" VerticalContentAlignment="Center" Name="TB_Quality" Margin="3 0 0 0"/>
-                    <TextBlock Text="kbps" Margin="5 0 0 0" VerticalAlignment="Center"/>
-                </StackPanel>
-                <StackPanel Margin="0 5 0 0" Orientation="Horizontal" VerticalAlignment="Top">
-                    <TextBlock Text="Выходная папка: " VerticalAlignment="Center"/>
-                    <TextBox Width="135"  VerticalContentAlignment="Center" Name="TB_outputPath" Margin="1 0 0 0"/>
-                </StackPanel>
-            </StackPanel>
-        </GroupBox>
+        
     </Grid>
 </Window>
