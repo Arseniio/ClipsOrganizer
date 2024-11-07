@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -11,7 +12,6 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using System.Windows.Shapes;
 
 namespace ClipsOrganizer {
     /// <summary>
@@ -29,7 +29,7 @@ namespace ClipsOrganizer {
             this.settings = settings;
             this.VideoPath = VideoPath;
             CB_codec.ItemsSource = Enum.GetValues(typeof(VideoCodec)).Cast<VideoCodec>();
-            TB_outputPath.Text = VideoPath.AbsolutePath + "/exported.mp4";
+            TB_outputPath.Text = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(VideoPath.AbsolutePath), "exported.mp4");
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
@@ -43,7 +43,7 @@ namespace ClipsOrganizer {
 
         private void Btn_Crop_Click(object sender, RoutedEventArgs e) {
             if (CB_codec.Tag != null || TB_Quality != null) {
-                settings.ffmpegManager.ConvertVideo(VideoPath.AbsolutePath, TB_outputPath.Text, VideoCodec.H264_NVENC, int.Parse(TB_Quality.Text));
+                settings.ffmpegManager.StartEncodingAsync(VideoPath.LocalPath, TB_outputPath.Text, VideoCodec.H264_NVENC, int.Parse(TB_Quality.Text));
             }
         }
     }

@@ -69,7 +69,7 @@
 
                 </TreeView>
 
-                <TreeView ItemsSource="{Binding}" Grid.Row="1" Name="TV_clips" MouseDoubleClick="TV_clips_MouseDoubleClick" SelectedItemChanged="TV_UpdateLastUsed" Margin="0,125,0,0" Grid.RowSpan="2">
+                <TreeView ItemsSource="{Binding}" Grid.Row="1" Name="TV_clips" MouseDoubleClick="TV_clips_MouseDoubleClick" SelectedItemChanged="TV_UpdateLastUsed" Grid.RowSpan="2">
                     <TreeView.Resources>
 
                         <HierarchicalDataTemplate DataType="{x:Type Model:DirectoryItem}"
@@ -85,7 +85,7 @@
                     </TreeView.Resources>
 
                 </TreeView>
-                <TextBlock d:Text="asdas" Name="TB_log" Grid.Row="3" VerticalAlignment="Center"/>
+                <TextBlock d:Text="asdas" Name="TB_log" Grid.Row="0" VerticalAlignment="Center"/>
             </Grid>
 
         </Grid>

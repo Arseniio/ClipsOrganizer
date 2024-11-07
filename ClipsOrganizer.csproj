@@ -72,6 +72,7 @@
     <Compile Include="ExportWindow.xaml.cs">
       <DependentUpon>ExportWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ExternalProcessManager.cs" />
     <Compile Include="ffmpegManager.cs" />
     <Compile Include="FileUtils.cs" />
     <Compile Include="Log.cs" />
