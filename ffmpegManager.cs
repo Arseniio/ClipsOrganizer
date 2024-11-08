@@ -57,9 +57,11 @@ namespace ClipsOrganizer {
             }
         }
 
-        public string GetCodecArgs(VideoCodec codec, int Bitrate, string InputFilePath, string OutputFilePath) {
-            // Input file path
+        public string GetCodecArgs(VideoCodec codec, int Bitrate, string InputFilePath, string OutputFilePath, TimeSpan? StartTime = null, TimeSpan? EndTime = null) {
             StringBuilder args = new StringBuilder();
+            if (StartTime != null && StartTime != TimeSpan.Zero) {
+                args.Append($"-ss {StartTime.Value.ToString(@"hh\:mm\:ss")} ");
+            }
             args.Append($"-i \"{InputFilePath}\" ");
             switch (codec) {
                 case VideoCodec.Unknown:
@@ -79,6 +81,13 @@ namespace ClipsOrganizer {
                     args.Append($"-b:v {Bitrate}k ");
                     break;
             }
+
+
+
+            if (EndTime != null && EndTime != TimeSpan.Zero) {
+                args.Append($"-to {EndTime.Value.ToString(@"hh\:mm\:ss")} ");
+            }
+
             args.Append($"-y ");
 
             args.Append($"\"{OutputFilePath}\"");
@@ -87,10 +96,13 @@ namespace ClipsOrganizer {
         public Task<bool> StartEncodingAsync(string inputVideo, string outputVideo, VideoCodec codec, int bitrate) {
             return Task.Run(() => StartEncoding(inputVideo, outputVideo, codec, bitrate));
         }
-        public bool StartEncoding(string inputVideo, string outputVideo, VideoCodec codec, int bitrate) {
+        public Task<bool> StartEncodingAsync(string inputVideo, string outputVideo, VideoCodec codec, int bitrate, TimeSpan StartTime, TimeSpan EndTime) {
+            return Task.Run(() => StartEncoding(inputVideo, outputVideo, codec, bitrate, StartTime, EndTime));
+        }
+        public bool StartEncoding(string inputVideo, string outputVideo, VideoCodec codec, int bitrate, TimeSpan? StartTime = null, TimeSpan? EndTime = null) {
             if (codec == VideoCodec.Unknown) return false;
-            
-            bool errorcode = this.Open(this.ffmpegpath, GetCodecArgs(codec, bitrate, inputVideo, outputVideo)) == 0;
+
+            bool errorcode = this.Open(this.ffmpegpath, GetCodecArgs(codec, bitrate, inputVideo, outputVideo, StartTime, EndTime)) == 0;
             if (!errorcode) {
                 MessageBox.Show(Output.ToString());
             }
