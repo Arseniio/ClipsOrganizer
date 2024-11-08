@@ -50,7 +50,7 @@ namespace ClipsOrganizer {
                 }
             }
             itemProvider = new ItemProvider();
-            settings = new Settings.Settings(clipsPath,ffmpegPath);
+            settings = new Settings.Settings(clipsPath, ffmpegPath);
 
             settings.SettingsFile.LoadSettings();
             settings.ffmpegInit(); //maybe change it to init when cut was being made
@@ -179,30 +179,30 @@ namespace ClipsOrganizer {
 
         private void UpdateCollectionsUI(TreeView treeView) {
             var expandedItems = new List<object>();
-            SaveExpandedItems(treeView.Items, expandedItems);
+            SaveExpandedItems(treeView.Items, expandedItems, treeView);
 
             treeView.Items.Refresh();
 
-            RestoreExpandedItems(treeView.Items, expandedItems);
+            RestoreExpandedItems(treeView.Items, expandedItems, treeView);
         }
 
-        private void SaveExpandedItems(ItemCollection items, List<object> expandedItems) {
+        private void SaveExpandedItems(ItemCollection items, List<object> expandedItems, TreeView treeView) {
             foreach (var item in items) {
-                var treeViewItem = TV_clips_collections.ItemContainerGenerator.ContainerFromItem(item) as TreeViewItem;
+                var treeViewItem = treeView.ItemContainerGenerator.ContainerFromItem(item) as TreeViewItem;
                 if (treeViewItem != null && treeViewItem.IsExpanded) {
                     expandedItems.Add(item);
-                    SaveExpandedItems(treeViewItem.Items, expandedItems);
+                    SaveExpandedItems(treeViewItem.Items, expandedItems, treeView);
                 }
             }
         }
 
-        private void RestoreExpandedItems(ItemCollection items, List<object> expandedItems) {
+        private void RestoreExpandedItems(ItemCollection items, List<object> expandedItems, TreeView treeView) {
             foreach (var item in items) {
                 if (expandedItems.Contains(item)) {
-                    var treeViewItem = TV_clips_collections.ItemContainerGenerator.ContainerFromItem(item) as TreeViewItem;
+                    var treeViewItem = treeView.ItemContainerGenerator.ContainerFromItem(item) as TreeViewItem;
                     if (treeViewItem != null) {
                         treeViewItem.IsExpanded = true;
-                        RestoreExpandedItems(treeViewItem.Items, expandedItems);
+                        RestoreExpandedItems(treeViewItem.Items, expandedItems, treeView);
                     }
                 }
             }
@@ -401,10 +401,17 @@ namespace ClipsOrganizer {
                     //MessageBox.Show(string.Format("Clip Will be cutted from {0} to {1}; {2}",StartTime.TotalMilliseconds, ME_main.Position.TotalMilliseconds , ME_main.Position));
                     log.Update(string.Format("Cut to {0}", ME_main.Position.TotalMilliseconds));
                     ME_main.Pause();
-                    Window rendererwindow = new RendererWindow(this.settings,StartTime,ME_main.Position,ME_main.Source);
+                    Window rendererwindow = new RendererWindow(this.settings, ME_main.Source, StartTime, ME_main.Position);
                     if (rendererwindow.ShowDialog() == true) {
-                        
+                        UpdateColors();
                     }
+                }
+            }
+            if (e.Key == Key.D) {
+                ME_main.Pause();
+                Window rendererwindow = new RendererWindow(this.settings, ME_main.Source);
+                if (rendererwindow.ShowDialog() == true) {
+                    UpdateColors();
                 }
             }
         }

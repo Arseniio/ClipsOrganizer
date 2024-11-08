@@ -39,15 +39,17 @@ namespace ClipsOrganizer {
             return System.IO.Path.Combine(System.IO.Path.GetDirectoryName(VideoPath.AbsolutePath), string.Format("exported_{0}.mp4", lastFileSaved));
         }
 
-        public RendererWindow(Settings.Settings settings, TimeSpan Crop_From, TimeSpan Crop_To, Uri VideoPath) {
+        public RendererWindow(Settings.Settings settings, Uri VideoPath, TimeSpan? Crop_From = null, TimeSpan? Crop_To = null) {
             InitializeComponent();
             this.settings = settings;
             this.VideoPath = VideoPath;
             CB_codec.ItemsSource = Enum.GetValues(typeof(VideoCodec)).Cast<VideoCodec>();
             CB_codec.SelectedIndex = 0; //change later
             TB_outputPath.Text = getNextFileName(Path.GetDirectoryName(VideoPath.AbsolutePath));
-            TB_Crop_From.Text = Crop_From.ToString();
-            TB_Crop_To.Text = Crop_To.ToString();
+            if (Crop_From != null && Crop_To != null) {
+                TB_Crop_From.Text = Crop_From.ToString();
+                TB_Crop_To.Text = Crop_To.ToString();
+            }
         }
 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
@@ -55,6 +57,7 @@ namespace ClipsOrganizer {
             if (selectedItem != null && selectedItem.Tag is VideoCodec codec) {
                 LastUsedCodec = codec;
             }
+            this.DialogResult = true;
             //LastUsedQuality = 
             //LastUsedEncoderPath =
         }

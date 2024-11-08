@@ -72,7 +72,6 @@ namespace ClipsOrganizer.Model {
             return items;
         }
 
-
         private static string PlaceholderColor = "#808080";
 
         private List<Item> GetParsedFileItems(DirectoryInfo dirInfo, List<Collection> collections = null) {
