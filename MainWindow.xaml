@@ -7,7 +7,7 @@
         xmlns:Collection="clr-namespace:ClipsOrganizer.Collections"
         xmlns:local="clr-namespace:ClipsOrganizer"
         mc:Ignorable="d"
-        Title="MainWindow" Height="550" Width="1018" Closing="Window_Closing"
+        Title="ClipsOrganizer" Height="550" Width="1018" Closing="Window_Closing"
         KeyDown="Window_KeyDown">
 
     <Grid Name="MainGrid" SizeChanged="MainGrid_SizeChanged" >
@@ -36,7 +36,7 @@
                 <RowDefinition/>
                 <RowDefinition Height="2*"/>
             </Grid.RowDefinitions>
-            <TextBlock Text="тут чёто обязательно будет" VerticalAlignment="Bottom" Margin="0 0 0 30"/>
+            <!-- <TextBlock Text="тут чёто обязательно будет" VerticalAlignment="Bottom" Margin="0 0 0 30"/> -->
             <!-- <StackPanel VerticalAlignment="Bottom">
                  <ComboBox Name="CB_sortType" SelectionChanged="CB_sortType_SelectionChanged">
                     <ComboBoxItem Tag="{x:Static Model:Sorts.Default}" IsSelected="True" >Default</ComboBoxItem>

@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ClipsOrganizer"
         mc:Ignorable="d"
         Closing="Window_Closing"
-        Title="RendererWindow" Height="206" Width="500">
+        Title="Конвертер видео" Height="206" Width="500">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="262*"/>

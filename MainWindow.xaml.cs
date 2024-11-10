@@ -102,7 +102,7 @@ namespace ClipsOrganizer {
                         if (TV_clips_collections.SelectedItem.GetType() == typeof(Item)) {
                             UpdateCollectionsMI();
                             var sel_item = TV_clips_collections.SelectedItem as Item;
-                            var MI = new MenuItem { Header = "Remove" };
+                            var MI = new MenuItem { Header = "Удалить" };
                             MI.Tag = sel_item;
                             MI.Click += MI_CT_remove_Click;
                             CT_mark.Items.Add(MI);
@@ -110,7 +110,7 @@ namespace ClipsOrganizer {
                         if (TV_clips_collections.SelectedItem.GetType() == typeof(Collection)) {
                             UpdateCollectionsMI();
                             var sel_item = TV_clips_collections.SelectedItem as Collection;
-                            var MI = new MenuItem { Header = "Edit" };
+                            var MI = new MenuItem { Header = "Изменить" };
 
                             MI.Tag = sel_item;
                             MI.Click += MI_CT_edit_Click;
@@ -171,7 +171,7 @@ namespace ClipsOrganizer {
         }
 
         private void AddNewCollectionMI() {
-            var MI_create = new MenuItem { Header = "Create new collection" };
+            var MI_create = new MenuItem { Header = "Создать новую коллекцию" };
             MI_create.Click += create_collection;
             CT_mark.Items.Add(new Separator());
             CT_mark.Items.Add(MI_create);

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ClipsOrganizer"
         mc:Ignorable="d"
-        Title="ExportWindow" Height="253" Width="427">
+        Title="Окно экспорта" Height="253" Width="427">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
@@ -15,9 +15,9 @@
         </Grid.ColumnDefinitions>
         <StackPanel>
             <StackPanel>
-                <TextBlock Text="Структура файлов после экспорта:" Margin="0 7 0 0"/>
+                <!--<TextBlock Text="Структура файлов после экспорта:" Margin="0 7 0 0"/>
                 <CheckBox IsEnabled="False" Content="В папках коллекций папки с играми(пока нету такого функционала)" Margin="0 7 0 0"/>
-                <CheckBox IsEnabled="False" Content="В папках коллекций .mp4 файлы(но экспорт работает по этому варианту)" Margin="0 7 0 0"/>
+                <CheckBox IsEnabled="False" Content="В папках коллекций .mp4 файлы(но экспорт работает по этому варианту)" Margin="0 7 0 0"/>-->
             </StackPanel>
         </StackPanel>
         <Button Width="130" Height="28" Name="Btn_export" Click="Btn_export_Click" VerticalAlignment="Bottom" Margin="0 0 0 70" Content="Экспорт"/>
