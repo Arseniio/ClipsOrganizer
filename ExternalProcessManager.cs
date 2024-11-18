@@ -63,10 +63,14 @@ namespace ClipsOrganizer {
             if (IsProcessRunning && _process != null && _process.StartInfo != null && _process.StartInfo.RedirectStandardInput) {
                 _process.StandardInput.WriteLine(input);
             }
+            else {
+                throw new ObjectDisposedException("Process is disposed or not started");
+            }
         }
         public virtual void Close() {
             if (IsProcessRunning && _process != null) {
                 _process.CloseMainWindow();
+                IsProcessRunning = false;
             }
         }
 

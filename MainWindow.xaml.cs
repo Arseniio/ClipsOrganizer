@@ -77,7 +77,7 @@ namespace ClipsOrganizer {
             //Костыль?
             Btn_Mark.ContextMenu.Tag = Btn_Mark;
             TV_clips.ContextMenu.Tag = TV_clips;
-            TV_clips_collections.Tag = TV_clips_collections;
+            TV_clips_collections.ContextMenu.Tag = TV_clips_collections;
 
 
             TV_clips_collections.ItemsSource = settings.collections;
@@ -86,7 +86,7 @@ namespace ClipsOrganizer {
 
             #region slider timer init
             timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromMilliseconds(400);
+            timer.Interval = TimeSpan.FromMilliseconds(400); //yeah timer updates every 400ms
             timer.Tick += VideoDurationUpdate;
             #endregion
         }
@@ -94,27 +94,34 @@ namespace ClipsOrganizer {
         private void CT_mark_Opened(object sender, RoutedEventArgs e) {
             if (sender is ContextMenu contextMenu) {
                 if (contextMenu.PlacementTarget is FrameworkElement placementTarget) {
-                    if (placementTarget.Tag != TV_clips_collections) {
-                        UpdateCollectionsMI();
+                    if (placementTarget == TV_clips) {
+                        if(TV_clips.SelectedItem is DirectoryItem) {
+                            CT_mark.IsOpen = false;
+                            e.Handled = false;
+                            return;
+                        }
                         return;
                     }
-                    if (!(TV_clips_collections.SelectedItem is null)) {
-                        if (TV_clips_collections.SelectedItem.GetType() == typeof(Item)) {
-                            UpdateCollectionsMI();
-                            var sel_item = TV_clips_collections.SelectedItem as Item;
-                            var MI = new MenuItem { Header = "Удалить" };
-                            MI.Tag = sel_item;
-                            MI.Click += MI_CT_remove_Click;
-                            CT_mark.Items.Add(MI);
-                        }
-                        if (TV_clips_collections.SelectedItem.GetType() == typeof(Collection)) {
-                            UpdateCollectionsMI();
-                            var sel_item = TV_clips_collections.SelectedItem as Collection;
-                            var MI = new MenuItem { Header = "Изменить" };
+                    if (placementTarget == TV_clips_collections) {
+                        if (!(TV_clips_collections.SelectedItem is null)) {
+                            if (TV_clips_collections.SelectedItem.GetType() == typeof(Item)) {
+                                UpdateCollectionsMI();
+                                var sel_item = TV_clips_collections.SelectedItem as Item;
+                                var MI = new MenuItem { Header = "Удалить" };
+                                MI.Tag = sel_item;
+                                MI.Click += MI_CT_remove_Click;
+                                CT_mark.Items.Add(MI);
+                            }
+                            if (TV_clips_collections.SelectedItem.GetType() == typeof(Collection)) {
+                                //UpdateCollectionsMI();
+                                CT_mark.Items.Clear();
+                                var sel_item = TV_clips_collections.SelectedItem as Collection;
+                                var MI = new MenuItem { Header = "Изменить" };
 
-                            MI.Tag = sel_item;
-                            MI.Click += MI_CT_edit_Click;
-                            CT_mark.Items.Add(MI);
+                                MI.Tag = sel_item;
+                                MI.Click += MI_CT_edit_Click;
+                                CT_mark.Items.Add(MI);
+                            }
                         }
                     }
                 }
@@ -303,7 +310,6 @@ namespace ClipsOrganizer {
         private void Btn_Mark_Click(object sender, RoutedEventArgs e) {
             MessageBox.Show("Пока не работает :)");
         }
-
         private void MI_CT_mark_Click(object sender, RoutedEventArgs e) {
             var clickeditem = sender as MenuItem;
             var sourceElement = (clickeditem.Parent as ContextMenu)?.Tag as FrameworkElement;
@@ -345,7 +351,6 @@ namespace ClipsOrganizer {
             }
         }
         #endregion
-
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
             bool settingsChanged = settings.SettingsFile.CheckIfChanged();
             if (settingsChanged) {
@@ -365,7 +370,6 @@ namespace ClipsOrganizer {
                 e.Cancel = false;
             }
         }
-
         private void Btn_export_Click(object sender, RoutedEventArgs e) {
             Window window = new ExportWindow(this.settings);
             window.ShowDialog();
@@ -395,17 +399,25 @@ namespace ClipsOrganizer {
                 StartTime = ME_main.Position;
                 log.Update(string.Format("Cut from {0}", StartTime.TotalMilliseconds));
             }
+            if (e.Key == Key.C && Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) {
+                ME_main.Pause();
+                log.Update(string.Format("Cut from {0} ended", StartTime.TotalMilliseconds));
+                Window rendererwindow = new RendererWindow(this.settings, ME_main.Source, ME_main.Position, TimeSpan.Zero);
+                if (rendererwindow.ShowDialog() == true) {
+                    UpdateColors();
+                }
+            }
             if (e.Key == Key.E) {
                 log.Update("Cut dropped");
-                if (StartTime != TimeSpan.Zero && ME_main.Position > StartTime) {
-                    //MessageBox.Show(string.Format("Clip Will be cutted from {0} to {1}; {2}",StartTime.TotalMilliseconds, ME_main.Position.TotalMilliseconds , ME_main.Position));
-                    log.Update(string.Format("Cut to {0}", ME_main.Position.TotalMilliseconds));
-                    ME_main.Pause();
-                    Window rendererwindow = new RendererWindow(this.settings, ME_main.Source, StartTime, ME_main.Position);
-                    if (rendererwindow.ShowDialog() == true) {
-                        UpdateColors();
-                    }
+                //if (StartTime != TimeSpan.Zero && ME_main.Position > StartTime) {
+                //MessageBox.Show(string.Format("Clip Will be cutted from {0} to {1}; {2}",StartTime.TotalMilliseconds, ME_main.Position.TotalMilliseconds , ME_main.Position));
+                log.Update(string.Format("Cut to {0}", ME_main.Position.TotalMilliseconds));
+                ME_main.Pause();
+                Window rendererwindow = new RendererWindow(this.settings, ME_main.Source, StartTime, ME_main.Position);
+                if (rendererwindow.ShowDialog() == true) {
+                    UpdateColors();
                 }
+                //}
             }
             if (e.Key == Key.D) {
                 ME_main.Pause();
@@ -419,7 +431,6 @@ namespace ClipsOrganizer {
             _lastSelectedTreeView = sender as TreeView;
             _lastSelectedItem = e.NewValue;
         }
-
         private void Btn_settings_Click(object sender, RoutedEventArgs e) {
             Window window = new SettingsWindow(this.settings);
             if (window.ShowDialog() == true) {

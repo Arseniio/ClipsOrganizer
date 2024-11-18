@@ -14,6 +14,7 @@ using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
+using System.Windows.Threading;
 
 namespace ClipsOrganizer {
     /// <summary>
@@ -38,6 +39,7 @@ namespace ClipsOrganizer {
             lastFileSaved++;
             return System.IO.Path.Combine(System.IO.Path.GetDirectoryName(VideoPath.AbsolutePath), string.Format("exported_{0}.mp4", lastFileSaved));
         }
+        DispatcherTimer timer;
 
         public RendererWindow(Settings.Settings settings, Uri VideoPath, TimeSpan? Crop_From = null, TimeSpan? Crop_To = null) {
             InitializeComponent();
@@ -46,9 +48,22 @@ namespace ClipsOrganizer {
             CB_codec.ItemsSource = Enum.GetValues(typeof(VideoCodec)).Cast<VideoCodec>();
             CB_codec.SelectedIndex = 0; //change later
             TB_outputPath.Text = getNextFileName(Path.GetDirectoryName(VideoPath.AbsolutePath));
-            if (Crop_From != null && Crop_To != null) {
-                TB_Crop_From.Text = Crop_From.ToString();
-                TB_Crop_To.Text = Crop_To.ToString();
+            if (Crop_From != null || Crop_To != null) {
+                TB_Crop_From.Text = Crop_From.ToString() ?? TimeSpan.Zero.ToString();
+                TB_Crop_To.Text = Crop_To.ToString() ?? TimeSpan.Zero.ToString();
+            }
+            timer = new DispatcherTimer();
+            timer.Interval = TimeSpan.FromMilliseconds(400); //yeah timer updates every 400ms
+            timer.Tick += FFmpegchecker;
+        }
+        private void FFmpegchecker(object sender, System.EventArgs e) {
+            if (this.settings.ffmpegManager.IsProcessRunning) {
+                tb_status.Text = "В процессе обраотки видео";
+            }
+            else {
+                tb_status.Text = "Закончено";
+
+                timer.Stop();
             }
         }
 
@@ -65,16 +80,21 @@ namespace ClipsOrganizer {
         private void Btn_Crop_Click(object sender, RoutedEventArgs e) {
             if (CB_codec.SelectedItem != null && !string.IsNullOrEmpty(TB_Quality.Text) && int.TryParse(TB_Quality.Text, out int bitrate)) {
                 if (TimeSpan.TryParse(TB_Crop_From.Text, out TimeSpan startTime) && TimeSpan.TryParse(TB_Crop_To.Text, out TimeSpan endTime)) {
+                    if (startTime == TimeSpan.Zero && startTime > endTime) {
+                        MessageBox.Show("Невозможно обрезать клип в обратную сторону.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+
+                    }
                     settings.ffmpegManager.StartEncodingAsync(VideoPath.LocalPath, TB_outputPath.Text, VideoCodec.H264_NVENC, bitrate, startTime, endTime);
+                    timer.Start();
                 }
                 else {
                     settings.ffmpegManager.StartEncodingAsync(VideoPath.LocalPath, TB_outputPath.Text, VideoCodec.H264_NVENC, bitrate);
+                    timer.Start();
                 }
             }
             else {
                 MessageBox.Show("Пожалуйста, убедитесь, что выбраны параметры кодека и указано значение качества.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
-
         }
     }
 }

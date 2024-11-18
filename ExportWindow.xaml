@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ClipsOrganizer"
         mc:Ignorable="d"
-        Title="Окно экспорта" Height="253" Width="427">
+        Title="Окно экспорта" Height="153" Width="427">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
