@@ -115,7 +115,8 @@ The application supports the following hotkeys to easily control the video trimm
 | **D** | **Encodes the entire file** without trimming. |
 | **Shift + C** | Sets **trim to end of file** starting at the current position. | |
 
-
+## Translation
+Maybe some day will be added, but currently not planning to
 
 ## Project Status
 At the moment the project is still under development, so the build is not created intentionally, after we are sure that the application works, the first build will be posted.
