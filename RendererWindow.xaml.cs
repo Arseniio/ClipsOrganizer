@@ -56,13 +56,13 @@ namespace ClipsOrganizer {
             timer.Interval = TimeSpan.FromMilliseconds(400); //yeah timer updates every 400ms
             timer.Tick += FFmpegchecker;
         }
+        //rewrite with regex parsing from output info from ffmpeg executable
         private void FFmpegchecker(object sender, System.EventArgs e) {
             if (this.settings.ffmpegManager.IsProcessRunning) {
                 tb_status.Text = "В процессе обраотки видео";
             }
             else {
                 tb_status.Text = "Закончено";
-
                 timer.Stop();
             }
         }
@@ -78,17 +78,18 @@ namespace ClipsOrganizer {
         }
 
         private void Btn_Crop_Click(object sender, RoutedEventArgs e) {
-            if (CB_codec.SelectedItem != null && !string.IsNullOrEmpty(TB_Quality.Text) && int.TryParse(TB_Quality.Text, out int bitrate)) {
+            VideoCodec selectedCodec = (VideoCodec)CB_codec.SelectedItem;
+            if (CB_codec.SelectedItem != null && selectedCodec != VideoCodec.Unknown && !string.IsNullOrEmpty(TB_Quality.Text) && int.TryParse(TB_Quality.Text, out int bitrate)) {
                 if (TimeSpan.TryParse(TB_Crop_From.Text, out TimeSpan startTime) && TimeSpan.TryParse(TB_Crop_To.Text, out TimeSpan endTime)) {
                     if (startTime == TimeSpan.Zero && startTime > endTime) {
                         MessageBox.Show("Невозможно обрезать клип в обратную сторону.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
 
                     }
-                    settings.ffmpegManager.StartEncodingAsync(VideoPath.LocalPath, TB_outputPath.Text, VideoCodec.H264_NVENC, bitrate, startTime, endTime);
+                    settings.ffmpegManager.StartEncodingAsync(VideoPath.LocalPath, TB_outputPath.Text, selectedCodec, bitrate, startTime, endTime);
                     timer.Start();
                 }
                 else {
-                    settings.ffmpegManager.StartEncodingAsync(VideoPath.LocalPath, TB_outputPath.Text, VideoCodec.H264_NVENC, bitrate);
+                    settings.ffmpegManager.StartEncodingAsync(VideoPath.LocalPath, TB_outputPath.Text, selectedCodec, bitrate);
                     timer.Start();
                 }
             }

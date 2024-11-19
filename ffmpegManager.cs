@@ -15,17 +15,17 @@ namespace ClipsOrganizer {
         HEVC_NVENC,
         H264_x264,
         H265_x265,
-        H264_AMF,
-        HEVC_AMF,
-        H264_QuickSync,
-        HEVC_QuickSync,
-        VP8,
-        VP9,
-        AV1,
-        MPEG4_Xvid,
-        GIF,
-        WebP,
-        APNG
+        NE_H264_AMF,
+        NE_HEVC_AMF,
+        NE_H264_QuickSync,
+        NE_HEVC_QuickSync,
+        NE_VP8,
+        NE_VP9,
+        NE_AV1,
+        NE_MPEG4_Xvid,
+        NE_GIF,
+        NE_WebP,
+        NE_APNG
     }
 
     public class ffmpegManager : ExternalProcessManager {
@@ -80,6 +80,20 @@ namespace ClipsOrganizer {
                     args.Append("-profile:v main ");
                     args.Append($"-b:v {Bitrate}k ");
                     break;
+                case VideoCodec.H264_x264:
+                    args.Append("-c:v libx264 ");
+                    args.Append("-preset medium ");
+                    args.Append($"-b:v {Bitrate}k ");
+                    break;
+                case VideoCodec.H265_x265:
+                    args.Append("-c:v libx265 ");
+                    args.Append("-preset medium ");
+                    args.Append($"-b:v {Bitrate}k ");
+                    break;
+                default:
+                    throw new NotImplementedException(nameof(codec));
+                    break;
+
             }
 
 
