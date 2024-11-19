@@ -97,11 +97,11 @@ namespace ClipsOrganizer {
                 if (contextMenu.PlacementTarget is FrameworkElement placementTarget) {
                     if (placementTarget == TV_clips) {
                         if (TV_clips.SelectedItem is DirectoryItem) {
-                            UpdateCollectionsMI();
                             CT_mark.IsOpen = false;
                             e.Handled = false;
                             return;
                         }
+                        UpdateCollectionsMI();
                         return;
                     }
                     if (placementTarget == TV_clips_collections) {
@@ -119,7 +119,6 @@ namespace ClipsOrganizer {
                                 CT_mark.Items.Clear();
                                 var sel_item = TV_clips_collections.SelectedItem as Collection;
                                 var MI = new MenuItem { Header = "Изменить" };
-
                                 MI.Tag = sel_item;
                                 MI.Click += MI_CT_edit_Click;
                                 CT_mark.Items.Add(MI);

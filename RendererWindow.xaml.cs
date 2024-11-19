@@ -37,7 +37,7 @@ namespace ClipsOrganizer {
                 }
             }
             lastFileSaved++;
-            return System.IO.Path.Combine(System.IO.Path.GetDirectoryName(VideoPath.AbsolutePath), string.Format("exported_{0}.mp4", lastFileSaved));
+            return System.IO.Path.Combine(System.IO.Path.GetDirectoryName(VideoPath.LocalPath), string.Format("exported_{0}.mp4", lastFileSaved));
         }
         DispatcherTimer timer;
 
@@ -47,19 +47,19 @@ namespace ClipsOrganizer {
             this.VideoPath = VideoPath;
             CB_codec.ItemsSource = Enum.GetValues(typeof(VideoCodec)).Cast<VideoCodec>();
             CB_codec.SelectedIndex = 0; //change later
-            TB_outputPath.Text = getNextFileName(Path.GetDirectoryName(VideoPath.AbsolutePath));
+            TB_outputPath.Text = getNextFileName(Path.GetDirectoryName(VideoPath.LocalPath));
             if (Crop_From != null || Crop_To != null) {
                 TB_Crop_From.Text = Crop_From.ToString() ?? TimeSpan.Zero.ToString();
                 TB_Crop_To.Text = Crop_To.ToString() ?? TimeSpan.Zero.ToString();
             }
             timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromMilliseconds(400); //yeah timer updates every 400ms
+            timer.Interval = TimeSpan.FromMilliseconds(400); 
             timer.Tick += FFmpegchecker;
         }
-        //rewrite with regex parsing from output info from ffmpeg executable
+        //TODO: rewrite with regex parsing from output info from ffmpeg executable
         private void FFmpegchecker(object sender, System.EventArgs e) {
             if (this.settings.ffmpegManager.IsProcessRunning) {
-                tb_status.Text = "В процессе обраотки видео";
+                tb_status.Text = "В процессе обработки видео";
             }
             else {
                 tb_status.Text = "Закончено";
