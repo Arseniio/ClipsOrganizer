@@ -14,7 +14,7 @@
         <StackPanel VerticalAlignment="Center" Height="84">
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
                 <TextBlock Text="Путь до папки с видеофайлами:" VerticalAlignment="Center" FontSize="18" Margin="0 0 10 0"/>
-                <TextBox Name="TB_Path" Width="120" VerticalContentAlignment="Center" Height="32px" Text="H:\nrtesting" TextChanged="TB_Path_TextChanged"/>
+                <TextBox Name="TB_Path" Width="120" VerticalContentAlignment="Center" Height="32px" Text="H:\тест" TextChanged="TB_Path_TextChanged"/>
             </StackPanel>
             <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 20 0 0">
                 <TextBlock Text="Путь до exe файла ffmpeg:" VerticalAlignment="Center" FontSize="18" Margin="0 0 10 0"/>

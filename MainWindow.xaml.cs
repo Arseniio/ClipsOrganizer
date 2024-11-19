@@ -75,9 +75,10 @@ namespace ClipsOrganizer {
             TV_clips.ContextMenu = CT_mark;
             TV_clips_collections.ContextMenu = CT_mark;
             //Костыль?
+            //ДА КОСТЫЛЬ ПОТОМ ПЕРЕПРОВЕРИТЬ И УБРАТЬ, В ТЕГЕ ОСТАЁТСЯ ТОЛЬКО ПОСЛЕДНЕЕ ПРИСВОЕННОЕ ЗНАЧЕНИЕ
             Btn_Mark.ContextMenu.Tag = Btn_Mark;
-            TV_clips.ContextMenu.Tag = TV_clips;
             TV_clips_collections.ContextMenu.Tag = TV_clips_collections;
+            TV_clips.ContextMenu.Tag = TV_clips;
 
 
             TV_clips_collections.ItemsSource = settings.collections;
@@ -95,7 +96,8 @@ namespace ClipsOrganizer {
             if (sender is ContextMenu contextMenu) {
                 if (contextMenu.PlacementTarget is FrameworkElement placementTarget) {
                     if (placementTarget == TV_clips) {
-                        if(TV_clips.SelectedItem is DirectoryItem) {
+                        if (TV_clips.SelectedItem is DirectoryItem) {
+                            UpdateCollectionsMI();
                             CT_mark.IsOpen = false;
                             e.Handled = false;
                             return;
@@ -215,12 +217,18 @@ namespace ClipsOrganizer {
             }
         }
 
+        //TODO: REFACTOR COLOR UPDATING LATER
+        private void RefreshTreeViewWithColors(TreeView treeView, string basePath, List<Collection> collections) {
+            var expandedItems = new List<object>();
+            SaveExpandedItems(treeView.Items, expandedItems, treeView);
+
+            var items = itemProvider.GetItemsFromFolder(basePath, collections: collections);
+            treeView.ItemsSource = items;
+
+            RestoreExpandedItems(treeView.Items, expandedItems, treeView);
+        }
         private void UpdateColors() {
-            Items = itemProvider.GetItemsFromFolder(settings.ClipsFolder, collections: settings.collections);
-            //maybe wrong implementation
-            TV_clips.ItemsSource = null;
-            TV_clips.ItemsSource = Items;
-            UpdateCollectionsUI(TV_clips);
+            RefreshTreeViewWithColors(TV_clips, settings.ClipsFolder, settings.collections);
         }
 
         #region sliders events
@@ -312,29 +320,31 @@ namespace ClipsOrganizer {
         }
         private void MI_CT_mark_Click(object sender, RoutedEventArgs e) {
             var clickeditem = sender as MenuItem;
-            var sourceElement = (clickeditem.Parent as ContextMenu)?.Tag as FrameworkElement;
-            //construct new collectionfile and write it to this file
-            ME_main.Volume = 0; //TODO: remove this, this is only for not get hear loss while debugging
+            if ((clickeditem.Parent as ContextMenu).PlacementTarget is TreeView sourceElement) {
+                //((clickeditem.Parent as ContextMenu)).Name
 
-            if (sourceElement == Btn_Mark) {
-                (clickeditem.Tag as Collection).Files.Add(new Item
-                {
-                    Date = new FileInfo(ME_main.Source.LocalPath).CreationTime,
-                    Path = ME_main.Source.LocalPath,
-                    Color = itemProvider.FindColorByCollections(clickeditem.Tag as Collection, ME_main.Source.AbsolutePath.Split('/').Last()),
-                    Name = ME_main.Source.AbsolutePath.Split('/').Last()
-                });
-            }
-            else if (sourceElement == TV_clips) {
-                if (TV_clips.SelectedItem == null) return;
-                FileItem SelectedItem = TV_clips.SelectedItem as FileItem;
-                (clickeditem.Tag as Collection).Files.Add(new Item
-                {
-                    Path = SelectedItem.Path,
-                    Date = SelectedItem.Date,
-                    Name = SelectedItem.Name,
-                    Color = (clickeditem.Tag as Collection).Color,
-                });
+                ME_main.Volume = 0; //TODO: remove this, this is only for not get hear loss while debugging
+                //TODO: redolater
+                //if (sourceElement == Btn_Mark) {
+                //    (clickeditem.Tag as Collection).Files.Add(new Item
+                //    {
+                //        Date = new FileInfo(ME_main.Source.LocalPath).CreationTime,
+                //        Path = ME_main.Source.LocalPath,
+                //        Color = itemProvider.FindColorByCollections(clickeditem.Tag as Collection, ME_main.Source.AbsolutePath.Split('/').Last()),
+                //        Name = ME_main.Source.AbsolutePath.Split('/').Last()
+                //    });
+                //}
+                if (sourceElement == TV_clips) {
+                    if (TV_clips.SelectedItem == null) return;
+                    FileItem SelectedItem = TV_clips.SelectedItem as FileItem;
+                    (clickeditem.Tag as Collection).Files.Add(new Item
+                    {
+                        Path = SelectedItem.Path,
+                        Date = SelectedItem.Date,
+                        Name = SelectedItem.Name,
+                        Color = (clickeditem.Tag as Collection).Color,
+                    });
+                }
             }
             _lastSelectedCollection = clickeditem.Tag as Collection;
             UpdateCollectionsUI(TV_clips_collections);
@@ -392,6 +402,8 @@ namespace ClipsOrganizer {
                 if (_lastSelectedItem is Item) {
                     if (_lastSelectedCollection != null) {
                         _lastSelectedCollection.Files.Add(_lastSelectedItem as Item);
+                        UpdateCollectionsUI(TV_clips_collections);
+                        UpdateColors();
                     }
                 }
             }
