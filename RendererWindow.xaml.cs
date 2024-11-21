@@ -57,10 +57,22 @@ namespace ClipsOrganizer {
                 CB_codec.SelectedItem = settings.LastUsedCodec;
                 TB_Quality.Text = settings.LastUsedQuality;
             }
+
+            if (Owner != null) {
+                (Owner as MainWindow).SliderSelectionChanged += RendererWindow_SliderSelectionChanged;
+            }
+
             timer = new DispatcherTimer();
             timer.Interval = TimeSpan.FromMilliseconds(400);
             timer.Tick += FFmpegchecker;
         }
+
+        public void RendererWindow_SliderSelectionChanged(TimeSpan Start, TimeSpan? End) {
+            TB_Crop_From.Text = Start.ToString(@"hh\:mm\:ss\.fff");
+            if(End != null) TB_Crop_To.Text = End?.ToString(@"hh\:mm\:ss\.fff");
+
+        }
+
         //TODO: rewrite with regex parsing from output info from ffmpeg executable
         private void FFmpegchecker(object sender, System.EventArgs e) {
             if (this.settings.ffmpegManager.IsProcessRunning) {
@@ -118,6 +130,7 @@ namespace ClipsOrganizer {
                 if (timestamp < TimeSpan.Zero) {
                     timestamp = TimeSpan.Zero;
                 }
+
                 _lastTB.Text = timestamp.ToString(@"hh\:mm\:ss\.fff");
             }
         }
@@ -139,6 +152,7 @@ namespace ClipsOrganizer {
 
                     }
                     settings.ffmpegManager.StartEncodingAsync(VideoPath.LocalPath, TB_outputPath.Text, selectedCodec, bitrate, startTime, endTime);
+                    settings.ffmpegManager.OnEncodeProgressChanged += UpdateProgressBar;
                     timer.Start();
                 }
                 else {
@@ -151,5 +165,19 @@ namespace ClipsOrganizer {
             }
         }
 
+        private void UpdateProgressBar(float Precent) {
+            //TODO: пофиксить это, проблема в потоках и доступе что нельзя инвоукать этот элемент из ffmpegmanager
+            PB_RenderProgress.Value = Precent;
+        }
+
+        private void TB_Crop_TextChanged(object sender, TextChangedEventArgs e) {
+            if (TimeSpan.TryParse(TB_Crop_From.Text, out var startTime) &&
+    TimeSpan.TryParse(TB_Crop_To.Text, out var endTime)) {
+                //TimeSpanChanged?.Invoke(startTime, endTime);
+                if (Owner == null) return;
+                (Owner as MainWindow).SL_duration.SelectionStart = startTime.TotalSeconds;
+                (Owner as MainWindow).SL_duration.SelectionEnd = endTime.TotalSeconds;
+            }
+        }
     }
 }

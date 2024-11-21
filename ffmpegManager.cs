@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 
@@ -33,9 +34,14 @@ namespace ClipsOrganizer {
         private bool _disposed = false;
         private bool isReady = false;
 
+        private TimeSpan _VideoDuration = TimeSpan.Zero;
+
         public StringBuilder Output { get; private set; }
 
         private string ffmpegpath;
+        private float EncodePercentage;
+
+        public event Action<float> OnEncodeProgressChanged;
 
         public ffmpegManager(string affmpegpath) {
             this.ffmpegpath = affmpegpath;
@@ -53,6 +59,18 @@ namespace ClipsOrganizer {
 
                 if (!string.IsNullOrEmpty(data)) {
                     Output.AppendLine(data);
+                }
+
+                //  Duration: 00:00:15.32, start: 0.000000, bitrate: 1095 kb/s
+                Match match = Regex.Match(data, @"Duration:\s*(\d+:\d+:\d+\.\d+),\s*start:", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+                if (match.Success && TimeSpan.TryParse(match.Groups[1].Value, out TimeSpan duration)) {
+                    _VideoDuration = duration;
+                }
+
+
+                Match TimeMatch = Regex.Match(data, @"time=\s*(\d+:\d+:\d+\.\d+)\s*bitrate=", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+                if (TimeSpan.TryParse(TimeMatch.Groups[1].Value, out TimeSpan time)) {
+                    OnEncodeProgressChanged?.Invoke(((float)time.Ticks / _VideoDuration.Ticks) * 100);
                 }
             }
         }

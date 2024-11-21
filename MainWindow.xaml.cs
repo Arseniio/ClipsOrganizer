@@ -255,7 +255,7 @@ namespace ClipsOrganizer {
         private void VideoDurationUpdate(object sender, EventArgs e) {
             if (!is_dragging)
                 SL_duration.Value = ME_main.Position.TotalSeconds;
-            if (SL_duration.IsSelectionRangeEnabled)
+            if (SL_duration.IsSelectionRangeEnabled && OwnedWindows.Count == 0)
                 SL_duration.SelectionEnd = ME_main.Position.TotalSeconds;
         }
         #endregion
@@ -298,6 +298,7 @@ namespace ClipsOrganizer {
         }
 
         private void LoadNewVideoClip(Uri VideoPath = null) {
+            RemoveSelection();
             if (VideoPath != null) {
                 ME_main.Source = VideoPath;
                 ME_main.Play();
@@ -378,7 +379,7 @@ namespace ClipsOrganizer {
             //if (settingsChanged) {
             //    var result = MessageBox.Show("В коллекциях были изменены/добавлены файлы, хотите сохранить их?", "Подтверждение", MessageBoxButton.YesNoCancel);
             //    if (result == MessageBoxResult.Yes) {
-                    this.settings.SettingsFile.WriteAndCreateBackupSettings();
+            this.settings.SettingsFile.WriteAndCreateBackupSettings();
             //        e.Cancel = false;
             //    }
             //    if (result == MessageBoxResult.No) {
@@ -404,11 +405,19 @@ namespace ClipsOrganizer {
             else if (result == false) { }
         }
         TimeSpan StartTime = TimeSpan.Zero;
+        public event Action<TimeSpan, TimeSpan?> SliderSelectionChanged;
+
+        private void RemoveSelection() {
+            StartTime = TimeSpan.Zero;
+            SL_duration.SelectionStart = 0;
+            SL_duration.SelectionEnd = 0;
+            SL_duration.IsSelectionRangeEnabled = false;
+        }
+
         private void Window_KeyDown(object sender, KeyEventArgs e) {
             if (e.Key == Key.Enter) {
                 LoadNewVideoClip();
             }
-
             if (e.Key == Key.M) {
                 if (_lastSelectedItem is Item) {
                     if (_lastSelectedCollection != null) {
@@ -424,39 +433,49 @@ namespace ClipsOrganizer {
             //}
 
             #region Clips encoding binds
+            if (e.Key == Key.S) {
+                RemoveSelection();
+            }
             if (e.Key == Key.C) {
                 StartTime = ME_main.Position;
                 log.Update(string.Format("Cut from {0}", StartTime.TotalMilliseconds));
                 SL_duration.IsSelectionRangeEnabled = true;
                 SL_duration.SelectionStart = ME_main.Position.TotalSeconds;
+                SliderSelectionChanged?.Invoke(StartTime, null);
             }
             if (e.Key == Key.C && Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) {
-                ME_main.Pause();
                 log.Update(string.Format("Cut from {0} ended", StartTime.TotalMilliseconds));
-                Window rendererwindow = new RendererWindow(this.settings, ME_main.Source, ME_main.Position, TimeSpan.Zero);
-                if (rendererwindow.ShowDialog() == true) {
+                if (OwnedWindows.Count == 0) {
+                    OpenRendererWindow(ME_main.Position, ME_main.NaturalDuration.TimeSpan);
+                    SL_duration.SelectionEnd = ME_main.NaturalDuration.TimeSpan.TotalSeconds;
                     UpdateColors();
                 }
+
             }
             if (e.Key == Key.E) {
-                log.Update("Cut dropped");
-                //if (StartTime != TimeSpan.Zero && ME_main.Position > StartTime) {
-                //MessageBox.Show(string.Format("Clip Will be cutted from {0} to {1}; {2}",StartTime.TotalMilliseconds, ME_main.Position.TotalMilliseconds , ME_main.Position));
                 log.Update(string.Format("Cut to {0}", ME_main.Position.TotalMilliseconds));
-                ME_main.Pause();
+                SL_duration.IsSelectionRangeEnabled = true;
+                if (StartTime == TimeSpan.Zero) SL_duration.SelectionStart = 0;
                 SL_duration.SelectionEnd = ME_main.Position.TotalSeconds;
-                Window rendererwindow = new RendererWindow(this.settings, ME_main.Source, StartTime, ME_main.Position);
-                if (rendererwindow.ShowDialog() == true) {
+                if (OwnedWindows.Count == 0) {
+                    OpenRendererWindow(StartTime,ME_main.Position);
                     UpdateColors();
                 }
-                //}
+                else {
+                    SliderSelectionChanged?.Invoke(StartTime, ME_main.Position);
+                }
+
             }
-            if (e.Key == Key.D) {
-                ME_main.Pause();
-                Window rendererwindow = new RendererWindow(this.settings, ME_main.Source);
-                rendererwindow.Show();
+            if (e.Key == Key.D && OwnedWindows.Count != 0) {
+                OpenRendererWindow(null, ME_main.NaturalDuration.TimeSpan);
                 UpdateColors();
-                
+            }
+
+            void OpenRendererWindow(TimeSpan? StartTime, TimeSpan? EndTime) {
+                RendererWindow rendererwindow = new RendererWindow(this.settings, ME_main.Source, StartTime, EndTime) { Owner = this };
+                ME_main.Pause();
+                SliderSelectionChanged += rendererwindow.RendererWindow_SliderSelectionChanged;
+                rendererwindow.Show();
             }
             #endregion
         }
