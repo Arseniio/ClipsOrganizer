@@ -20,10 +20,10 @@ namespace ClipsOrganizer.Settings {
     public class Settings {
         //in order in json file
         public string ClipsFolder { get; set; }
-        public string ffmpegpath { get; set; }
-        public VideoCodec _lastUsedCodec { get; set; }
-        public string _lastUsedQuality { get; set; }
-        public string _lastUsedEncoderPath { get; set; }
+        public string FFmpegpath { get; set; }
+        public VideoCodec LastUsedCodec { get; set; }
+        public string LastUsedQuality { get; set; }
+        public string LastUsedEncoderPath { get; set; }
 
 
 
@@ -39,12 +39,12 @@ namespace ClipsOrganizer.Settings {
             this.SettingsFile = this.SettingsFile ?? new SettingsFile(settingsPath, ClipsFolder, this);
             collections = collections ?? new List<Collection>();
             this.ClipsFolder = ClipsFolder;
-            this.ffmpegpath = ffmpegpath;
+            this.FFmpegpath = ffmpegpath;
         }
 
         public void ffmpegInit() {
             try {
-                this.ffmpegManager = new ffmpegManager(this.ffmpegpath);
+                this.ffmpegManager = new ffmpegManager(this.FFmpegpath);
             }
             catch (Exception e) {
                 MessageBox.Show(e.Message);
@@ -55,10 +55,10 @@ namespace ClipsOrganizer.Settings {
             //TODO add more changed args after finishing settings window
             this.collections = ChangedSettings.collections;
             this.ClipsFolder = ChangedSettings.ClipsFolder;
-            this.ffmpegpath = ChangedSettings.ffmpegpath;
-            this._lastUsedCodec = ChangedSettings._lastUsedCodec;
-            this._lastUsedEncoderPath = ChangedSettings._lastUsedEncoderPath;
-            this._lastUsedQuality = ChangedSettings._lastUsedQuality;
+            this.FFmpegpath = ChangedSettings.FFmpegpath;
+            this.LastUsedCodec = ChangedSettings.LastUsedCodec;
+            this.LastUsedEncoderPath = ChangedSettings.LastUsedEncoderPath;
+            this.LastUsedQuality = ChangedSettings.LastUsedQuality;
         }
         public bool Equals(Settings other) {
             if (other == null) return false;

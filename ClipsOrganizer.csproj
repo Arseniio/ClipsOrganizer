@@ -157,5 +157,9 @@
   <ItemGroup>
     <Resource Include=".TextFile1.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <Resource Include="img\pause.png" />
+    <Resource Include="img\play.png" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -49,11 +50,15 @@ namespace ClipsOrganizer {
             CB_codec.SelectedIndex = 0; //change later
             TB_outputPath.Text = getNextFileName(Path.GetDirectoryName(VideoPath.LocalPath));
             if (Crop_From != null || Crop_To != null) {
-                TB_Crop_From.Text = Crop_From.ToString() ?? TimeSpan.Zero.ToString();
-                TB_Crop_To.Text = Crop_To.ToString() ?? TimeSpan.Zero.ToString();
+                TB_Crop_From.Text = Crop_From.Value.ToString(@"hh\:mm\:ss\.fff") ?? TimeSpan.Zero.ToString(@"hh\:mm\:ss\.fff");
+                TB_Crop_To.Text = Crop_To.Value.ToString(@"hh\:mm\:ss\.fff") ?? TimeSpan.Zero.ToString(@"hh\:mm\:ss\.fff");
+            }
+            if (settings.LastUsedCodec != VideoCodec.Unknown && settings.LastUsedQuality != null) {
+                CB_codec.SelectedItem = settings.LastUsedCodec;
+                TB_Quality.Text = settings.LastUsedQuality;
             }
             timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromMilliseconds(400); 
+            timer.Interval = TimeSpan.FromMilliseconds(400);
             timer.Tick += FFmpegchecker;
         }
         //TODO: rewrite with regex parsing from output info from ffmpeg executable
@@ -67,14 +72,62 @@ namespace ClipsOrganizer {
             }
         }
 
-        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
-            ComboBoxItem selectedItem = CB_codec.SelectedItem as ComboBoxItem;
-            if (selectedItem != null && selectedItem.Tag is VideoCodec codec) {
-                LastUsedCodec = codec;
+        private bool _isDragging = false;
+        private Point _lastMousePosition;
+        private TextBox _lastTB;
+        private void TimestampTextBox_PreviewMouseDown(object sender, MouseButtonEventArgs e) {
+            if (sender is TextBox text) {
+                _lastTB = sender as TextBox;
             }
-            this.DialogResult = true;
-            //LastUsedQuality = 
-            //LastUsedEncoderPath =
+            if (e.LeftButton == MouseButtonState.Pressed) {
+                _isDragging = true;
+                _lastMousePosition = e.GetPosition(this);
+            }
+        }
+
+        private void TimestampTextBox_PreviewMouseMove(object sender, MouseEventArgs e) {
+            if (_isDragging && e.LeftButton == MouseButtonState.Pressed) {
+                var currentPosition = e.GetPosition(this);
+                double deltaY = currentPosition.Y - _lastMousePosition.Y;
+                if (Math.Abs(deltaY) > 4) {
+                    if (_lastTB != null)
+                        UpdateTimestamp(deltaY);
+                    _lastMousePosition = currentPosition;
+                }
+            }
+        }
+
+        private void TimestampTextBox_PreviewMouseUp(object sender, MouseButtonEventArgs e) {
+            _isDragging = false;
+        }
+
+        private void UpdateTimestamp(double deltaY) {
+            if (TimeSpan.TryParseExact(_lastTB.Text, @"hh\:mm\:ss\.fff", CultureInfo.InvariantCulture, out var timestamp)) {
+                if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control) && Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) {
+                    timestamp = deltaY < 0 ? timestamp.Add(TimeSpan.FromMinutes(1)) : timestamp.Subtract(TimeSpan.FromMinutes(1));
+                }
+                else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) {
+                    timestamp = deltaY < 0 ? timestamp.Add(TimeSpan.FromMilliseconds(200)) : timestamp.Subtract(TimeSpan.FromMilliseconds(200));
+                }
+                else if (Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) {
+                    timestamp = deltaY < 0 ? timestamp.Add(TimeSpan.FromSeconds(5)) : timestamp.Subtract(TimeSpan.FromSeconds(5));
+                }
+                else {
+                    timestamp = deltaY < 0 ? timestamp.Add(TimeSpan.FromSeconds(1)) : timestamp.Subtract(TimeSpan.FromSeconds(1));
+                }
+                if (timestamp < TimeSpan.Zero) {
+                    timestamp = TimeSpan.Zero;
+                }
+                _lastTB.Text = timestamp.ToString(@"hh\:mm\:ss\.fff");
+            }
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
+            VideoCodec selectedCodec = (VideoCodec)CB_codec.SelectedItem;
+            if (selectedCodec != VideoCodec.Unknown && int.TryParse(TB_Quality.Text, out int bitrate)) {
+                settings.LastUsedCodec = selectedCodec;
+                settings.LastUsedQuality = bitrate.ToString();
+            }
         }
 
         private void Btn_Crop_Click(object sender, RoutedEventArgs e) {
@@ -97,5 +150,6 @@ namespace ClipsOrganizer {
                 MessageBox.Show("Пожалуйста, убедитесь, что выбраны параметры кодека и указано значение качества.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
         }
+
     }
 }
