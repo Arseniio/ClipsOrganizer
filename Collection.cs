@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
 using ClipsOrganizer.FileUtils;
@@ -15,10 +16,18 @@ using Newtonsoft.Json;
 
 namespace ClipsOrganizer.Collections {
 
+    public class KeyBinding {
+        public ModifierKeys Modifiers { get; set; }
+        public Key Key { get; set; }
+        public override string ToString() {
+            return $"{Modifiers}+{Key}";
+        }
+    }
     [JsonObject]
     public class Collection {
         public string CollectionTag { get; set; }
         public string Color { get; set; }
+        public string KeyBinding { get; set; }
         public List<Item> Files { get; set; }
 
         //for json parsing
@@ -27,8 +36,9 @@ namespace ClipsOrganizer.Collections {
         }
         public Collection(DirectoryItem directoryItem) {
             //placeholders
-            this.Color = "#000000";
-            this.CollectionTag = "test1";
+            Color = "#000000";
+            CollectionTag = "test1";
+
             Files = new List<Item>();
             foreach (var item in directoryItem.Items) {
                 var fileInfo = new FileUtils.FileUtils().GetFileinfo(item.Path);

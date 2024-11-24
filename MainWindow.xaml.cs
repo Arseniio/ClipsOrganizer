@@ -22,6 +22,7 @@ using System.Runtime.Remoting.Channels;
 using System.Windows.Controls.Primitives;
 using System.IO;
 using System.Security.Principal;
+using Gma.System.MouseKeyHook;
 
 namespace ClipsOrganizer {
     /// <summary>
@@ -58,7 +59,11 @@ namespace ClipsOrganizer {
             Items = itemProvider.GetItemsFromFolder(settings.ClipsFolder, collections: settings.collections);
 
             InitializeComponent();
+
             Log.TB_log = TB_log;
+            LoadGlobalKeyboardHook();
+
+            #region Context Menu init
             CT_mark = new ContextMenu() { Name = "CT_mark" };
             if (settings.collections.Count == 0) {
                 CT_mark.Items.Add("Нет коллекций");
@@ -79,7 +84,7 @@ namespace ClipsOrganizer {
             Btn_Mark.ContextMenu.Tag = Btn_Mark;
             TV_clips_collections.ContextMenu.Tag = TV_clips_collections;
             TV_clips.ContextMenu.Tag = TV_clips;
-
+            #endregion
 
             TV_clips_collections.ItemsSource = settings.collections;
 
@@ -90,6 +95,25 @@ namespace ClipsOrganizer {
             timer.Interval = TimeSpan.FromMilliseconds(100);
             timer.Tick += VideoDurationUpdate;
             #endregion
+        }
+
+        private void LoadGlobalKeyboardHook() {
+            Hook.GlobalEvents().Dispose();
+            var CombinationDict = new Dictionary<Combination, Action>();
+            foreach (var item in settings.collections) {
+                if (item.KeyBinding != null) {
+                    Action action = () =>
+                    {
+                        FileInfo fileInfo = ItemProvider.GetLastFile(this.settings.ClipsFolder, Items);
+                        Item newitem = new Item() { Name = fileInfo.Name, Path = fileInfo.FullName };
+                        item.Files.Add(newitem);
+                        UpdateCollectionsUI(TV_clips_collections);
+                    };
+                    CombinationDict.Add(Combination.FromString(item.KeyBinding.Replace("Ctrl", "Control")), action);
+                }
+            }
+
+            Hook.GlobalEvents().OnCombination(CombinationDict);
         }
 
         private void CT_mark_Opened(object sender, RoutedEventArgs e) {
@@ -118,7 +142,11 @@ namespace ClipsOrganizer {
                                 //UpdateCollectionsMI();
                                 CT_mark.Items.Clear();
                                 var sel_item = TV_clips_collections.SelectedItem as Collection;
-                                var MI = new MenuItem { Header = "Изменить" };
+                                var MI = new MenuItem { Header = "Удалить коллекцию" };
+                                MI.Tag = sel_item;
+                                MI.Click += MI_CT_DeleteCollection_Click;
+                                CT_mark.Items.Add(MI);
+                                MI = new MenuItem { Header = "Изменить" };
                                 MI.Tag = sel_item;
                                 MI.Click += MI_CT_edit_Click;
                                 CT_mark.Items.Add(MI);
@@ -128,6 +156,14 @@ namespace ClipsOrganizer {
                 }
             }
         }
+
+        private void MI_CT_DeleteCollection_Click(object sender, RoutedEventArgs e) {
+            var collection = (sender as MenuItem).Tag as Collection;
+            settings.collections.Remove(collection);
+            UpdateCollectionsMI();
+            UpdateCollectionsUI(TV_clips_collections);
+        }
+
         private void MI_CT_edit_Click(object sender, RoutedEventArgs e) {
             var ItemToEdit = (sender as MenuItem).Tag as Collection;
             var window = new CollectionCreatorWindow(ItemToEdit);
@@ -168,6 +204,7 @@ namespace ClipsOrganizer {
 
         private void UpdateCollectionsMI() {
             CT_mark.Items.Clear();
+            LoadGlobalKeyboardHook();
             settings.collections.ForEach(x =>
             {
                 var MI = new MenuItem { Header = x.CollectionTag };
@@ -175,6 +212,7 @@ namespace ClipsOrganizer {
                 MI.Click += MI_CT_mark_Click;
                 CT_mark.Items.Add(MI);
             });
+
             AddNewCollectionMI();
         }
 
@@ -315,6 +353,8 @@ namespace ClipsOrganizer {
             if (_lastSelectedTreeView?.SelectedItem.GetType() == typeof(DirectoryItem)) { }
             if (_lastSelectedTreeView?.SelectedItem.GetType() == typeof(Collection)) { }
             ME_main.Play();
+            if(ME_main.Source.LocalPath != null)
+            this.Title = string.Format("ClipsOrganizer / {0}", System.IO.Path.GetFileName(ME_main.Source.LocalPath));
             TB_loading_info.Visibility = Visibility.Hidden;
         }
 
@@ -427,6 +467,10 @@ namespace ClipsOrganizer {
                     }
                 }
             }
+            if (e.Key == Key.S && Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) {
+                settings.SettingsFile.WriteAndCreateBackupSettings();
+                log.Update("Настройки сохранены");
+            }
             //почему то не работает
             //if (e.Key == Key.Left) {
             //    ME_main.Position.Subtract(TimeSpan.FromSeconds(10));
@@ -458,7 +502,7 @@ namespace ClipsOrganizer {
                 if (StartTime == TimeSpan.Zero) SL_duration.SelectionStart = 0;
                 SL_duration.SelectionEnd = ME_main.Position.TotalSeconds;
                 if (OwnedWindows.Count == 0) {
-                    OpenRendererWindow(StartTime,ME_main.Position);
+                    OpenRendererWindow(StartTime, ME_main.Position);
                     UpdateColors();
                 }
                 else {

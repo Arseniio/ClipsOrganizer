@@ -51,6 +51,13 @@ namespace ClipsOrganizer.Model {
     public class ItemProvider {
         public bool ParsedFileNames = false;
 
+        public static FileInfo GetLastFile(string path,List<Item> OldItems) {
+            //List<Item> NewItems = GetItemsFromFolder(path);
+            var allFiles = Directory.GetFiles(path, "*", SearchOption.AllDirectories).Select(f => new FileInfo(f));
+            var newFiles = allFiles.Where(file => !OldItems.Select(p=>p.Name).Contains(file.Name)).ToList();
+            return newFiles.OrderByDescending(file => file.CreationTime).FirstOrDefault();
+        }
+
         public List<Item> GetItemsFromFolder(string path, Sorts sortMethod = Sorts.Default, List<Collection> collections = null) {
             var items = new List<Item>();
             var dirInfo = new DirectoryInfo(path);

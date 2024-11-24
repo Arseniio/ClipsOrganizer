@@ -10,6 +10,7 @@
         AllowDrop="True"
         DragEnter="Window_DragEnter"
         Drop="Window_Drop"
+        Icon="img/video-image.png"
         Title="ClipsOrganizer" Height="550" Width="1018" Closing="Window_Closing"
         KeyDown="Window_KeyDown">
 
@@ -89,7 +90,6 @@
                     </TreeView.Resources>
 
                 </TreeView>
-                <TextBlock d:Text="asdas" Name="TB_log" Grid.Row="0" VerticalAlignment="Center"/>
             </Grid>
 
         </Grid>
@@ -119,6 +119,7 @@
                     </Button>
                     <Button Width="100" Height="30" Margin="5 0 5 0" Name="Btn_Mark" Content="Mark" Click="Btn_Mark_Click"/>
                     <Slider TabIndex="3" Width="120" VerticalAlignment="Center" Minimum="0" Value="1" Name="SL_volume" ValueChanged="SL_volume_ValueChanged" Maximum="1"/>
+                    <TextBlock d:Text="LOG DEFAULT TEXT" Margin="10 0 0 0" Name="TB_log" VerticalAlignment="Center" Grid.RowSpan="2"/>
                 </StackPanel>
             </StackPanel>
         </Grid>

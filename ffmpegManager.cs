@@ -41,7 +41,7 @@ namespace ClipsOrganizer {
         private string ffmpegpath;
         private float EncodePercentage;
 
-        public event Action<float> OnEncodeProgressChanged;
+        public event Action<int> OnEncodeProgressChanged;
 
         public ffmpegManager(string affmpegpath) {
             this.ffmpegpath = affmpegpath;
@@ -62,15 +62,17 @@ namespace ClipsOrganizer {
                 }
 
                 //  Duration: 00:00:15.32, start: 0.000000, bitrate: 1095 kb/s
-                Match match = Regex.Match(data, @"Duration:\s*(\d+:\d+:\d+\.\d+),\s*start:", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
-                if (match.Success && TimeSpan.TryParse(match.Groups[1].Value, out TimeSpan duration)) {
-                    _VideoDuration = duration;
+                if (_VideoDuration == TimeSpan.Zero) {
+                    Match match = Regex.Match(data, @"Duration:\s*(\d+:\d+:\d+\.\d+),\s*start:", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+                    if (match.Success && TimeSpan.TryParse(match.Groups[1].Value, out TimeSpan duration)) {
+                        _VideoDuration = duration;
+                    }
                 }
 
 
                 Match TimeMatch = Regex.Match(data, @"time=\s*(\d+:\d+:\d+\.\d+)\s*bitrate=", RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
                 if (TimeSpan.TryParse(TimeMatch.Groups[1].Value, out TimeSpan time)) {
-                    OnEncodeProgressChanged?.Invoke(((float)time.Ticks / _VideoDuration.Ticks) * 100);
+                    OnEncodeProgressChanged?.Invoke((int)(((float)time.Ticks / _VideoDuration.Ticks) * 100));
                 }
             }
         }
@@ -137,7 +139,11 @@ namespace ClipsOrganizer {
             bool errorcode = this.Open(this.ffmpegpath, GetCodecArgs(codec, bitrate, inputVideo, outputVideo, StartTime, EndTime)) == 0;
             if (!errorcode) {
                 MessageBox.Show(Output.ToString());
+                OnEncodeProgressChanged?.Invoke(0);
+                return false;
             }
+            OnEncodeProgressChanged?.Invoke(100);
+
             return true;
         }
         public void CloseFFmpeg() {

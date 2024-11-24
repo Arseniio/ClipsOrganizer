@@ -62,27 +62,27 @@ namespace ClipsOrganizer {
                 (Owner as MainWindow).SliderSelectionChanged += RendererWindow_SliderSelectionChanged;
             }
 
-            timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromMilliseconds(400);
-            timer.Tick += FFmpegchecker;
+            //timer = new DispatcherTimer();
+            //timer.Interval = TimeSpan.FromMilliseconds(400);
+            //timer.Tick += FFmpegchecker;
         }
 
         public void RendererWindow_SliderSelectionChanged(TimeSpan Start, TimeSpan? End) {
             TB_Crop_From.Text = Start.ToString(@"hh\:mm\:ss\.fff");
-            if(End != null) TB_Crop_To.Text = End?.ToString(@"hh\:mm\:ss\.fff");
+            if (End != null) TB_Crop_To.Text = End?.ToString(@"hh\:mm\:ss\.fff");
 
         }
 
-        //TODO: rewrite with regex parsing from output info from ffmpeg executable
-        private void FFmpegchecker(object sender, System.EventArgs e) {
-            if (this.settings.ffmpegManager.IsProcessRunning) {
-                tb_status.Text = "В процессе обработки видео";
-            }
-            else {
-                tb_status.Text = "Закончено";
-                timer.Stop();
-            }
-        }
+        ////TODO: rewrite with regex parsing from output info from ffmpeg executable
+        //private void FFmpegchecker(object sender, System.EventArgs e) {
+        //    if (this.settings.ffmpegManager.IsProcessRunning) {
+        //        tb_status.Text = "В процессе обработки видео";
+        //    }
+        //    else {
+        //        tb_status.Text = "Закончено";
+        //        timer.Stop();
+        //    }
+        //}
 
         private bool _isDragging = false;
         private Point _lastMousePosition;
@@ -153,11 +153,9 @@ namespace ClipsOrganizer {
                     }
                     settings.ffmpegManager.StartEncodingAsync(VideoPath.LocalPath, TB_outputPath.Text, selectedCodec, bitrate, startTime, endTime);
                     settings.ffmpegManager.OnEncodeProgressChanged += UpdateProgressBar;
-                    timer.Start();
                 }
                 else {
                     settings.ffmpegManager.StartEncodingAsync(VideoPath.LocalPath, TB_outputPath.Text, selectedCodec, bitrate);
-                    timer.Start();
                 }
             }
             else {
@@ -165,15 +163,18 @@ namespace ClipsOrganizer {
             }
         }
 
-        private void UpdateProgressBar(float Precent) {
+        private void UpdateProgressBar(int Precent) {
             //TODO: пофиксить это, проблема в потоках и доступе что нельзя инвоукать этот элемент из ffmpegmanager
+            Dispatcher.Invoke(() =>
+            {
             PB_RenderProgress.Value = Precent;
+                tb_status.Text = string.Format("{0}%", Precent.ToString());
+            });
         }
 
         private void TB_Crop_TextChanged(object sender, TextChangedEventArgs e) {
             if (TimeSpan.TryParse(TB_Crop_From.Text, out var startTime) &&
-    TimeSpan.TryParse(TB_Crop_To.Text, out var endTime)) {
-                //TimeSpanChanged?.Invoke(startTime, endTime);
+                TimeSpan.TryParse(TB_Crop_To.Text, out var endTime)) {
                 if (Owner == null) return;
                 (Owner as MainWindow).SL_duration.SelectionStart = startTime.TotalSeconds;
                 (Owner as MainWindow).SL_duration.SelectionEnd = endTime.TotalSeconds;
