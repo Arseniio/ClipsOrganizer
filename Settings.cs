@@ -68,6 +68,7 @@ namespace ClipsOrganizer.Settings {
 
             return areCollectionsEqual && areFoldersEqual;
         }
+        
     }
     public class SettingsFile {
         //settings file properties

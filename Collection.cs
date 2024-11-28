@@ -7,6 +7,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Controls;
+using System.Windows.Forms;
 using System.Windows.Input;
 using System.Windows.Markup;
 using System.Windows.Media;
@@ -16,13 +17,6 @@ using Newtonsoft.Json;
 
 namespace ClipsOrganizer.Collections {
 
-    public class KeyBinding {
-        public ModifierKeys Modifiers { get; set; }
-        public Key Key { get; set; }
-        public override string ToString() {
-            return $"{Modifiers}+{Key}";
-        }
-    }
     [JsonObject]
     public class Collection {
         public string CollectionTag { get; set; }
@@ -62,7 +56,10 @@ namespace ClipsOrganizer.Collections {
         public System.Collections.Generic.IEnumerator<Item> GetEnumerator() {
             return this.Files.GetEnumerator();
         }
-
+        public void SafeAddClip(Item File) {
+            if (Files.Find(p=> p.Name == File.Name) == null) Files.Add(File);
+            else Log.Update($"Невозможно добавить файл {File.Name} в коллекцию");
+        }
         public override bool Equals(object obj) {
             if (obj is Collection otherCollection) {
                 return Equals(otherCollection);

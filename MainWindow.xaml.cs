@@ -37,8 +37,6 @@ namespace ClipsOrganizer {
         string clipsPath;
         string ffmpegPath;
 
-        private Log log = new Log();
-
         private TreeView _lastSelectedTreeView;
         private object _lastSelectedItem;
         private Collection _lastSelectedCollection;
@@ -106,7 +104,7 @@ namespace ClipsOrganizer {
                     {
                         FileInfo fileInfo = ItemProvider.GetLastFile(this.settings.ClipsFolder, Items);
                         Item newitem = new Item() { Name = fileInfo.Name, Path = fileInfo.FullName };
-                        item.Files.Add(newitem);
+                        item.SafeAddClip(newitem);
                         UpdateCollectionsUI(TV_clips_collections);
                     };
                     CombinationDict.Add(Combination.FromString(item.KeyBinding.Replace("Ctrl", "Control")), action);
@@ -353,8 +351,8 @@ namespace ClipsOrganizer {
             if (_lastSelectedTreeView?.SelectedItem.GetType() == typeof(DirectoryItem)) { }
             if (_lastSelectedTreeView?.SelectedItem.GetType() == typeof(Collection)) { }
             ME_main.Play();
-            if(ME_main.Source.LocalPath != null)
-            this.Title = string.Format("ClipsOrganizer / {0}", System.IO.Path.GetFileName(ME_main.Source.LocalPath));
+            if (ME_main.Source?.LocalPath != null)
+                this.Title = string.Format("ClipsOrganizer / {0}", System.IO.Path.GetFileName(ME_main.Source.LocalPath));
             TB_loading_info.Visibility = Visibility.Hidden;
         }
 
@@ -389,7 +387,7 @@ namespace ClipsOrganizer {
                 if (sourceElement == TV_clips) {
                     if (TV_clips.SelectedItem == null) return;
                     FileItem SelectedItem = TV_clips.SelectedItem as FileItem;
-                    (clickeditem.Tag as Collection).Files.Add(new Item
+                    (clickeditem.Tag as Collection).SafeAddClip(new Item
                     {
                         Path = SelectedItem.Path,
                         Date = SelectedItem.Date,
@@ -406,16 +404,22 @@ namespace ClipsOrganizer {
             Window window = new CollectionCreatorWindow(null);
             if (window.ShowDialog() == true) {
                 Collection collection = (window as CollectionCreatorWindow).Collection;
-                settings.collections.Add(collection);
-                UpdateCollectionsMI();
-                UpdateColors();
-                TV_clips_collections.Items.Refresh();
+                if (settings.collections.Find(p => p.CollectionTag == collection.CollectionTag) == null) {
+                    settings.collections.Add(collection);
+                    UpdateCollectionsMI();
+                    UpdateColors();
+                    TV_clips_collections.Items.Refresh();
+                }
+                else {
+                    MessageBox.Show("Коллекция с таким названием уже существует");
+                    return;
+                }
             }
         }
         #endregion
         //Если честно то скорее всего сохранение изменений можно так и оставить 
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
-            bool settingsChanged = settings.SettingsFile.CheckIfChanged();
+            //bool settingsChanged = settings.SettingsFile.CheckIfChanged();
             //if (settingsChanged) {
             //    var result = MessageBox.Show("В коллекциях были изменены/добавлены файлы, хотите сохранить их?", "Подтверждение", MessageBoxButton.YesNoCancel);
             //    if (result == MessageBoxResult.Yes) {
@@ -459,9 +463,9 @@ namespace ClipsOrganizer {
                 LoadNewVideoClip();
             }
             if (e.Key == Key.M) {
-                if (_lastSelectedItem is Item) {
+                if (_lastSelectedItem is Item && _lastSelectedItem.GetType() != typeof(DirectoryItem)) {
                     if (_lastSelectedCollection != null) {
-                        _lastSelectedCollection.Files.Add(_lastSelectedItem as Item);
+                        _lastSelectedCollection.SafeAddClip(_lastSelectedItem as Item);
                         UpdateCollectionsUI(TV_clips_collections);
                         UpdateColors();
                     }
@@ -469,7 +473,7 @@ namespace ClipsOrganizer {
             }
             if (e.Key == Key.S && Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) {
                 settings.SettingsFile.WriteAndCreateBackupSettings();
-                log.Update("Настройки сохранены");
+                Log.Update("Настройки сохранены");
             }
             //почему то не работает
             //if (e.Key == Key.Left) {
@@ -482,13 +486,13 @@ namespace ClipsOrganizer {
             }
             if (e.Key == Key.C) {
                 StartTime = ME_main.Position;
-                log.Update(string.Format("Cut from {0}", StartTime.TotalMilliseconds));
+                Log.Update(string.Format("Cut from {0}", StartTime.TotalMilliseconds));
                 SL_duration.IsSelectionRangeEnabled = true;
                 SL_duration.SelectionStart = ME_main.Position.TotalSeconds;
                 SliderSelectionChanged?.Invoke(StartTime, null);
             }
             if (e.Key == Key.C && Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) {
-                log.Update(string.Format("Cut from {0} ended", StartTime.TotalMilliseconds));
+                Log.Update(string.Format("Cut from {0} ended", StartTime.TotalMilliseconds));
                 if (OwnedWindows.Count == 0) {
                     OpenRendererWindow(ME_main.Position, ME_main.NaturalDuration.TimeSpan);
                     SL_duration.SelectionEnd = ME_main.NaturalDuration.TimeSpan.TotalSeconds;
@@ -497,7 +501,7 @@ namespace ClipsOrganizer {
 
             }
             if (e.Key == Key.E) {
-                log.Update(string.Format("Cut to {0}", ME_main.Position.TotalMilliseconds));
+                Log.Update(string.Format("Cut to {0}", ME_main.Position.TotalMilliseconds));
                 SL_duration.IsSelectionRangeEnabled = true;
                 if (StartTime == TimeSpan.Zero) SL_duration.SelectionStart = 0;
                 SL_duration.SelectionEnd = ME_main.Position.TotalSeconds;
@@ -534,7 +538,7 @@ namespace ClipsOrganizer {
         }
 
         private void Window_DragEnter(object sender, DragEventArgs e) {
-            e.Effects = e.Data.GetDataPresent(DataFormats.FileDrop) ? DragDropEffects.Link : DragDropEffects.None;
+            e.Effects = new FileInfo((e.Data.GetData(DataFormats.FileDrop) as string[]).First()).Extension == ".mp4" ? DragDropEffects.Link : DragDropEffects.None;
         }
 
         private void Window_Drop(object sender, DragEventArgs e) {
