@@ -156,6 +156,8 @@ namespace ClipsOrganizer {
                 }
                 else {
                     settings.ffmpegManager.StartEncodingAsync(VideoPath.LocalPath, TB_outputPath.Text, selectedCodec, bitrate);
+                    settings.ffmpegManager.OnEncodeProgressChanged += UpdateProgressBar;
+
                 }
             }
             else {

@@ -463,12 +463,10 @@ namespace ClipsOrganizer {
                 LoadNewVideoClip();
             }
             if (e.Key == Key.M) {
-                if (_lastSelectedItem is Item && _lastSelectedItem.GetType() != typeof(DirectoryItem)) {
-                    if (_lastSelectedCollection != null) {
+                if (_lastSelectedItem is Item && _lastSelectedItem.GetType() != typeof(DirectoryItem) && _lastSelectedCollection != null) {
                         _lastSelectedCollection.SafeAddClip(_lastSelectedItem as Item);
                         UpdateCollectionsUI(TV_clips_collections);
                         UpdateColors();
-                    }
                 }
             }
             if (e.Key == Key.S && Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) {

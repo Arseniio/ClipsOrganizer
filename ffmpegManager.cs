@@ -80,7 +80,7 @@ namespace ClipsOrganizer {
         public string GetCodecArgs(VideoCodec codec, int Bitrate, string InputFilePath, string OutputFilePath, TimeSpan? StartTime = null, TimeSpan? EndTime = null) {
             StringBuilder args = new StringBuilder();
             if (StartTime != null && StartTime != TimeSpan.Zero) {
-                args.Append($"-ss {StartTime.Value.ToString(@"hh\:mm\:ss")} ");
+                args.Append($"-ss {StartTime.Value.ToString(@"hh\:mm\:ss\.ffff")} ");
             }
             args.Append($"-i \"{InputFilePath}\" ");
             switch (codec) {
@@ -119,7 +119,10 @@ namespace ClipsOrganizer {
 
 
             if (EndTime != null && EndTime != TimeSpan.Zero) {
-                args.Append($"-to {EndTime.Value.ToString(@"hh\:mm\:ss")} ");
+                //case if start present and select endtime - starttime to actual cut
+                if(StartTime != null && StartTime != TimeSpan.Zero) args.Append($"-to {(EndTime.Value - StartTime.Value).ToString(@"hh\:mm\:ss\.ffff")} ");
+                //case if no start time present and cut starts from 0 till end time
+                else args.Append($"-to {EndTime.Value.ToString(@"hh\:mm\:ss\.ffff")} ");
             }
 
             args.Append($"-y ");
@@ -135,8 +138,8 @@ namespace ClipsOrganizer {
         }
         public bool StartEncoding(string inputVideo, string outputVideo, VideoCodec codec, int bitrate, TimeSpan? StartTime = null, TimeSpan? EndTime = null) {
             if (codec == VideoCodec.Unknown) return false;
-
-            bool errorcode = this.Open(this.ffmpegpath, GetCodecArgs(codec, bitrate, inputVideo, outputVideo, StartTime, EndTime)) == 0;
+            var args = GetCodecArgs(codec, bitrate, inputVideo, outputVideo, StartTime, EndTime);
+            bool errorcode = this.Open(this.ffmpegpath, args) == 0;
             if (!errorcode) {
                 MessageBox.Show(Output.ToString());
                 OnEncodeProgressChanged?.Invoke(0);
