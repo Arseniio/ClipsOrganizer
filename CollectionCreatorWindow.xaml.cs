@@ -56,6 +56,10 @@ namespace ClipsOrganizer {
 
         private void Btn_createCollection_Click(object sender, RoutedEventArgs e) {
             StringBuilder err = new StringBuilder();
+            if (TB_keybind.Text != Collection.KeyBinding) {
+                if (!HasModifierKey) err.AppendLine("Невозможно создать горячую клавишу без модификатора");
+                if (!HasMainKey) err.AppendLine("Невозможно создать горячую клавишу без основной кнопки");
+            }
             if (string.IsNullOrWhiteSpace(TB_color.Text)) TB_color.Text = "#FFFFFF"; //default color to not trip regex check if field is empty
             if (string.IsNullOrWhiteSpace(TB_CollName.Text)) err.AppendLine("Неверное название коллекции");
             if (!Regex.Match(TB_color.Text, @"^#?[0-9a-fA-F]{6}").Success) err.Append("Неверный цвет");
@@ -72,12 +76,24 @@ namespace ClipsOrganizer {
             this.Close();
         }
 
+        // Yeah that code sucks
+        private bool HasModifierKey = false;
+        private bool HasMainKey = false;
+        private int KeyCount;
+        private List<Key> PreviousKey = new List<Key>();
+
         private void TB_keybind_PreviewKeyDown(object sender, KeyEventArgs e) {
             e.Handled = true;
-
+            if (PreviousKey.Count == 0) {
+                HasMainKey = false;
+                HasModifierKey = false;
+            }
+            Log.Update($"mod: {HasModifierKey.ToString()} main: {HasMainKey.ToString()} keys: {PreviousKey.Count}");
             var modifiers = GetModifiers();
             Key? key = e.Key != Key.System ? e.Key : e.SystemKey;
-            if (modifiers.Count() == 0 && IsModifierKey(key.Value))
+            HasModifierKey = modifiers.Length > 0;
+            HasMainKey = key != null && !IsModifierKey(key.Value);
+            if (modifiers.Length == 0 && IsModifierKey(key.Value))
                 return;
             if (IsModifierKey(key.Value)) {
                 key = null;
@@ -85,6 +101,7 @@ namespace ClipsOrganizer {
             var shortcut = FormatKeyCombination(modifiers, key);
             TB_keybind.Text = shortcut;
             SaveShortcut(modifiers, key);
+            if (!PreviousKey.Contains(e.Key)) PreviousKey.Add(e.Key);
         }
 
         private void TB_keybind_KeyDown(object sender, KeyEventArgs e) {
@@ -104,11 +121,11 @@ namespace ClipsOrganizer {
         private string[] GetModifiers() {
             var modifiers = new[]
             {
-                Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl) ? "Ctrl" : null,
-                Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt) ? "Alt" : null,
-                Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift) ? "Shift" : null,
-                Keyboard.IsKeyDown(Key.LWin) || Keyboard.IsKeyDown(Key.RWin) ? "Win" : null
-            };
+        Keyboard.IsKeyDown(Key.LeftCtrl) || Keyboard.IsKeyDown(Key.RightCtrl) ? "Ctrl" : null,
+        Keyboard.IsKeyDown(Key.LeftAlt) || Keyboard.IsKeyDown(Key.RightAlt) ? "Alt" : null,
+        Keyboard.IsKeyDown(Key.LeftShift) || Keyboard.IsKeyDown(Key.RightShift) ? "Shift" : null,
+        Keyboard.IsKeyDown(Key.LWin) || Keyboard.IsKeyDown(Key.RWin) ? "Win" : null
+    };
 
             return modifiers.Where(m => m != null).ToArray();
         }
@@ -123,6 +140,16 @@ namespace ClipsOrganizer {
         private string SaveShortcut(string[] modifiers, Key? key) {
             string shortcut = FormatKeyCombination(modifiers, key);
             return shortcut;
+        }
+
+        private void ResetKeyStates() {
+            HasModifierKey = false;
+            HasMainKey = false;
+        }
+
+        private void TB_keybind_KeyUp(object sender, KeyEventArgs e) {
+            PreviousKey.Remove(e.Key);
+            Log.Update($"mod: {HasModifierKey.ToString()} main: {HasMainKey.ToString()} keys: {PreviousKey.Count}");
         }
     }
 }

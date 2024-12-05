@@ -29,7 +29,7 @@
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="2">
             <TextBlock Text="Горячая клавиша:" VerticalAlignment="Center" FontSize="18" Margin="0 0 10 0"/>
-            <TextBox Name="TB_keybind" d:Text="Ctrl + Shift + Alt + F5" KeyDown="TB_keybind_KeyDown" PreviewKeyDown="TB_keybind_PreviewKeyDown" Width="218" Margin="0 0 5 0" Height="32px" Text="{Binding KeyBinding}"/>
+            <TextBox Name="TB_keybind" d:Text="Ctrl + Shift + Alt + F5" KeyUp="TB_keybind_KeyUp" KeyDown="TB_keybind_KeyDown" PreviewKeyDown="TB_keybind_PreviewKeyDown" Width="218" Margin="0 0 5 0" Height="32px" Text="{Binding KeyBinding}"/>
         </StackPanel>
         <Button Grid.Row="3" Width="120" Height="32" Content="Создать" Name="Btn_createCollection" Click="Btn_createCollection_Click"/>
     </Grid>

@@ -107,10 +107,14 @@ namespace ClipsOrganizer {
                         item.SafeAddClip(newitem);
                         UpdateCollectionsUI(TV_clips_collections);
                     };
-                    CombinationDict.Add(Combination.FromString(item.KeyBinding.Replace("Ctrl", "Control")), action);
-                }
+                    try {
+                        CombinationDict.Add(Combination.FromString(item.KeyBinding.Replace("Ctrl", "Control")), action);
+                    }
+                    catch (Exception ex) {
+                        MessageBox.Show(ex.Message);
+                    }
+                    }
             }
-
             Hook.GlobalEvents().OnCombination(CombinationDict);
         }
 
@@ -167,6 +171,7 @@ namespace ClipsOrganizer {
             var window = new CollectionCreatorWindow(ItemToEdit);
             window.ShowDialog();
             if (window.DialogResult.HasValue) {
+                LoadGlobalKeyboardHook();
                 UpdateColors();
                 UpdateCollectionsUI(TV_clips_collections);
             }
@@ -330,7 +335,8 @@ namespace ClipsOrganizer {
 
         #region Clip selection
         private void TV_clips_MouseDoubleClick(object sender, MouseButtonEventArgs e) {
-            LoadNewVideoClip();
+            if(e.RightButton != MouseButtonState.Pressed) 
+                LoadNewVideoClip();
         }
 
         private void LoadNewVideoClip(Uri VideoPath = null) {
