@@ -103,7 +103,7 @@ namespace ClipsOrganizer {
                     Action action = () =>
                     {
                         FileInfo fileInfo = ItemProvider.GetLastFile(this.settings.ClipsFolder, Items);
-                        Item newitem = new Item() { Name = fileInfo.Name, Path = fileInfo.FullName };
+                        Item newitem = new Item() { Name = fileInfo.Name, Path = fileInfo.FullName, Date = fileInfo.CreationTime };
                         item.SafeAddClip(newitem);
                         UpdateCollectionsUI(TV_clips_collections);
                     };
@@ -111,9 +111,9 @@ namespace ClipsOrganizer {
                         CombinationDict.Add(Combination.FromString(item.KeyBinding.Replace("Ctrl", "Control")), action);
                     }
                     catch (Exception ex) {
-                        MessageBox.Show(ex.Message);
+                        MessageBox.Show($"Ошибка загрузки горячей клавиши для коллекции {item.CollectionTag}");
                     }
-                    }
+                }
             }
             Hook.GlobalEvents().OnCombination(CombinationDict);
         }
@@ -335,7 +335,7 @@ namespace ClipsOrganizer {
 
         #region Clip selection
         private void TV_clips_MouseDoubleClick(object sender, MouseButtonEventArgs e) {
-            if(e.RightButton != MouseButtonState.Pressed) 
+            if (e.RightButton != MouseButtonState.Pressed)
                 LoadNewVideoClip();
         }
 
@@ -470,9 +470,9 @@ namespace ClipsOrganizer {
             }
             if (e.Key == Key.M) {
                 if (_lastSelectedItem is Item && _lastSelectedItem.GetType() != typeof(DirectoryItem) && _lastSelectedCollection != null) {
-                        _lastSelectedCollection.SafeAddClip(_lastSelectedItem as Item);
-                        UpdateCollectionsUI(TV_clips_collections);
-                        UpdateColors();
+                    _lastSelectedCollection.SafeAddClip(_lastSelectedItem as Item);
+                    UpdateCollectionsUI(TV_clips_collections);
+                    UpdateColors();
                 }
             }
             if (e.Key == Key.S && Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) {
