@@ -77,12 +77,14 @@
     </Compile>
     <Compile Include="ExternalProcessManager.cs" />
     <Compile Include="ffmpegManager.cs" />
+    <Compile Include="FileSerializerBase.cs" />
     <Compile Include="FileUtils.cs" />
     <Compile Include="Log.cs" />
+    <Compile Include="ProfileManager.cs" />
     <Compile Include="RendererWindow.xaml.cs">
       <DependentUpon>RendererWindow.xaml</DependentUpon>
     </Compile>
-    <Compile Include="Settings.cs" />
+    <Compile Include="GlobalSettings.cs" />
     <Compile Include="SettingsWindow.xaml.cs">
       <DependentUpon>SettingsWindow.xaml</DependentUpon>
     </Compile>

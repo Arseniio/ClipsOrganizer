@@ -1,4 +1,5 @@
-﻿using ClipsOrganizer.Properties;
+﻿using ClipsOrganizer.Profiles;
+using ClipsOrganizer.Properties;
 using ClipsOrganizer.Settings;
 using System;
 using System.Collections.Generic;
@@ -20,13 +21,13 @@ namespace ClipsOrganizer {
     /// Логика взаимодействия для ExportWindow.xaml
     /// </summary>
     public partial class ExportWindow : Window {
-        public Settings.Settings Settings { get; set; }
-        public ExportWindow(Settings.Settings settings) {
+        public Profile profile { get; set; }
+        public ExportWindow(Profile profile) {
             InitializeComponent();
-            if (settings.collections == null) {
+            if (profile.Collections.Count == 0) {
                 throw new System.ArgumentNullException();
             }
-            Settings = settings;
+            this.profile = profile;
         }
 
         public bool bresult = false;
@@ -37,7 +38,7 @@ namespace ClipsOrganizer {
             if (result == MessageBoxResult.Yes) {
                 bresult = true;
             }
-            foreach (var collection in Settings.collections) {
+            foreach (var collection in profile.Collections) {
                 string ExportcollectionPath = ExportFolderPrefix + collection.CollectionTag;
                 Directory.CreateDirectory(ExportcollectionPath);
                 ExportcollectionPath += "/"; //ClipsOrganizer/bin/Debug/Exported/Collection/

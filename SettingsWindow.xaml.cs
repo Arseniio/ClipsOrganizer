@@ -22,7 +22,7 @@ namespace ClipsOrganizer {
         public VideoCodec LastUsedCodec { get; set; }
         public string LastUsedQuality { get; set; }
         public string LastUsedEncoderPath { get; set; }
-        public SettingsWindow(Settings.Settings settings) {
+        public SettingsWindow(Settings.GlobalSettings settings) {
             InitializeComponent();
             //CB_codec.ItemsSource = Enum.GetValues(typeof(VideoCodec)).Cast<VideoCodec>();
         }

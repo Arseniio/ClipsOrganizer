@@ -25,14 +25,15 @@
         </Grid.ColumnDefinitions>
         <GridSplitter IsTabStop="False" Grid.Row="1" Grid.Column="0" Width="2" HorizontalAlignment="Right" Panel.ZIndex="10" Background="Gray"/>
 
-        <Menu IsTabStop="False" Height="22.35" VerticalAlignment="Top" Panel.ZIndex="99" Grid.ColumnSpan="2">
+        <DockPanel Height="22.35" VerticalAlignment="Top" Panel.ZIndex="99" Grid.ColumnSpan="2">
             <Grid>
-                <StackPanel Orientation="Horizontal">
+                <StackPanel Margin="10 0 0 0" IsEnabled="True" Orientation="Horizontal">
+                    <ComboBox Name="CB_Profile" Width="130" Margin="0 0 10 0" SelectionChanged="CB_Profile_SelectionChanged"/>
                     <Button Width="50" Height="20" Content="Экспорт" Name="Btn_export" Click="Btn_export_Click"/>
                     <Button Width="70" Margin="10 0 0 0" Height="20" Content="Настройки" Name="Btn_settings" Click="Btn_settings_Click"/>
                 </StackPanel>
             </Grid>
-        </Menu>
+        </DockPanel>
 
 
 

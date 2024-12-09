@@ -22,7 +22,7 @@ namespace ClipsOrganizer {
     /// Логика взаимодействия для RendererWindow.xaml
     /// </summary>
     public partial class RendererWindow : Window {
-        Settings.Settings settings;
+        Settings.GlobalSettings settings;
         Uri VideoPath;
         public VideoCodec LastUsedCodec { get; set; }
         public string LastUsedQuality { get; set; }
@@ -42,7 +42,7 @@ namespace ClipsOrganizer {
         }
         DispatcherTimer timer;
 
-        public RendererWindow(Settings.Settings settings, Uri VideoPath, TimeSpan? Crop_From = null, TimeSpan? Crop_To = null) {
+        public RendererWindow(Settings.GlobalSettings settings, Uri VideoPath, TimeSpan? Crop_From = null, TimeSpan? Crop_To = null) {
             InitializeComponent();
             this.settings = settings;
             this.VideoPath = VideoPath;

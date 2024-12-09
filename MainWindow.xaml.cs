@@ -23,6 +23,11 @@ using System.Windows.Controls.Primitives;
 using System.IO;
 using System.Security.Principal;
 using Gma.System.MouseKeyHook;
+using ClipsOrganizer.Profiles;
+using ClipsOrganizer.FileUtils;
+using ClipsOrganizer.Properties;
+using System.Diagnostics.Eventing.Reader;
+using Newtonsoft.Json;
 
 namespace ClipsOrganizer {
     /// <summary>
@@ -31,39 +36,70 @@ namespace ClipsOrganizer {
     public partial class MainWindow : Window {
         DispatcherTimer timer;
         ItemProvider itemProvider = null;
-        Settings.Settings settings = null;
+        Settings.GlobalSettings settings = null;
         ContextMenu CT_mark = null;
         List<Item> Items = null;
-        string clipsPath;
-        string ffmpegPath;
+        Profile CurrentProfile = null;
+
+        private string SettingsPath = "./settings.json";
+        private string ProfilePath = "./Profiles/";
+
 
         private TreeView _lastSelectedTreeView;
         private object _lastSelectedItem;
         private Collection _lastSelectedCollection;
         public MainWindow() {
-            if (!File.Exists("./settings.json")) {
+            //// Удаление файла settings.json, если он существует
+            //if (File.Exists("./settings.json")) {
+            //    File.Delete("./settings.json");
+            //}
+
+            //// Удаление папки Profiles, если она существует
+            //if (Directory.Exists("./Profiles")) {
+            //    Directory.Delete("./Profiles", true); // true удаляет папку с содержимым
+            //}
+            string clipsPath;
+            string ffmpegPath;
+            string Profilename;
+            if (!Directory.Exists("./Profiles")) {
                 Window window = new WelcomeWindow();
                 if (window.ShowDialog() == true) {
                     clipsPath = (window as WelcomeWindow).ClipsPath;
                     ffmpegPath = (window as WelcomeWindow).ffmpegPath;
+                    Profilename = (window as WelcomeWindow).ProfileName;
+                    Directory.CreateDirectory("./Profiles");
+                    CurrentProfile = new Profile() { ClipsFolder = clipsPath, ProfileName = Profilename };
+                    FileSerializer.WriteAndCreateBackupFile(CurrentProfile, CurrentProfile.ProfilePath);
+                    GlobalSettings settings = new GlobalSettings(clipsPath, ffmpegPath);
+                    settings.LastSelectedProfile = CurrentProfile.ProfileName;
+                    FileSerializer.WriteAndCreateBackupFile(settings, SettingsPath);
                 }
             }
-            itemProvider = new ItemProvider();
-            settings = new Settings.Settings(clipsPath, ffmpegPath);
+            settings = FileSerializer.ReadFile<GlobalSettings>(SettingsPath);
+            if (File.Exists($"./Profiles/{settings.LastSelectedProfile}.json")) {
+                CurrentProfile = FileSerializer.ReadFile<Profile>($"./Profiles/{settings.LastSelectedProfile}.json");
+            }
+            else {
+                CurrentProfile = FileSerializer.ReadFile<Profile>($"./Profiles/{LoadAllProfiles().First()}.json");
+            }
+                itemProvider = new ItemProvider();
+            //settings = new Settings.Settings(clipsPath, ffmpegPath);
 
-            settings.SettingsFile.LoadSettings();
+            //settings = FileSerializer.ReadFile();
+
             settings.ffmpegInit(); //maybe change it to init when cut was being made
 
-            Items = itemProvider.GetItemsFromFolder(settings.ClipsFolder, collections: settings.collections);
+            Items = itemProvider.GetItemsFromFolder(CurrentProfile.ClipsFolder, collections: CurrentProfile.Collections);
 
             InitializeComponent();
 
             Log.TB_log = TB_log;
+
             LoadGlobalKeyboardHook();
 
             #region Context Menu init
             CT_mark = new ContextMenu() { Name = "CT_mark" };
-            if (settings.collections.Count == 0) {
+            if (CurrentProfile.Collections.Count == 0) {
                 CT_mark.Items.Add("Нет коллекций");
                 AddNewCollectionMI();
             }
@@ -72,7 +108,8 @@ namespace ClipsOrganizer {
             }
             CT_mark.Opened += CT_mark_Opened;
 
-
+            CB_Profile.ItemsSource = LoadAllProfiles();
+            CB_Profile.SelectedItem = CurrentProfile.ProfileName;
 
             Btn_Mark.ContextMenu = CT_mark;
             TV_clips.ContextMenu = CT_mark;
@@ -84,7 +121,7 @@ namespace ClipsOrganizer {
             TV_clips.ContextMenu.Tag = TV_clips;
             #endregion
 
-            TV_clips_collections.ItemsSource = settings.collections;
+            TV_clips_collections.ItemsSource = CurrentProfile.Collections;
 
             TV_clips.ItemsSource = Items;
 
@@ -95,14 +132,33 @@ namespace ClipsOrganizer {
             #endregion
         }
 
+        private List<string> LoadAllProfiles() {
+            string[] allFiles = Directory.GetFiles(ProfilePath);
+            List<string> profiles = new List<string>();
+            foreach (string file in allFiles) {
+                if (file.EndsWith("_bkp.json")) continue;
+                try {
+                    string fileContent = File.ReadAllText(file);
+                    var jsonObject = JsonConvert.DeserializeObject<Profile>(fileContent);
+                    if (jsonObject != null && jsonObject.ProfileName != null){
+                        profiles.Add(jsonObject.ProfileName);
+                    }
+                }
+                catch (Exception ex) {
+                    Log.Update($"Ошибка при обработке файла {file}: {ex.Message}");
+                }
+            }
+            return profiles;
+        }
+
         private void LoadGlobalKeyboardHook() {
             Hook.GlobalEvents().Dispose();
             var CombinationDict = new Dictionary<Combination, Action>();
-            foreach (var item in settings.collections) {
+            foreach (var item in CurrentProfile.Collections) {
                 if (item.KeyBinding != null) {
                     Action action = () =>
                     {
-                        FileInfo fileInfo = ItemProvider.GetLastFile(this.settings.ClipsFolder, Items);
+                        FileInfo fileInfo = ItemProvider.GetLastFile(CurrentProfile.ClipsFolder, Items);
                         Item newitem = new Item() { Name = fileInfo.Name, Path = fileInfo.FullName, Date = fileInfo.CreationTime };
                         item.SafeAddClip(newitem);
                         UpdateCollectionsUI(TV_clips_collections);
@@ -161,7 +217,7 @@ namespace ClipsOrganizer {
 
         private void MI_CT_DeleteCollection_Click(object sender, RoutedEventArgs e) {
             var collection = (sender as MenuItem).Tag as Collection;
-            settings.collections.Remove(collection);
+            CurrentProfile.Collections.Remove(collection);
             UpdateCollectionsMI();
             UpdateCollectionsUI(TV_clips_collections);
         }
@@ -181,7 +237,7 @@ namespace ClipsOrganizer {
             var ItemToDelete = (sender as MenuItem).Tag as Item;
             Item item = new Item();
             List<Collection> foundCollections = new List<Collection>();
-            foreach (var collection in settings.collections) {
+            foreach (var collection in CurrentProfile.Collections) {
                 item = null;
                 item = collection.Files.Find(p => p.Name == ItemToDelete.Name); //not sure if need to check only name,date or entire object
                 if (!(item is null)) foundCollections.Add(collection);
@@ -192,13 +248,13 @@ namespace ClipsOrganizer {
                 if (dialogResult == true && (window as CollectionDeletionWindow).selectedCollections.Count > 0) {
                     foreach (var collection in (window as CollectionDeletionWindow).selectedCollections) {
                         item = null;
-                        settings.collections.Find(p => p.CollectionTag == collection.CollectionTag).Files.RemoveAll(i => i.Name == ItemToDelete.Name);
+                        CurrentProfile.Collections.Find(p => p.CollectionTag == collection.CollectionTag).Files.RemoveAll(i => i.Name == ItemToDelete.Name);
                     }
                     UpdateCollectionsUI(TV_clips_collections);
                 }
             }
             else {
-                foreach (var collection in settings.collections) {
+                foreach (var collection in CurrentProfile.Collections) {
                     collection.Files.RemoveAll(p => p.Name == ItemToDelete.Name);
                 }
             }
@@ -208,7 +264,7 @@ namespace ClipsOrganizer {
         private void UpdateCollectionsMI() {
             CT_mark.Items.Clear();
             LoadGlobalKeyboardHook();
-            settings.collections.ForEach(x =>
+            CurrentProfile.Collections.ForEach(x =>
             {
                 var MI = new MenuItem { Header = x.CollectionTag };
                 MI.Tag = x;
@@ -268,7 +324,7 @@ namespace ClipsOrganizer {
             RestoreExpandedItems(treeView.Items, expandedItems, treeView);
         }
         private void UpdateColors() {
-            RefreshTreeViewWithColors(TV_clips, settings.ClipsFolder, settings.collections);
+            RefreshTreeViewWithColors(TV_clips, CurrentProfile.ClipsFolder, CurrentProfile.Collections);
         }
 
         #region sliders events
@@ -324,12 +380,12 @@ namespace ClipsOrganizer {
 
         private void CB_ParsedFileName_Checked(object sender, RoutedEventArgs e) {
             //TV_clips.ItemsSource = itemProvider.GetItemsFromFolder("H:\\nrtesting");
-            //TV_clips_collections.ItemsSource = itemProvider.GetItemsFromCollections(settings.collections);
+            //TV_clips_collections.ItemsSource = itemProvider.GetItemsFromCollections(CurrentProfile.Collections);
             throw new NotImplementedException("NE");
         }
         private void CB_ParsedFileName_Unchecked(object sender, RoutedEventArgs e) {
             //TV_clips.ItemsSource = itemProvider.GetItemsFromFolder("H:\\nrtesting");
-            //TV_clips_collections.ItemsSource = itemProvider.GetItemsFromCollections(settings.collections);
+            //TV_clips_collections.ItemsSource = itemProvider.GetItemsFromCollections(CurrentProfile.Collections);
             throw new NotImplementedException("NE");
         }
 
@@ -410,8 +466,8 @@ namespace ClipsOrganizer {
             Window window = new CollectionCreatorWindow(null);
             if (window.ShowDialog() == true) {
                 Collection collection = (window as CollectionCreatorWindow).Collection;
-                if (settings.collections.Find(p => p.CollectionTag == collection.CollectionTag) == null) {
-                    settings.collections.Add(collection);
+                if (CurrentProfile.Collections.Find(p => p.CollectionTag == collection.CollectionTag) == null) {
+                    CurrentProfile.Collections.Add(collection);
                     UpdateCollectionsMI();
                     UpdateColors();
                     TV_clips_collections.Items.Refresh();
@@ -429,7 +485,10 @@ namespace ClipsOrganizer {
             //if (settingsChanged) {
             //    var result = MessageBox.Show("В коллекциях были изменены/добавлены файлы, хотите сохранить их?", "Подтверждение", MessageBoxButton.YesNoCancel);
             //    if (result == MessageBoxResult.Yes) {
-            this.settings.SettingsFile.WriteAndCreateBackupSettings();
+            Log.Update("closing window");
+            settings.LastSelectedProfile = CurrentProfile.ProfileName;
+            FileSerializer.WriteAndCreateBackupFile(settings, SettingsPath);
+            FileSerializer.WriteAndCreateBackupFile(CurrentProfile, CurrentProfile.ProfilePath);
             //        e.Cancel = false;
             //    }
             //    if (result == MessageBoxResult.No) {
@@ -444,15 +503,15 @@ namespace ClipsOrganizer {
             //}
         }
         private void Btn_export_Click(object sender, RoutedEventArgs e) {
-            Window window = new ExportWindow(this.settings);
+            Window window = new ExportWindow(CurrentProfile);
             window.ShowDialog();
-            Settings.Settings settingsAfterMoving = (window as ExportWindow).Settings;
-            bool result = (window as ExportWindow).bresult;
-            if (result == true) {
-                settings.UpdateSettings(settingsAfterMoving);
-                settings.SettingsFile.WriteAndCreateBackupSettings();
-            }
-            else if (result == false) { }
+            //Profile ProfileAfterMoving = (window as ExportWindow).profile;
+            //bool result = (window as ExportWindow).bresult;
+            //if (result == true) {
+            //    settings.UpdateSettings();
+            //    FileSerializer.WriteAndCreateBackupFile(settings, SettingsPath);
+            //}
+            //else if (result == false) { }
         }
         TimeSpan StartTime = TimeSpan.Zero;
         public event Action<TimeSpan, TimeSpan?> SliderSelectionChanged;
@@ -476,7 +535,7 @@ namespace ClipsOrganizer {
                 }
             }
             if (e.Key == Key.S && Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) {
-                settings.SettingsFile.WriteAndCreateBackupSettings();
+                FileSerializer.WriteAndCreateBackupFile(settings, SettingsPath);
                 Log.Update("Настройки сохранены");
             }
             //почему то не работает
@@ -535,6 +594,7 @@ namespace ClipsOrganizer {
             _lastSelectedTreeView = sender as TreeView;
             _lastSelectedItem = e.NewValue;
         }
+
         private void Btn_settings_Click(object sender, RoutedEventArgs e) {
             Window window = new SettingsWindow(this.settings);
             if (window.ShowDialog() == true) {
@@ -547,6 +607,18 @@ namespace ClipsOrganizer {
 
         private void Window_Drop(object sender, DragEventArgs e) {
             LoadNewVideoClip(new Uri((e.Data.GetData(DataFormats.FileDrop) as string[]).First()));
+        }
+        private void CB_Profile_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            if (!this.IsLoaded) return;
+            string SelectedProfile = CB_Profile.SelectedItem as string;
+            if (!File.Exists(ProfilePath + $"/{SelectedProfile}.json")) Log.Update($"Не удалось найти {SelectedProfile} в папке с профилями {ProfilePath}");
+            else {
+                FileSerializer.WriteAndCreateBackupFile(CurrentProfile, CurrentProfile.ProfilePath);
+                CurrentProfile = FileSerializer.ReadFile<Profile>(ProfilePath + $"/{SelectedProfile}.json");
+                Items = itemProvider.GetItemsFromFolder(CurrentProfile.ClipsFolder, collections: CurrentProfile.Collections);
+                TV_clips_collections.ItemsSource = CurrentProfile.Collections;
+                TV_clips.ItemsSource = Items;
+            }
         }
     }
 }

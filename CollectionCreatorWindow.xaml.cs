@@ -56,7 +56,7 @@ namespace ClipsOrganizer {
 
         private void Btn_createCollection_Click(object sender, RoutedEventArgs e) {
             StringBuilder err = new StringBuilder();
-            if (TB_keybind.Text != Collection.KeyBinding) {
+            if (TB_keybind.Text != Collection?.KeyBinding) {
                 if (!HasModifierKey) err.AppendLine("Невозможно создать горячую клавишу без модификатора");
                 if (!HasMainKey) err.AppendLine("Невозможно создать горячую клавишу без основной кнопки");
             }
