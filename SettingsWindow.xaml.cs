@@ -12,21 +12,35 @@ using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Shapes;
+using ClipsOrganizer.Profiles;
 using ClipsOrganizer.Settings;
+using ClipsOrganizer.SettingsControls;
 
 namespace ClipsOrganizer {
     /// <summary>
     /// Логика взаимодействия для SettingsWindow.xaml
     /// </summary>
     public partial class SettingsWindow : Window {
-        public VideoCodec LastUsedCodec { get; set; }
-        public string LastUsedQuality { get; set; }
-        public string LastUsedEncoderPath { get; set; }
-        public SettingsWindow(Settings.GlobalSettings settings) {
+        GlobalSettings settings;
+        Profile Profile;
+        public SettingsWindow(Settings.GlobalSettings settings, Profile profile) {
             InitializeComponent();
-            //CB_codec.ItemsSource = Enum.GetValues(typeof(VideoCodec)).Cast<VideoCodec>();
+            this.settings = settings;
+            this.Profile = profile;
         }
-
+        private void LB_Menu_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            if (LB_Menu.SelectedItem is ListBoxItem selectedItem) {
+                string tag = selectedItem.Tag as string;
+                switch(tag){
+                    case "General":
+                        CC_Content.Content = new GeneralSettings();
+                        break;
+                    case "Profiles":
+                        CC_Content.Content = new ProfilesSettings();
+                        break;
+                }
+            }
+        }
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
 
         }

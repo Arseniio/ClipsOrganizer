@@ -120,7 +120,7 @@
                     </Button>
                     <Button Width="100" Height="30" Margin="5 0 5 0" Name="Btn_Mark" Content="Mark" Click="Btn_Mark_Click"/>
                     <Slider TabIndex="3" Width="120" VerticalAlignment="Center" Minimum="0" Value="1" Name="SL_volume" ValueChanged="SL_volume_ValueChanged" Maximum="1"/>
-                    <TextBlock d:Text="LOG DEFAULT TEXT" Margin="10 0 0 0" Name="TB_log" VerticalAlignment="Center" Grid.RowSpan="2"/>
+                    <TextBlock MouseDown="TB_log_MouseDown" d:Text="LOG DEFAULT TEXT" Margin="10 0 0 0" Name="TB_log" VerticalAlignment="Center" Grid.RowSpan="2"/>
                 </StackPanel>
             </StackPanel>
         </Grid>

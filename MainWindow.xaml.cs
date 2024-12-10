@@ -80,9 +80,9 @@ namespace ClipsOrganizer {
                 CurrentProfile = FileSerializer.ReadFile<Profile>($"./Profiles/{settings.LastSelectedProfile}.json");
             }
             else {
-                CurrentProfile = FileSerializer.ReadFile<Profile>($"./Profiles/{LoadAllProfiles().First()}.json");
+                CurrentProfile = FileSerializer.ReadFile<Profile>($"./Profiles/{ProfileManager.LoadAllProfiles().First()}.json");
             }
-                itemProvider = new ItemProvider();
+            itemProvider = new ItemProvider();
             //settings = new Settings.Settings(clipsPath, ffmpegPath);
 
             //settings = FileSerializer.ReadFile();
@@ -108,7 +108,7 @@ namespace ClipsOrganizer {
             }
             CT_mark.Opened += CT_mark_Opened;
 
-            CB_Profile.ItemsSource = LoadAllProfiles();
+            CB_Profile.ItemsSource = ProfileManager.LoadAllProfiles();
             CB_Profile.SelectedItem = CurrentProfile.ProfileName;
 
             Btn_Mark.ContextMenu = CT_mark;
@@ -130,25 +130,6 @@ namespace ClipsOrganizer {
             timer.Interval = TimeSpan.FromMilliseconds(100);
             timer.Tick += VideoDurationUpdate;
             #endregion
-        }
-
-        private List<string> LoadAllProfiles() {
-            string[] allFiles = Directory.GetFiles(ProfilePath);
-            List<string> profiles = new List<string>();
-            foreach (string file in allFiles) {
-                if (file.EndsWith("_bkp.json")) continue;
-                try {
-                    string fileContent = File.ReadAllText(file);
-                    var jsonObject = JsonConvert.DeserializeObject<Profile>(fileContent);
-                    if (jsonObject != null && jsonObject.ProfileName != null){
-                        profiles.Add(jsonObject.ProfileName);
-                    }
-                }
-                catch (Exception ex) {
-                    Log.Update($"Ошибка при обработке файла {file}: {ex.Message}");
-                }
-            }
-            return profiles;
         }
 
         private void LoadGlobalKeyboardHook() {
@@ -596,9 +577,17 @@ namespace ClipsOrganizer {
         }
 
         private void Btn_settings_Click(object sender, RoutedEventArgs e) {
-            Window window = new SettingsWindow(this.settings);
-            if (window.ShowDialog() == true) {
+            Window window = new SettingsWindow(settings, CurrentProfile);
+            window.ShowDialog();
+            if (!ProfileManager.LoadAllProfiles().Exists(p => p == CurrentProfile.ProfileName)) {
+                CurrentProfile = FileSerializer.ReadFile<Profile>($"./Profiles/{ProfileManager.LoadAllProfiles().First()}.json");
+                FileSerializer.WriteAndCreateBackupFile(CurrentProfile, CurrentProfile.ProfilePath);
+                Items = itemProvider.GetItemsFromFolder(CurrentProfile.ClipsFolder, collections: CurrentProfile.Collections);
+                TV_clips_collections.ItemsSource = CurrentProfile.Collections;
+                TV_clips.ItemsSource = Items;
             }
+            CB_Profile.SelectedItem = CurrentProfile.ProfileName;
+            CB_Profile.ItemsSource = ProfileManager.LoadAllProfiles();
         }
 
         private void Window_DragEnter(object sender, DragEventArgs e) {
@@ -608,17 +597,23 @@ namespace ClipsOrganizer {
         private void Window_Drop(object sender, DragEventArgs e) {
             LoadNewVideoClip(new Uri((e.Data.GetData(DataFormats.FileDrop) as string[]).First()));
         }
+
         private void CB_Profile_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             if (!this.IsLoaded) return;
             string SelectedProfile = CB_Profile.SelectedItem as string;
-            if (!File.Exists(ProfilePath + $"/{SelectedProfile}.json")) Log.Update($"Не удалось найти {SelectedProfile} в папке с профилями {ProfilePath}");
+            if (!File.Exists(ProfileManager.ProfilePath + $"/{SelectedProfile}.json")) Log.Update($"Не удалось найти {SelectedProfile} в папке с профилями {ProfileManager.ProfilePath}");
             else {
                 FileSerializer.WriteAndCreateBackupFile(CurrentProfile, CurrentProfile.ProfilePath);
-                CurrentProfile = FileSerializer.ReadFile<Profile>(ProfilePath + $"/{SelectedProfile}.json");
+                CurrentProfile = FileSerializer.ReadFile<Profile>(ProfileManager.ProfilePath + $"/{SelectedProfile}.json");
                 Items = itemProvider.GetItemsFromFolder(CurrentProfile.ClipsFolder, collections: CurrentProfile.Collections);
                 TV_clips_collections.ItemsSource = CurrentProfile.Collections;
                 TV_clips.ItemsSource = Items;
             }
+        }
+
+        private void TB_log_MouseDown(object sender, MouseButtonEventArgs e) {
+            Window window = new LogWindow();
+            window.Show();
         }
     }
 }

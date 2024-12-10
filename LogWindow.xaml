@@ -1,0 +1,16 @@
+﻿<Window x:Class="ClipsOrganizer.LogWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:ClipsOrganizer"
+        mc:Ignorable="d"
+        MinHeight="130" MinWidth="505"
+        Title="Окно лога" Height="485" Width="505">
+    <Grid>
+        <StackPanel>
+            <TextBox IsReadOnly="True" Name="TB_log_window" d:Text="lkha;dghsjkashdkaweiuawgbefuihgabweguhaweoguhsadklfghjasdkjlfhsaeilufhzseklfhaseklfhbaskleufghaskluehfgklasuehfkluasehfuklsaehfkulashefkuashekulfhasefukshaefkluahsefkluasheufklashefklasehukflasehufklaeshuklsefuhkleuahskleuhkslfaesuhlf" Height="380" TextWrapping="Wrap" VerticalAlignment="Top" Margin="10 10 10 0"  />
+            <Button Margin="0 10 0 0" Name="Btn_Exit" Click="Btn_Exit_Click" Content="Выход" Width="130"/>
+        </StackPanel>
+    </Grid>
+</Window>

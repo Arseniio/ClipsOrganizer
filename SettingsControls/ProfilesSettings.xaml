@@ -1,0 +1,58 @@
+﻿<UserControl x:Class="ClipsOrganizer.SettingsControls.ProfilesSettings"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ClipsOrganizer.SettingsControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="29*"/>
+            <ColumnDefinition Width="11*"/>
+        </Grid.ColumnDefinitions>
+        <ListBox Name="LB_Profiles" SelectionChanged="LB_Profiles_SelectionChanged" Grid.Column="1"/>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition Height="35"/>
+            </Grid.RowDefinitions>
+            <StackPanel Name="SP_ProfileData">
+                <StackPanel.Resources>
+                    <Style TargetType="TextBlock" >
+                        <Setter Property="MinWidth" Value="150px"/>
+                    </Style>
+                </StackPanel.Resources>
+                <StackPanel Orientation="Horizontal" >
+                    <TextBlock Text="Название профиля:" VerticalAlignment="Center" />
+                    <TextBox Text="{Binding ProfileName}" Margin="10 0 0 0" Width="180" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 10 0 0">
+                    <TextBlock Text="Путь до папки:"  VerticalAlignment="Center" />
+                    <TextBox Text="{Binding ClipsFolder}" Width="180" Margin="10 0 0 0" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 10 0 0">
+                    <TextBlock Text="Количество коллекций:"  VerticalAlignment="Center" />
+                    <TextBox Text="{Binding Collections.Count,Mode=OneTime}" IsReadOnly="True" IsReadOnlyCaretVisible="False" Width="180" Margin="10 0 0 0" />
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 10 0 0">
+                    <TextBlock Text="Количество файлов:"  VerticalAlignment="Center" />
+                    <TextBox Text="{Binding TotalFileCount,Mode=OneTime}" IsReadOnly="True" IsReadOnlyCaretVisible="False" Width="180" Margin="10 0 0 0" />
+                </StackPanel>
+            </StackPanel>
+
+            <UniformGrid Grid.Row="1" Rows="1">
+                <UniformGrid.Resources>
+                    <Style TargetType="Button">
+                        <Setter Property="Margin" Value="5 2 5 2" />
+                        <Setter Property="Width" Value="125"/>
+                    </Style>
+                </UniformGrid.Resources>
+                <Button Content="Добавить профиль" Name="Btn_AddProfile" Click="Btn_AddProfile_Click"/>
+                <Button Content="Удалить профиль" Name="Btn_DeleteProfile" Click="Btn_DeleteProfile_Click"/>
+                <Button Content="Сохранить профиль" Name="Btn_SaveProfile" Click="Btn_SaveProfile_Click"/>
+            </UniformGrid>
+
+        </Grid>
+    </Grid>
+</UserControl>

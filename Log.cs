@@ -13,7 +13,7 @@ namespace ClipsOrganizer {
         public static TextBlock TB_log { get; set; }
         private static DoubleAnimation _fadeOutAnimation;
         private static DispatcherTimer _resetTimer;
-
+        public static StringBuilder AllLogInfo = new StringBuilder();
         public static void Update(string text) {
             if (TB_log != null) {
                 TB_log.Text = text;
@@ -40,6 +40,7 @@ namespace ClipsOrganizer {
                         TB_log.BeginAnimation(TextBlock.OpacityProperty, _fadeOutAnimation);
                     };
                 }
+                AllLogInfo.AppendLine(text);
                 _resetTimer.Start();
             }
         }
