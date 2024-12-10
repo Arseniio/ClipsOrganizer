@@ -83,9 +83,6 @@ namespace ClipsOrganizer {
                 CurrentProfile = FileSerializer.ReadFile<Profile>($"./Profiles/{ProfileManager.LoadAllProfiles().First()}.json");
             }
             itemProvider = new ItemProvider();
-            //settings = new Settings.Settings(clipsPath, ffmpegPath);
-
-            //settings = FileSerializer.ReadFile();
 
             settings.ffmpegInit(); //maybe change it to init when cut was being made
 
@@ -132,7 +129,7 @@ namespace ClipsOrganizer {
             #endregion 
             #region AutoSave timer init
             AutoSaveTimer = new DispatcherTimer();
-            AutoSaveTimer.Interval = TimeSpan.FromSeconds(3);
+            AutoSaveTimer.Interval = TimeSpan.FromMinutes(3);
             AutoSaveTimer.Tick += AutoSave;
             AutoSaveTimer.Start();
             #endregion

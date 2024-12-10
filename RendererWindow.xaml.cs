@@ -27,6 +27,14 @@ namespace ClipsOrganizer {
         public VideoCodec LastUsedCodec { get; set; }
         public string LastUsedQuality { get; set; }
         public string LastUsedEncoderPath { get; set; }
+        private int progressValue;
+        public int ProgressValue {
+            get => progressValue;
+            set {
+                progressValue = value;
+                Btn_Crop.GetBindingExpression(MaterialDesignThemes.Wpf.ButtonProgressAssist.ValueProperty)?.UpdateTarget();
+            }
+        }
 
         private string getNextFileName(string FilePath) {
             int lastFileSaved = 0;
@@ -47,7 +55,7 @@ namespace ClipsOrganizer {
             this.settings = settings;
             this.VideoPath = VideoPath;
             CB_codec.ItemsSource = Enum.GetValues(typeof(VideoCodec)).Cast<VideoCodec>();
-            CB_codec.SelectedIndex = 0; //change later
+            CB_codec.SelectedIndex = 0; //TODO: change later
             TB_outputPath.Text = getNextFileName(Path.GetDirectoryName(VideoPath.LocalPath));
             if (Crop_From != null || Crop_To != null) {
                 TB_Crop_From.Text = Crop_From.Value.ToString(@"hh\:mm\:ss\.fff") ?? TimeSpan.Zero.ToString(@"hh\:mm\:ss\.fff");
@@ -57,14 +65,11 @@ namespace ClipsOrganizer {
                 CB_codec.SelectedItem = settings.LastUsedCodec;
                 TB_Quality.Text = settings.LastUsedQuality;
             }
-
+            CB_OpenFolderAfterEncoding.IsChecked = settings.OpenFolderAfterEncoding;
             if (Owner != null) {
                 (Owner as MainWindow).SliderSelectionChanged += RendererWindow_SliderSelectionChanged;
             }
-
-            //timer = new DispatcherTimer();
-            //timer.Interval = TimeSpan.FromMilliseconds(400);
-            //timer.Tick += FFmpegchecker;
+            Btn_Crop.DataContext = this;
         }
 
         public void RendererWindow_SliderSelectionChanged(TimeSpan Start, TimeSpan? End) {
@@ -73,16 +78,6 @@ namespace ClipsOrganizer {
 
         }
 
-        ////TODO: rewrite with regex parsing from output info from ffmpeg executable
-        //private void FFmpegchecker(object sender, System.EventArgs e) {
-        //    if (this.settings.ffmpegManager.IsProcessRunning) {
-        //        tb_status.Text = "В процессе обработки видео";
-        //    }
-        //    else {
-        //        tb_status.Text = "Закончено";
-        //        timer.Stop();
-        //    }
-        //}
 
         private bool _isDragging = false;
         private Point _lastMousePosition;
@@ -140,10 +135,12 @@ namespace ClipsOrganizer {
             if (selectedCodec != VideoCodec.Unknown && int.TryParse(TB_Quality.Text, out int bitrate)) {
                 settings.LastUsedCodec = selectedCodec;
                 settings.LastUsedQuality = bitrate.ToString();
+                settings.OpenFolderAfterEncoding = CB_OpenFolderAfterEncoding.IsChecked.Value;
             }
         }
 
         private void Btn_Crop_Click(object sender, RoutedEventArgs e) {
+            if (settings.ffmpegManager.IsProcessRunning) return;
             VideoCodec selectedCodec = (VideoCodec)CB_codec.SelectedItem;
             if (CB_codec.SelectedItem != null && selectedCodec != VideoCodec.Unknown && !string.IsNullOrEmpty(TB_Quality.Text) && int.TryParse(TB_Quality.Text, out int bitrate)) {
                 if (TimeSpan.TryParse(TB_Crop_From.Text, out TimeSpan startTime) && TimeSpan.TryParse(TB_Crop_To.Text, out TimeSpan endTime)) {
@@ -157,21 +154,26 @@ namespace ClipsOrganizer {
                 else {
                     settings.ffmpegManager.StartEncodingAsync(VideoPath.LocalPath, TB_outputPath.Text, selectedCodec, bitrate);
                     settings.ffmpegManager.OnEncodeProgressChanged += UpdateProgressBar;
-
                 }
             }
             else {
                 MessageBox.Show("Пожалуйста, убедитесь, что выбраны параметры кодека и указано значение качества.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
-        }
+            if (CB_OpenFolderAfterEncoding.IsChecked == true) {
 
+            }
+        }
         private void UpdateProgressBar(int Precent) {
-            //TODO: пофиксить это, проблема в потоках и доступе что нельзя инвоукать этот элемент из ffmpegmanager
             Dispatcher.Invoke(() =>
             {
-            PB_RenderProgress.Value = Precent;
-                tb_status.Text = string.Format("{0}%", Precent.ToString());
+                ProgressValue = Precent;
             });
+            if (Precent == 100) {
+                Dispatcher.Invoke(() =>
+                {
+                    Process.Start("explorer.exe", $"/select,\"{TB_outputPath.Text}\"");
+                });
+            }
         }
 
         private void TB_Crop_TextChanged(object sender, TextChangedEventArgs e) {
@@ -182,5 +184,7 @@ namespace ClipsOrganizer {
                 (Owner as MainWindow).SL_duration.SelectionEnd = endTime.TotalSeconds;
             }
         }
+
+
     }
 }

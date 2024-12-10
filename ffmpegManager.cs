@@ -112,8 +112,6 @@ namespace ClipsOrganizer {
                     break;
                 default:
                     throw new NotImplementedException(nameof(codec));
-                    break;
-
             }
 
 

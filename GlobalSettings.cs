@@ -25,8 +25,7 @@ namespace ClipsOrganizer.Settings {
         public VideoCodec LastUsedCodec { get; set; }
         public string LastUsedQuality { get; set; }
         public string LastUsedEncoderPath { get; set; }
-
-        //public List<Collection> collections { get; set; }
+        public bool OpenFolderAfterEncoding { get; set; }
 
         [JsonIgnore]
         public ffmpegManager ffmpegManager { get; set; }
@@ -51,7 +50,7 @@ namespace ClipsOrganizer.Settings {
             this.LastUsedEncoderPath = ChangedSettings.LastUsedEncoderPath;
             this.LastUsedQuality = ChangedSettings.LastUsedQuality;
         }
-        
+
     }
 
 }

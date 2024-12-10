@@ -14,6 +14,8 @@ using System.Windows.Shapes;
 using ClipsOrganizer.Collections;
 using System.Text.RegularExpressions;
 using System.Drawing;
+using MaterialDesignColors;
+using MaterialDesignThemes.Wpf;
 using Gma.System.MouseKeyHook;
 
 namespace ClipsOrganizer {
@@ -79,7 +81,6 @@ namespace ClipsOrganizer {
         // Yeah that code sucks
         private bool HasModifierKey = false;
         private bool HasMainKey = false;
-        private int KeyCount;
         private List<Key> PreviousKey = new List<Key>();
 
         private void TB_keybind_PreviewKeyDown(object sender, KeyEventArgs e) {
@@ -88,7 +89,7 @@ namespace ClipsOrganizer {
                 HasMainKey = false;
                 HasModifierKey = false;
             }
-            Log.Update($"mod: {HasModifierKey.ToString()} main: {HasMainKey.ToString()} keys: {PreviousKey.Count}");
+            Log.Update($"mod: {HasModifierKey} main: {HasMainKey} keys: {PreviousKey.Count}");
             var modifiers = GetModifiers();
             Key? key = e.Key != Key.System ? e.Key : e.SystemKey;
             HasModifierKey = modifiers.Length > 0;

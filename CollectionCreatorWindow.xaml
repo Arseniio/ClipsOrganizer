@@ -3,11 +3,12 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:local="clr-namespace:ClipsOrganizer"
         mc:Ignorable="d"
-        Title="Создание/редактирование коллекции" Height="300" Width="390"
-        FontSize="22px"
-        >
+        Title="Создание/редактирование коллекции" Height="300" Width="411"
+        ResizeMode="NoResize"
+        FontSize="20px">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
@@ -25,7 +26,9 @@
         <StackPanel Orientation="Horizontal" Grid.Row="1">
             <TextBlock Text="Цвет коллекции(hex):" VerticalAlignment="Center" FontSize="18" Margin="0 0 10 0"/>
             <TextBox Name="TB_color" Width="120" Margin="0 0 5 0" Height="32px" Text="{Binding Color}"/>
-            <Button Width="34" Height="35" Name="Btn_ColorPicker" Click="Btn_ColorPicker_Click"/>
+            <Button Width="55" Height="30" Name="Btn_ColorPicker" Click="Btn_ColorPicker_Click">
+                <materialDesign:PackIcon Kind="Palette"/>
+            </Button>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="2">
             <TextBlock Text="Горячая клавиша:" VerticalAlignment="Center" FontSize="18" Margin="0 0 10 0"/>
