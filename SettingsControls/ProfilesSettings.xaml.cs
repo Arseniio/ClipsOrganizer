@@ -60,6 +60,10 @@ namespace ClipsOrganizer.SettingsControls {
                 File.Delete(OldProfile.ProfileBkpPath);
             }
             //ProfileValidation
+            if (!Directory.Exists(currentProfile.ClipsFolder)) {
+                MessageBox.Show("Не найдена рабочая папка для профиля");
+                return;
+            }
             FileSerializer.WriteAndCreateBackupFile(currentProfile, currentProfile.ProfilePath);
             LB_Profiles.ItemsSource = ProfileManager.LoadAllProfiles();
         }

@@ -33,9 +33,6 @@ namespace ClipsOrganizer.Profiles {
             }
         }
         public List<Collection> Collections { get; set; } = new List<Collection>();
-        //public string GetCurrentProfilePath() {
-        //    return $"./Profiles/{this.ProfileName}.json";
-        //}
     }
     public static class ProfileManager {
         public static string ProfilePath = "./Profiles/";

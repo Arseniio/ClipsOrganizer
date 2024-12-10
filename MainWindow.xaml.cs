@@ -34,7 +34,7 @@ namespace ClipsOrganizer {
     /// Логика взаимодействия для MainWindow.xaml
     /// </summary>
     public partial class MainWindow : Window {
-        DispatcherTimer timer;
+        DispatcherTimer SliderTimer, AutoSaveTimer;
         ItemProvider itemProvider = null;
         Settings.GlobalSettings settings = null;
         ContextMenu CT_mark = null;
@@ -62,11 +62,11 @@ namespace ClipsOrganizer {
             string ffmpegPath;
             string Profilename;
             if (!Directory.Exists("./Profiles")) {
-                Window window = new WelcomeWindow();
+                WelcomeWindow window = new WelcomeWindow();
                 if (window.ShowDialog() == true) {
-                    clipsPath = (window as WelcomeWindow).ClipsPath;
-                    ffmpegPath = (window as WelcomeWindow).ffmpegPath;
-                    Profilename = (window as WelcomeWindow).ProfileName;
+                    clipsPath = window.ClipsPath;
+                    ffmpegPath = window.ffmpegPath;
+                    Profilename = window.ProfileName;
                     Directory.CreateDirectory("./Profiles");
                     CurrentProfile = new Profile() { ClipsFolder = clipsPath, ProfileName = Profilename };
                     FileSerializer.WriteAndCreateBackupFile(CurrentProfile, CurrentProfile.ProfilePath);
@@ -125,11 +125,22 @@ namespace ClipsOrganizer {
 
             TV_clips.ItemsSource = Items;
 
-            #region slider timer init
-            timer = new DispatcherTimer();
-            timer.Interval = TimeSpan.FromMilliseconds(100);
-            timer.Tick += VideoDurationUpdate;
+            #region Slider timer init
+            SliderTimer = new DispatcherTimer();
+            SliderTimer.Interval = TimeSpan.FromMilliseconds(100);
+            SliderTimer.Tick += VideoDurationUpdate;
+            #endregion 
+            #region AutoSave timer init
+            AutoSaveTimer = new DispatcherTimer();
+            AutoSaveTimer.Interval = TimeSpan.FromSeconds(3);
+            AutoSaveTimer.Tick += AutoSave;
+            AutoSaveTimer.Start();
             #endregion
+        }
+
+        private void AutoSave(object sender, EventArgs e) {
+            Log.Update($"Автосохранение профиля {CurrentProfile.ProfileName} выполнено в {DateTime.Now}");
+            FileSerializer.WriteAndCreateBackupFile(CurrentProfile, CurrentProfile.ProfilePath);
         }
 
         private void LoadGlobalKeyboardHook() {
@@ -350,7 +361,7 @@ namespace ClipsOrganizer {
         private void ME_main_MediaOpened(object sender, RoutedEventArgs e) {
             if (ME_main.NaturalDuration.HasTimeSpan) {
                 SL_duration.Maximum = ME_main.NaturalDuration.TimeSpan.TotalSeconds;
-                timer.Start();
+                SliderTimer.Start();
             }
         }
 
