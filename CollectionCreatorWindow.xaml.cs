@@ -31,12 +31,11 @@ namespace ClipsOrganizer {
             if (collection != null) Btn_createCollection.Content = "Сохранить";
             DataContext = Collection;
         }
-
         private void Btn_ColorPicker_Click(object sender, RoutedEventArgs e) {
             System.Windows.Forms.ColorDialog colorDialog = new System.Windows.Forms.ColorDialog();
             if (colorDialog.ShowDialog() == System.Windows.Forms.DialogResult.OK) {
                 var color = colorDialog.Color;
-                double luminance = 0.2126 * color.R + 0.7152 * color.G + 0.0722 * color.B;
+                double luminance = 0.2126 * color.R + 0.7152 * color.G + 0.0722 * color.B; //??
                 if (luminance < 50) {
                     var result = MessageBox.Show("Выбранный цвет слишком тёмный. Вы уверены, что хотите использовать этот цвет?", "Предупреждение", MessageBoxButton.YesNo);
                     if (result == MessageBoxResult.Yes) {

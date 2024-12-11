@@ -9,31 +9,31 @@
         Title="Создание/редактирование коллекции" Height="300" Width="411"
         ResizeMode="NoResize"
         FontSize="20px">
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+                <RowDefinition/>
+            </Grid.RowDefinitions>
+            <Grid.ColumnDefinitions>
 
-        </Grid.ColumnDefinitions>
-        <StackPanel Orientation="Horizontal">
-            <TextBlock Text="Название коллекции:" VerticalAlignment="Center" FontSize="18" Margin="0 0 10 0"/>
-            <TextBox Name="TB_CollName" Width="120" Height="32px" Text="{Binding CollectionTag}"/>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Grid.Row="1">
-            <TextBlock Text="Цвет коллекции(hex):" VerticalAlignment="Center" FontSize="18" Margin="0 0 10 0"/>
-            <TextBox Name="TB_color" Width="120" Margin="0 0 5 0" Height="32px" Text="{Binding Color}"/>
-            <Button Width="55" Height="30" Name="Btn_ColorPicker" Click="Btn_ColorPicker_Click">
-                <materialDesign:PackIcon Kind="Palette"/>
-            </Button>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Grid.Row="2">
-            <TextBlock Text="Горячая клавиша:" VerticalAlignment="Center" FontSize="18" Margin="0 0 10 0"/>
-            <TextBox Name="TB_keybind" d:Text="Ctrl + Shift + Alt + F5" KeyUp="TB_keybind_KeyUp" KeyDown="TB_keybind_KeyDown" PreviewKeyDown="TB_keybind_PreviewKeyDown" Width="218" Margin="0 0 5 0" Height="32px" Text="{Binding KeyBinding}"/>
-        </StackPanel>
-        <Button Grid.Row="3" Width="120" Height="32" Content="Создать" Name="Btn_createCollection" Click="Btn_createCollection_Click"/>
-    </Grid>
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="Название коллекции:" VerticalAlignment="Center" FontSize="18" Margin="0 0 10 0"/>
+                <TextBox Name="TB_CollName" Width="120" Height="32px" Text="{Binding CollectionTag}"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Grid.Row="1">
+                <TextBlock Text="Цвет коллекции(hex):" VerticalAlignment="Center" FontSize="18" Margin="0 0 10 0"/>
+                <TextBox Name="TB_color" Width="120" Margin="0 0 5 0" Height="32px" Text="{Binding Color}"/>
+                <Button Width="55" Height="30" Name="Btn_ColorPicker" Click="Btn_ColorPicker_Click">
+                    <materialDesign:PackIcon Kind="Palette"/>
+                </Button>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Grid.Row="2">
+                <TextBlock Text="Горячая клавиша:" VerticalAlignment="Center" FontSize="18" Margin="0 0 10 0"/>
+                <TextBox Name="TB_keybind" d:Text="Ctrl + Shift + Alt + F5" KeyUp="TB_keybind_KeyUp" KeyDown="TB_keybind_KeyDown" PreviewKeyDown="TB_keybind_PreviewKeyDown" Width="218" Margin="0 0 5 0" Height="32px" Text="{Binding KeyBinding}"/>
+            </StackPanel>
+            <Button Grid.Row="3" Width="120" Height="32" Content="Создать" Name="Btn_createCollection" Click="Btn_createCollection_Click"/>
+        </Grid>
 </Window>

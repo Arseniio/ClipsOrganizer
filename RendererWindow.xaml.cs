@@ -48,7 +48,6 @@ namespace ClipsOrganizer {
             lastFileSaved++;
             return System.IO.Path.Combine(System.IO.Path.GetDirectoryName(VideoPath.LocalPath), string.Format("exported_{0}.mp4", lastFileSaved));
         }
-        DispatcherTimer timer;
 
         public RendererWindow(Settings.GlobalSettings settings, Uri VideoPath, TimeSpan? Crop_From = null, TimeSpan? Crop_To = null) {
             InitializeComponent();
@@ -70,6 +69,14 @@ namespace ClipsOrganizer {
                 (Owner as MainWindow).SliderSelectionChanged += RendererWindow_SliderSelectionChanged;
             }
             Btn_Crop.DataContext = this;
+            UpdateVideoSize();
+        }
+
+        private double CalculateVideoSize(double? bitrate, TimeSpan Duration) {
+            if (bitrate == null) return 0;
+            double fileSizeBytes = (bitrate.Value * 1000 * Duration.TotalSeconds) / 8;
+            double filesize = fileSizeBytes / (1024 * 1024);
+            return filesize < 0 ? 0 : filesize;
         }
 
         public void RendererWindow_SliderSelectionChanged(TimeSpan Start, TimeSpan? End) {
@@ -100,12 +107,18 @@ namespace ClipsOrganizer {
                     if (_lastTB != null)
                         UpdateTimestamp(deltaY);
                     _lastMousePosition = currentPosition;
+                    UpdateVideoSize();
                 }
             }
         }
 
         private void TimestampTextBox_PreviewMouseUp(object sender, MouseButtonEventArgs e) {
             _isDragging = false;
+        }
+
+        private void UpdateVideoSize() {
+            double.TryParse(TB_Quality.Text, out double bitrate);
+            TB_filesize.Text = "~"+ CalculateVideoSize(bitrate, TimeSpan.Parse(TB_Crop_To.Text) - TimeSpan.Parse(TB_Crop_From.Text)).ToString("F2") + " MB";
         }
 
         private void UpdateTimestamp(double deltaY) {
@@ -159,9 +172,6 @@ namespace ClipsOrganizer {
             else {
                 MessageBox.Show("Пожалуйста, убедитесь, что выбраны параметры кодека и указано значение качества.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
             }
-            if (CB_OpenFolderAfterEncoding.IsChecked == true) {
-
-            }
         }
         private void UpdateProgressBar(int Precent) {
             Dispatcher.Invoke(() =>
@@ -171,7 +181,8 @@ namespace ClipsOrganizer {
             if (Precent == 100) {
                 Dispatcher.Invoke(() =>
                 {
-                    Process.Start("explorer.exe", $"/select,\"{TB_outputPath.Text}\"");
+                    if (CB_OpenFolderAfterEncoding.IsChecked == true)
+                        Process.Start("explorer.exe", $"/select,\"{TB_outputPath.Text}\"");
                 });
             }
         }
@@ -185,6 +196,8 @@ namespace ClipsOrganizer {
             }
         }
 
-
+        private void TB_Quality_TextChanged(object sender, TextChangedEventArgs e) {
+            UpdateVideoSize();
+        }
     }
 }

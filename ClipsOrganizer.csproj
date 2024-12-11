@@ -98,6 +98,13 @@
     <Compile Include="CollectionDeletionWindow.xaml.cs">
       <DependentUpon>CollectionDeletionWindow.xaml</DependentUpon>
     </Compile>
+    <Compile Include="ExportControls\ExportGeneralControl.xaml.cs">
+      <DependentUpon>ExportGeneralControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ExportControls\ExportLocalControl.xaml.cs">
+      <DependentUpon>ExportLocalControl.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="ExportSettings.cs" />
     <Compile Include="ExportWindow.xaml.cs">
       <DependentUpon>ExportWindow.xaml</DependentUpon>
     </Compile>
@@ -131,6 +138,14 @@
       <Generator>MSBuild:Compile</Generator>
     </Page>
     <Page Include="CollectionDeletionWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ExportControls\ExportGeneralControl.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+    <Page Include="ExportControls\ExportLocalControl.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -228,6 +243,7 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="packages\MaterialDesignThemes.5.1.0\build\MaterialDesignThemes.targets" Condition="Exists('packages\MaterialDesignThemes.5.1.0\build\MaterialDesignThemes.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

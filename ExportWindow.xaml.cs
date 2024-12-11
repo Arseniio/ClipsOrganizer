@@ -1,6 +1,8 @@
-﻿using ClipsOrganizer.Profiles;
+﻿using ClipsOrganizer.ExportControls;
+using ClipsOrganizer.Profiles;
 using ClipsOrganizer.Properties;
 using ClipsOrganizer.Settings;
+using ClipsOrganizer.SettingsControls;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -30,31 +32,45 @@ namespace ClipsOrganizer {
             this.profile = profile;
         }
 
-        public bool bresult = false;
-        private void Btn_export_Click(object sender, RoutedEventArgs e) {
-            string ExportFolderPrefix = "./Exported/";
-            Log.Text = "";
-            var result = MessageBox.Show("Хотите ли вы сохранить пути для перемещённых файлов в коллекциях?\n(Не позволит далее работать с ними в программе (Относительные пути файлов))", "Подтверждение", MessageBoxButton.YesNo);
-            if (result == MessageBoxResult.Yes) {
-                bresult = true;
-            }
-            foreach (var collection in profile.Collections) {
-                string ExportcollectionPath = ExportFolderPrefix + collection.CollectionTag;
-                Directory.CreateDirectory(ExportcollectionPath);
-                ExportcollectionPath += "/"; //ClipsOrganizer/bin/Debug/Exported/Collection/
-                foreach (var item in collection) {
-                    try {
-                        File.Move(item.Path, ExportcollectionPath + item.Name);
-                        if (bresult)
-                            item.Path = ExportcollectionPath + item.Name;
-                        Log.Text += "\nУспешно перемещён " + ExportcollectionPath + item.Name;
-                    }
-                    catch {
-                        Log.Text += "\nНевозможно переместить " + ExportcollectionPath + item.Name;
-                    }
+        //public bool bresult = false;
+        //private void Btn_export_Click(object sender, RoutedEventArgs e) {
+        //    string ExportFolderPrefix = "./Exported/";
+        //    Log.Text = "";
+        //    var result = MessageBox.Show("Хотите ли вы сохранить пути для перемещённых файлов в коллекциях?\n(Не позволит далее работать с ними в программе (Относительные пути файлов))", "Подтверждение", MessageBoxButton.YesNo);
+        //    if (result == MessageBoxResult.Yes) {
+        //        bresult = true;
+        //    }
+        //    foreach (var collection in profile.Collections) {
+        //        string ExportcollectionPath = ExportFolderPrefix + collection.CollectionTag;
+        //        Directory.CreateDirectory(ExportcollectionPath);
+        //        ExportcollectionPath += "/"; //ClipsOrganizer/bin/Debug/Exported/Collection/
+        //        foreach (var item in collection) {
+        //            try {
+        //                File.Move(item.Path, ExportcollectionPath + item.Name);
+        //                if (bresult)
+        //                    item.Path = ExportcollectionPath + item.Name;
+        //                Log.Text += "\nУспешно перемещён " + ExportcollectionPath + item.Name;
+        //            }
+        //            catch {
+        //                Log.Text += "\nНевозможно переместить " + ExportcollectionPath + item.Name;
+        //            }
+        //        }
+        //    }
+        //    this.Btn_export.IsEnabled = false;
+        //}
+
+        private void LB_Menu_SelectionChanged(object sender, SelectionChangedEventArgs e) {
+            if (LB_Menu.SelectedItem is ListBoxItem selectedItem) {
+                string tag = selectedItem.Tag as string;
+                switch (tag) {
+                    case "ExportLocal":
+                        CC_Export.Content = new ExportLocalControl();
+                        break;
+                    case "GeneralSettings":
+                        CC_Export.Content = new ProfilesSettings();
+                        break;
                 }
             }
-            this.Btn_export.IsEnabled = false;
         }
     }
 }
