@@ -67,7 +67,7 @@ namespace ClipsOrganizer {
                         CC_Export.Content = new ExportLocalControl();
                         break;
                     case "GeneralSettings":
-                        CC_Export.Content = new ProfilesSettings();
+                        CC_Export.Content = new ExportGeneralControl();
                         break;
                 }
             }

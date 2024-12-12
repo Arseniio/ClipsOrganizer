@@ -22,7 +22,6 @@ namespace ClipsOrganizer {
     /// Логика взаимодействия для RendererWindow.xaml
     /// </summary>
     public partial class RendererWindow : Window {
-        Settings.GlobalSettings settings;
         Uri VideoPath;
         public VideoCodec LastUsedCodec { get; set; }
         public string LastUsedQuality { get; set; }
@@ -49,9 +48,9 @@ namespace ClipsOrganizer {
             return System.IO.Path.Combine(System.IO.Path.GetDirectoryName(VideoPath.LocalPath), string.Format("exported_{0}.mp4", lastFileSaved));
         }
 
-        public RendererWindow(Settings.GlobalSettings settings, Uri VideoPath, TimeSpan? Crop_From = null, TimeSpan? Crop_To = null) {
+        public RendererWindow(Uri VideoPath, TimeSpan? Crop_From = null, TimeSpan? Crop_To = null) {
             InitializeComponent();
-            this.settings = settings;
+            ;
             this.VideoPath = VideoPath;
             CB_codec.ItemsSource = Enum.GetValues(typeof(VideoCodec)).Cast<VideoCodec>();
             CB_codec.SelectedIndex = 0; //TODO: change later
@@ -60,11 +59,11 @@ namespace ClipsOrganizer {
                 TB_Crop_From.Text = Crop_From.Value.ToString(@"hh\:mm\:ss\.fff") ?? TimeSpan.Zero.ToString(@"hh\:mm\:ss\.fff");
                 TB_Crop_To.Text = Crop_To.Value.ToString(@"hh\:mm\:ss\.fff") ?? TimeSpan.Zero.ToString(@"hh\:mm\:ss\.fff");
             }
-            if (settings.LastUsedCodec != VideoCodec.Unknown && settings.LastUsedQuality != null) {
-                CB_codec.SelectedItem = settings.LastUsedCodec;
-                TB_Quality.Text = settings.LastUsedQuality;
+            if (Settings.GlobalSettings.Instance.LastUsedCodec != VideoCodec.Unknown && Settings.GlobalSettings.Instance.LastUsedQuality != null) {
+                CB_codec.SelectedItem = Settings.GlobalSettings.Instance.LastUsedCodec;
+                TB_Quality.Text = Settings.GlobalSettings.Instance.LastUsedQuality;
             }
-            CB_OpenFolderAfterEncoding.IsChecked = settings.OpenFolderAfterEncoding;
+            CB_OpenFolderAfterEncoding.IsChecked = Settings.GlobalSettings.Instance.OpenFolderAfterEncoding;
             if (Owner != null) {
                 (Owner as MainWindow).SliderSelectionChanged += RendererWindow_SliderSelectionChanged;
             }
@@ -146,14 +145,14 @@ namespace ClipsOrganizer {
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
             VideoCodec selectedCodec = (VideoCodec)CB_codec.SelectedItem;
             if (selectedCodec != VideoCodec.Unknown && int.TryParse(TB_Quality.Text, out int bitrate)) {
-                settings.LastUsedCodec = selectedCodec;
-                settings.LastUsedQuality = bitrate.ToString();
-                settings.OpenFolderAfterEncoding = CB_OpenFolderAfterEncoding.IsChecked.Value;
+                Settings.GlobalSettings.Instance.LastUsedCodec = selectedCodec;
+                Settings.GlobalSettings.Instance.LastUsedQuality = bitrate.ToString();
+                Settings.GlobalSettings.Instance.OpenFolderAfterEncoding = CB_OpenFolderAfterEncoding.IsChecked.Value;
             }
         }
 
         private void Btn_Crop_Click(object sender, RoutedEventArgs e) {
-            if (settings.ffmpegManager.IsProcessRunning) return;
+            if (Settings.GlobalSettings.Instance.ffmpegManager.IsProcessRunning) return;
             VideoCodec selectedCodec = (VideoCodec)CB_codec.SelectedItem;
             if (CB_codec.SelectedItem != null && selectedCodec != VideoCodec.Unknown && !string.IsNullOrEmpty(TB_Quality.Text) && int.TryParse(TB_Quality.Text, out int bitrate)) {
                 if (TimeSpan.TryParse(TB_Crop_From.Text, out TimeSpan startTime) && TimeSpan.TryParse(TB_Crop_To.Text, out TimeSpan endTime)) {
@@ -161,12 +160,12 @@ namespace ClipsOrganizer {
                         MessageBox.Show("Невозможно обрезать клип в обратную сторону.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
 
                     }
-                    settings.ffmpegManager.StartEncodingAsync(VideoPath.LocalPath, TB_outputPath.Text, selectedCodec, bitrate, startTime, endTime);
-                    settings.ffmpegManager.OnEncodeProgressChanged += UpdateProgressBar;
+                    Settings.GlobalSettings.Instance.ffmpegManager.StartEncodingAsync(VideoPath.LocalPath, TB_outputPath.Text, selectedCodec, bitrate, startTime, endTime);
+                    Settings.GlobalSettings.Instance.ffmpegManager.OnEncodeProgressChanged += UpdateProgressBar;
                 }
                 else {
-                    settings.ffmpegManager.StartEncodingAsync(VideoPath.LocalPath, TB_outputPath.Text, selectedCodec, bitrate);
-                    settings.ffmpegManager.OnEncodeProgressChanged += UpdateProgressBar;
+                    Settings.GlobalSettings.Instance.ffmpegManager.StartEncodingAsync(VideoPath.LocalPath, TB_outputPath.Text, selectedCodec, bitrate);
+                    Settings.GlobalSettings.Instance.ffmpegManager.OnEncodeProgressChanged += UpdateProgressBar;
                 }
             }
             else {

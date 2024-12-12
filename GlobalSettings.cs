@@ -23,16 +23,31 @@ namespace ClipsOrganizer.Settings {
         public string FFmpegpath { get; set; }
         public string LastSelectedProfile { get; set; }
         public VideoCodec LastUsedCodec { get; set; }
-        public string LastUsedQuality { get; set; }
+        public string LastUsedQuality { get; set; } 
         public string LastUsedEncoderPath { get; set; }
         public bool OpenFolderAfterEncoding { get; set; }
-        public static ExportSettings ExportSettings { get; set; }
-        //public bool UseDefaultExportSettings { get; set; }
+        public ExportSettings ExportSettings { get; set; } = new ExportSettings();
         [JsonIgnore]
         public ffmpegManager ffmpegManager { get; set; }
+        private static GlobalSettings _instance;
+        public static GlobalSettings Instance {
+            get {
+                if (_instance == null) {
+                    _instance = new GlobalSettings();
+                }
+                return _instance;
+            }
+            set {
+                _instance = value; //yeah that's a singletron but that just easier...
+            }
+        }
 
-        public GlobalSettings(string ClipsFolder, string ffmpegpath, string settingsPath = "./settings.json") {
-            this.FFmpegpath = ffmpegpath;
+        public static void Initialize(string ffmpegPath) {
+            var instance = Instance;
+            instance.FFmpegpath = ffmpegPath;
+        }
+
+        private GlobalSettings() {
         }
 
         public void ffmpegInit() {

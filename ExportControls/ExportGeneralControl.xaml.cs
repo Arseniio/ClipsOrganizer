@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ClipsOrganizer.Settings;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,6 +21,11 @@ namespace ClipsOrganizer.ExportControls {
     public partial class ExportGeneralControl : UserControl {
         public ExportGeneralControl() {
             InitializeComponent();
+            DataContext = GlobalSettings.Instance.ExportSettings;
+        }
+
+        private void TB_TargetFolder_PreviewTextInput(object sender, TextCompositionEventArgs e) {
+            TB_FolderExists.Visibility = InputValidator.IsValidFolderPath(TB_FolderExists.Text) == true ? Visibility.Hidden : Visibility.Visible;
         }
     }
 }

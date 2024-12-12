@@ -5,12 +5,15 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:local="clr-namespace:ClipsOrganizer.ExportControls"
+             xmlns:Settings="clr-namespace:ClipsOrganizer.Settings"
+             
              mc:Ignorable="d" 
              d:DesignHeight="408" d:DesignWidth="408">
     <Grid>
-        <StackPanel Orientation="Horizontal">
-            <TextBlock Text="Конченая папка:"/>
-            <TextBox Text="{Binding TargetFolder}" Width="130"/>
+        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+            <TextBlock VerticalAlignment="Center" Text="Конечная папка:"/>
+            <TextBox Name="TB_TargetFolder" Text="{Binding TargetFolder}" PreviewTextInput="TB_TargetFolder_PreviewTextInput" Width="130" />
+            <TextBlock VerticalAlignment="Center" Name="TB_FolderExists" Visibility="Hidden" Text="Папка не существует"/>
         </StackPanel>
     </Grid>
 </UserControl>

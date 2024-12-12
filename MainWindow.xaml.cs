@@ -36,7 +36,6 @@ namespace ClipsOrganizer {
     public partial class MainWindow : Window {
         DispatcherTimer SliderTimer, AutoSaveTimer;
         ItemProvider itemProvider = null;
-        Settings.GlobalSettings settings = null;
         ContextMenu CT_mark = null;
         List<Item> Items = null;
         Profile CurrentProfile = null;
@@ -70,21 +69,21 @@ namespace ClipsOrganizer {
                     Directory.CreateDirectory("./Profiles");
                     CurrentProfile = new Profile() { ClipsFolder = clipsPath, ProfileName = Profilename };
                     FileSerializer.WriteAndCreateBackupFile(CurrentProfile, CurrentProfile.ProfilePath);
-                    GlobalSettings settings = new GlobalSettings(clipsPath, ffmpegPath);
-                    settings.LastSelectedProfile = CurrentProfile.ProfileName;
-                    FileSerializer.WriteAndCreateBackupFile(settings, SettingsPath);
+                    GlobalSettings.Initialize(ffmpegPath);
+                    GlobalSettings.Instance.LastSelectedProfile = CurrentProfile.ProfileName;
+                    FileSerializer.WriteAndCreateBackupFile(GlobalSettings.Instance, SettingsPath);
                 }
             }
-            settings = FileSerializer.ReadFile<GlobalSettings>(SettingsPath);
-            if (File.Exists($"./Profiles/{settings.LastSelectedProfile}.json")) {
-                CurrentProfile = FileSerializer.ReadFile<Profile>($"./Profiles/{settings.LastSelectedProfile}.json");
+            GlobalSettings.Instance = FileSerializer.ReadFile<GlobalSettings>(SettingsPath);
+            if (File.Exists($"./Profiles/{GlobalSettings.Instance.LastSelectedProfile}.json")) {
+                CurrentProfile = FileSerializer.ReadFile<Profile>($"./Profiles/{GlobalSettings.Instance.LastSelectedProfile}.json");
             }
             else {
                 CurrentProfile = FileSerializer.ReadFile<Profile>($"./Profiles/{ProfileManager.LoadAllProfiles().First()}.json");
             }
             itemProvider = new ItemProvider();
 
-            settings.ffmpegInit(); //maybe change it to init when cut was being made
+            GlobalSettings.Instance.ffmpegInit(); //maybe change it to init when cut was being made
 
             Items = itemProvider.GetItemsFromFolder(CurrentProfile.ClipsFolder, collections: CurrentProfile.Collections);
 
@@ -474,9 +473,9 @@ namespace ClipsOrganizer {
             //if (settingsChanged) {
             //    var result = MessageBox.Show("В коллекциях были изменены/добавлены файлы, хотите сохранить их?", "Подтверждение", MessageBoxButton.YesNoCancel);
             //    if (result == MessageBoxResult.Yes) {
-            Log.Update("closing window");
-            settings.LastSelectedProfile = CurrentProfile.ProfileName;
-            FileSerializer.WriteAndCreateBackupFile(settings, SettingsPath);
+            Log.Update("Закрытие окна");
+            GlobalSettings.Instance.LastSelectedProfile = CurrentProfile.ProfileName;
+            FileSerializer.WriteAndCreateBackupFile(GlobalSettings.Instance, SettingsPath);
             FileSerializer.WriteAndCreateBackupFile(CurrentProfile, CurrentProfile.ProfilePath);
             //        e.Cancel = false;
             //    }
@@ -524,7 +523,7 @@ namespace ClipsOrganizer {
                 }
             }
             if (e.Key == Key.S && Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) {
-                FileSerializer.WriteAndCreateBackupFile(settings, SettingsPath);
+                FileSerializer.WriteAndCreateBackupFile(GlobalSettings.Instance, SettingsPath);
                 Log.Update("Настройки сохранены");
             }
             //почему то не работает
@@ -538,13 +537,13 @@ namespace ClipsOrganizer {
             }
             if (e.Key == Key.C) {
                 StartTime = ME_main.Position;
-                Log.Update(string.Format("Cut from {0}", StartTime.TotalMilliseconds));
+                Log.Update(string.Format("Обрезка с {0}", StartTime.TotalMilliseconds));
                 SL_duration.IsSelectionRangeEnabled = true;
                 SL_duration.SelectionStart = ME_main.Position.TotalSeconds;
                 SliderSelectionChanged?.Invoke(StartTime, null);
             }
             if (e.Key == Key.C && Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) {
-                Log.Update(string.Format("Cut from {0} ended", StartTime.TotalMilliseconds));
+                Log.Update(string.Format("Обрезка с {0} до конца", StartTime.TotalMilliseconds));
                 if (OwnedWindows.Count == 0) {
                     OpenRendererWindow(ME_main.Position, ME_main.NaturalDuration.TimeSpan);
                     SL_duration.SelectionEnd = ME_main.NaturalDuration.TimeSpan.TotalSeconds;
@@ -553,7 +552,7 @@ namespace ClipsOrganizer {
 
             }
             if (e.Key == Key.E) {
-                Log.Update(string.Format("Cut to {0}", ME_main.Position.TotalMilliseconds));
+                Log.Update(string.Format("Обрезка до {0}", ME_main.Position.TotalMilliseconds));
                 SL_duration.IsSelectionRangeEnabled = true;
                 if (StartTime == TimeSpan.Zero) SL_duration.SelectionStart = 0;
                 SL_duration.SelectionEnd = ME_main.Position.TotalSeconds;
@@ -572,7 +571,7 @@ namespace ClipsOrganizer {
             }
 
             void OpenRendererWindow(TimeSpan? StartTime, TimeSpan? EndTime) {
-                RendererWindow rendererwindow = new RendererWindow(this.settings, ME_main.Source, StartTime, EndTime) { Owner = this };
+                RendererWindow rendererwindow = new RendererWindow(ME_main.Source, StartTime, EndTime) { Owner = this };
                 ME_main.Pause();
                 SliderSelectionChanged += rendererwindow.RendererWindow_SliderSelectionChanged;
                 rendererwindow.Show();
@@ -585,7 +584,7 @@ namespace ClipsOrganizer {
         }
 
         private void Btn_settings_Click(object sender, RoutedEventArgs e) {
-            Window window = new SettingsWindow(settings, CurrentProfile);
+            Window window = new SettingsWindow(GlobalSettings.Instance, CurrentProfile);
             window.ShowDialog();
             if (!ProfileManager.LoadAllProfiles().Exists(p => p == CurrentProfile.ProfileName)) {
                 CurrentProfile = FileSerializer.ReadFile<Profile>($"./Profiles/{ProfileManager.LoadAllProfiles().First()}.json");

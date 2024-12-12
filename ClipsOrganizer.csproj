@@ -112,6 +112,7 @@
     <Compile Include="ffmpegManager.cs" />
     <Compile Include="FileSerializerBase.cs" />
     <Compile Include="FileUtils.cs" />
+    <Compile Include="InputValidator.cs" />
     <Compile Include="Log.cs" />
     <Compile Include="LogWindow.xaml.cs">
       <DependentUpon>LogWindow.xaml</DependentUpon>

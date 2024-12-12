@@ -4,7 +4,7 @@ using System;
 
 namespace ClipsOrganizer.FileUtils {
     public static class FileSerializer {
-        private static bool WriteSettings<T>(T obj, string Filepath) where T : class {
+        private static bool WriteFile<T>(T obj, string Filepath) where T : class {
             string contents = JsonConvert.SerializeObject(obj);
             File.WriteAllText(Filepath, contents);
             return false;
@@ -44,7 +44,7 @@ namespace ClipsOrganizer.FileUtils {
             if (File.Exists(Filepath)) {
                 File.Move(Filepath, backupFilePath);
             }
-            WriteSettings(data, Filepath);
+            WriteFile(data, Filepath);
         }
     }
 }
