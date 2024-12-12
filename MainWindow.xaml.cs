@@ -18,7 +18,6 @@ using System.Windows.Threading;
 using ClipsOrganizer.Settings;
 using ClipsOrganizer.Collections;
 using System.Runtime.InteropServices;
-using System.Runtime.Remoting.Channels;
 using System.Windows.Controls.Primitives;
 using System.IO;
 using System.Security.Principal;
