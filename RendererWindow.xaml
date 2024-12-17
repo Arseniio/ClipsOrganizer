@@ -27,19 +27,18 @@
             <StackPanel Orientation="Vertical" VerticalAlignment="Top">
                 <StackPanel Margin="0 5 0 0" Orientation="Horizontal" VerticalAlignment="Top">
                     <TextBlock Text="Энкодер видео: " VerticalAlignment="Center"/>
-                    <ComboBox Name="CB_codec" Width="130" Margin="5 0 0 0" VerticalContentAlignment="Center" Height="auto"/>
+                    <ComboBox Name="CB_codec" Width="120" Margin="5 0 0 0" VerticalContentAlignment="Center" Height="auto"/>
                 </StackPanel>
                 <StackPanel Margin="0 5 0 0" Orientation="Horizontal" VerticalAlignment="Top">
                     <TextBlock Text="Качество видео: " VerticalAlignment="Center"/>
-                    <TextBox TextChanged="TB_Quality_TextChanged"  Width="70" VerticalContentAlignment="Center" Name="TB_Quality" Margin="3 0 0 0"/>
-                    <TextBlock Text="kbps" Margin="5 0 0 0" VerticalAlignment="Center"/>
+                    <TextBox TextChanged="TB_Quality_TextChanged" materialDesign:TextFieldAssist.SuffixText="kbps" Width="110" VerticalContentAlignment="Center" Name="TB_Quality" Margin="3 0 0 0"/>
                 </StackPanel>
                 <StackPanel Margin="0 5 0 0" Orientation="Horizontal" VerticalAlignment="Top">
                     <TextBlock Text="Выходная папка: " VerticalAlignment="Center"/>
                     <TextBox Width="125" VerticalContentAlignment="Center" Name="TB_outputPath" Margin="1 0 0 0"/>
                 </StackPanel>
                 <StackPanel Margin="0 5 0 0" Orientation="Horizontal" VerticalAlignment="Top">
-                    <TextBlock Text="Размер выходного файла: " VerticalAlignment="Center"/>
+                    <TextBlock Text="Размер выходного файла: " materialDesign:TextFieldAssist.SuffixText="MB" VerticalAlignment="Center"/>
                     <TextBox Width="80" IsReadOnly="True" IsReadOnlyCaretVisible="False" VerticalContentAlignment="Center" Name="TB_filesize" Margin="1 0 0 0"/>
                 </StackPanel>
                 <CheckBox Margin="0 5 0 0" Name="CB_OpenFolderAfterEncoding" Content="Открыть папку после кодирования" />
@@ -66,6 +65,5 @@
                 Name="Btn_Crop"
                 Click="Btn_Crop_Click"
                 Margin="10 0 10 4"/>
-        <TextBlock Name="tb_status" Grid.Row="1" Grid.Column="1" Text="Не запущено" VerticalAlignment="Center"/>
     </Grid>
 </Window>

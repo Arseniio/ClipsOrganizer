@@ -1,0 +1,51 @@
+﻿<UserControl x:Class="ClipsOrganizer.ExportControls.EncodeFilesControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ClipsOrganizer.ExportControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="408" d:DesignWidth="408">
+    <Grid d:Background="White">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,5">
+            <TextBlock VerticalAlignment="Center" Text="Включить кодирование:" Width="200"/>
+            <CheckBox IsChecked="{Binding EncodeEnabled}" Name="CB_EncodeEnabled" Checked="CB_EncodeEnabled_Checked_Changed" Unchecked="CB_EncodeEnabled_Checked_Changed" />
+        </StackPanel>
+        <StackPanel Name="SP_EncodeEnable" Grid.RowSpan="10" Grid.Row="1">
+        <StackPanel IsEnabled="False" Orientation="Horizontal" Grid.Row="1" Margin="0,5">
+            <TextBlock VerticalAlignment="Center" Text="Переопределить кодирование(я честно не помню зачем):" Width="329"/>
+            <CheckBox IsChecked="{Binding OverrideEncode}" />
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="0,5">
+            <TextBlock VerticalAlignment="Center" Text="Включить параллельный экспорт:" Width="199"/>
+                <CheckBox IsChecked="{Binding EnableParallelExport}" Name="CB_EnableParallelExport" Unchecked="CB_EnableParallelExport_Checked_Changed" Checked="CB_EnableParallelExport_Checked_Changed" />
+        </StackPanel>
+        <StackPanel Name="SL_MaxParallelTasks" Orientation="Horizontal" Grid.Row="3" Margin="0,5">
+            <TextBlock VerticalAlignment="Center" Text="Макс. параллельных задач:" Width="180"/>
+            <TextBox Text="{Binding MaxParallelTasks}" PreviewTextInput="TB_IsNumber_check" Width="80"/>
+        </StackPanel>
+        <StackPanel Orientation="Horizontal" Grid.Row="4" Margin="0,5">
+            <TextBlock VerticalAlignment="Center" Text="Формат кодека:" Width="150"/>
+            <ComboBox Name="CB_Codec" SelectedItem="{Binding EncodeFormat}" Width="150"/>
+        </StackPanel>
+
+        <StackPanel Orientation="Horizontal" Grid.Row="5" Margin="0,5">
+            <TextBlock VerticalAlignment="Center" Text="Битрейт кодирования:" Width="180"/>
+            <TextBox Text="{Binding EncodeBitrate,TargetNullValue='',FallbackValue='1000'}" PreviewTextInput="TB_IsNumber_check" materialDesign:TextFieldAssist.SuffixText="kbps" Width="80"/>
+        </StackPanel>
+        </StackPanel>
+    </Grid>
+
+</UserControl>

@@ -117,7 +117,7 @@ namespace ClipsOrganizer {
 
         private void UpdateVideoSize() {
             double.TryParse(TB_Quality.Text, out double bitrate);
-            TB_filesize.Text = "~"+ CalculateVideoSize(bitrate, TimeSpan.Parse(TB_Crop_To.Text) - TimeSpan.Parse(TB_Crop_From.Text)).ToString("F2") + " MB";
+            TB_filesize.Text = "~"+ CalculateVideoSize(bitrate, TimeSpan.Parse(TB_Crop_To.Text) - TimeSpan.Parse(TB_Crop_From.Text)).ToString("F2");
         }
 
         private void UpdateTimestamp(double deltaY) {

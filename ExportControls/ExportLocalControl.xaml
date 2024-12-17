@@ -7,6 +7,10 @@
              mc:Ignorable="d" 
              d:DesignHeight="408" d:DesignWidth="408">
     <Grid>
-        
+        <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
+            <TextBlock VerticalAlignment="Center" Text="Конечная папка:"/>
+            <TextBox Name="TB_TargetFolder" Text="{Binding TargetFolder}" PreviewKeyUp="TB_TargetFolder_PreviewKeyUp" Width="130" />
+            <TextBlock VerticalAlignment="Center" Name="TB_FolderExists" Visibility="Hidden" Text="Папка не существует"/>
+        </StackPanel>
     </Grid>
 </UserControl>

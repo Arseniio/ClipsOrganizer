@@ -15,16 +15,11 @@ using System.Windows.Shapes;
 
 namespace ClipsOrganizer.ExportControls {
     /// <summary>
-    /// Логика взаимодействия для ExportLocalControl.xaml
+    /// Логика взаимодействия для ExportCollectionsControl.xaml
     /// </summary>
-    public partial class ExportLocalControl : UserControl {
-        public ExportLocalControl() {
+    public partial class ExportCollectionsControl : UserControl {
+        public ExportCollectionsControl() {
             InitializeComponent();
-        }
-
-
-        private void TB_TargetFolder_PreviewKeyUp(object sender, KeyEventArgs e) {
-            TB_FolderExists.Visibility = DataValidation.InputValidator.IsFolderExists(TB_TargetFolder.Text) ? Visibility.Hidden : Visibility.Visible;
         }
     }
 }

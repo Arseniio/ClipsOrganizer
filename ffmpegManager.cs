@@ -29,7 +29,7 @@ namespace ClipsOrganizer {
         NE_APNG
     }
 
-    public class ffmpegManager : ExternalProcessManager {
+    public class FFmpegManager : ExternalProcessManager {
 
         private bool _disposed = false;
         private bool isReady = false;
@@ -38,15 +38,15 @@ namespace ClipsOrganizer {
 
         public StringBuilder Output { get; private set; }
 
-        private string ffmpegpath;
+        private string FFmpegpath;
         private float EncodePercentage;
 
         public event Action<int> OnEncodeProgressChanged;
 
-        public ffmpegManager(string affmpegpath) {
-            this.ffmpegpath = affmpegpath;
+        public FFmpegManager(string affmpegpath) {
+            this.FFmpegpath = affmpegpath;
             Output = new StringBuilder();
-            if (!File.Exists(ffmpegpath)) {
+            if (!File.Exists(FFmpegpath)) {
                 throw new FileNotFoundException();
             }
             OutputDataReceived += FfmpegManager_OutputDataReceived;
@@ -137,7 +137,7 @@ namespace ClipsOrganizer {
         public bool StartEncoding(string inputVideo, string outputVideo, VideoCodec codec, int bitrate, TimeSpan? StartTime = null, TimeSpan? EndTime = null) {
             if (codec == VideoCodec.Unknown) return false;
             var args = GetCodecArgs(codec, bitrate, inputVideo, outputVideo, StartTime, EndTime);
-            bool errorcode = this.Open(this.ffmpegpath, args) == 0;
+            bool errorcode = this.Open(this.FFmpegpath, args) == 0;
             if (!errorcode) {
                 MessageBox.Show(Output.ToString());
                 OnEncodeProgressChanged?.Invoke(0);

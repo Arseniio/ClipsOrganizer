@@ -19,7 +19,6 @@ namespace ClipsOrganizer.Settings {
     [Serializable]
     public class GlobalSettings {
         //in order in json file
-        //public string ClipsFolder { get; set; }
         public string FFmpegpath { get; set; }
         public string LastSelectedProfile { get; set; }
         public VideoCodec LastUsedCodec { get; set; }
@@ -28,7 +27,7 @@ namespace ClipsOrganizer.Settings {
         public bool OpenFolderAfterEncoding { get; set; }
         public ExportSettings ExportSettings { get; set; } = new ExportSettings();
         [JsonIgnore]
-        public ffmpegManager ffmpegManager { get; set; }
+        public FFmpegManager ffmpegManager { get; set; }
         private static GlobalSettings _instance;
         public static GlobalSettings Instance {
             get {
@@ -52,7 +51,7 @@ namespace ClipsOrganizer.Settings {
 
         public void ffmpegInit() {
             try {
-                this.ffmpegManager = new ffmpegManager(this.FFmpegpath);
+                this.ffmpegManager = new FFmpegManager(this.FFmpegpath);
             }
             catch (Exception e) {
                 MessageBox.Show(e.Message);
@@ -88,12 +87,13 @@ namespace ClipsOrganizer.Settings {
         public VideoCodec EncodeFormat { get; set; }
         public int EncodeBitrate { get; set; }
 
-        //General export settings
-        public string TargetFolder { get; set; } = "./Temp";
-        public bool ExportAllFiles { get; set; }
+        //Collection export settings
         [JsonIgnore]
         public List<string> FilesToExport { get; set; }
         public bool DeleteFilesAfterExport { get; set; }
+        //General export settings
+        public string TargetFolder { get; set; } = "./Temp";
+        public bool ExportAllFiles { get; set; }
         public bool EnableLogging { get; set; }
         public string LogFilePath { get; set; }
         public int MaxFileSizeMB { get; set; }
@@ -102,9 +102,11 @@ namespace ClipsOrganizer.Settings {
         
         //Advanced general
         public bool UseRegex { get; set; }
-        public string FileNameTemplate { get; set; } 
+        public string FileNameTemplate { get; set; }
+        public string ExportFileNameTepmlate { get; set; } 
 
-        public bool DoExport() {
+
+        public static bool DoExport() {
             new NotImplementedException();
             return true;
         }

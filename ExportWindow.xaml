@@ -15,10 +15,10 @@
             </Grid.ColumnDefinitions>
 
             <ListBox Name="LB_Menu" SelectionChanged="LB_Menu_SelectionChanged">
-                <ListBoxItem Tag="ExportLocal">Локальный экспорт</ListBoxItem>
+                <ListBoxItem IsEnabled="False" Tag="ExportLocal">Локальный экспорт</ListBoxItem>
                 <ListBoxItem Tag="EncodeFiles">Перекодирование файлов</ListBoxItem>
-                <ListBoxItem Tag="UploadToCloud">Выгрузка на файлообменник</ListBoxItem>
-                <ListBoxItem Tag="CollectionSettings">Настройки коллекции</ListBoxItem>
+                <ListBoxItem IsEnabled="False" Tag="UploadToCloud">Выгрузка на файлообменник</ListBoxItem>
+                <ListBoxItem IsEnabled="False" Tag="CollectionSettings">Настройки коллекции</ListBoxItem>
                 <ListBoxItem Tag="FileSelection">Выбор файлов для экспорта</ListBoxItem>
                 <ListBoxItem Tag="GeneralSettings">Общие настройки</ListBoxItem>
             </ListBox>

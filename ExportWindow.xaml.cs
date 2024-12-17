@@ -69,6 +69,9 @@ namespace ClipsOrganizer {
                     case "GeneralSettings":
                         CC_Export.Content = new ExportGeneralControl();
                         break;
+                    case "EncodeFiles":
+                        CC_Export.Content = new EncodeFilesControl();
+                        break;
                 }
             }
         }

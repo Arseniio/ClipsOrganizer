@@ -9,7 +9,7 @@
         Title="Окно лога" Height="485" Width="505">
     <Grid>
         <StackPanel>
-            <TextBox IsReadOnly="True" Name="TB_log_window" d:Text="lkha;dghsjkashdkaweiuawgbefuihgabweguhaweoguhsadklfghjasdkjlfhsaeilufhzseklfhaseklfhbaskleufghaskluehfgklasuehfkluasehfuklsaehfkulashefkuashekulfhasefukshaefkluahsefkluasheufklashefklasehukflasehufklaeshuklsefuhkleuahskleuhkslfaesuhlf" Height="380" TextWrapping="Wrap" VerticalAlignment="Top" Margin="10 10 10 0"  />
+            <TextBox IsReadOnly="True" VerticalContentAlignment="Top" Name="TB_log_window" d:Text="lkha;dghsjkashdkaweiuawgbefuihgabweguhaweoguhsadklfghjasdkjlfhsaeilufhzseklfhaseklfhbaskleufghaskluehfgklasuehfkluasehfuklsaehfkulashefkuashekulfhasefukshaefkluahsefkluasheufklashefklasehukflasehufklaeshuklsefuhkleuahskleuhkslfaesuhlf" Height="380" TextWrapping="Wrap" VerticalAlignment="Top" Margin="10 10 10 0"  />
             <Button Margin="0 10 0 0" Name="Btn_Exit" Click="Btn_Exit_Click" Content="Выход" Width="130"/>
         </StackPanel>
     </Grid>
