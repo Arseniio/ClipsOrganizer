@@ -1,6 +1,7 @@
 ﻿using ClipsOrganizer.FileUtils;
 using ClipsOrganizer.Profiles;
 using ClipsOrganizer.Properties;
+using ClipsOrganizer.Settings;
 using System;
 using System.Collections.Generic;
 using System.IO;
