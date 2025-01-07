@@ -38,10 +38,8 @@ namespace ClipsOrganizer {
         private string getNextFileName(string FilePath) {
             int lastFileSaved = 0;
             foreach (var item in Directory.EnumerateFiles(FilePath)) {
-                if (int.TryParse(item.Split('_').Last().Split('.').First(), out int fileNumber)) {
-                    if (fileNumber > lastFileSaved) {
-                        lastFileSaved = fileNumber;
-                    }
+                if (int.TryParse(item.Split('_').Last().Split('.').First(), out int fileNumber) && fileNumber > lastFileSaved) {
+                    lastFileSaved = fileNumber;
                 }
             }
             lastFileSaved++;

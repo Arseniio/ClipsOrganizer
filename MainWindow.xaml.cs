@@ -32,14 +32,11 @@ namespace ClipsOrganizer {
         private object _lastSelectedItem;
         private Collection _lastSelectedCollection;
         public MainWindow() {
-            //// Удаление файла settings.json, если он существует
             //if (File.Exists("./settings.json")) {
             //    File.Delete("./settings.json");
             //}
-
-            //// Удаление папки Profiles, если она существует
             //if (Directory.Exists("./Profiles")) {
-            //    Directory.Delete("./Profiles", true); // true удаляет папку с содержимым
+            //    Directory.Delete("./Profiles", true);
             //}
             string clipsPath;
             string ffmpegPath;

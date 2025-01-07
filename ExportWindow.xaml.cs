@@ -27,7 +27,7 @@ namespace ClipsOrganizer {
         public ExportWindow(Profile profile) {
             InitializeComponent();
             if (profile.Collections.Count == 0) {
-                throw new System.ArgumentNullException();
+                //throw new System.ArgumentNullException();
             }
             this.profile = profile;
         }

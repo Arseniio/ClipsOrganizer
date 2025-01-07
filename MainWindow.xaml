@@ -12,8 +12,7 @@
         DragEnter="Window_DragEnter"
         Drop="Window_Drop"
         Style="{StaticResource MaterialDesignWindow}"
-        Icon="img/video-image.png"
-        Title="ClipsOrganizer" Height="550" Width="1018" Closing="Window_Closing"
+    Title="ClipsOrganizer" Height="550" Width="1018" Closing="Window_Closing"
         KeyDown="Window_KeyDown">
 
     <Grid Name="MainGrid" SizeChanged="MainGrid_SizeChanged" >
