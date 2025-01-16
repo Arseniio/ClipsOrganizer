@@ -66,6 +66,9 @@ namespace ClipsOrganizer {
                     case "ExportLocal":
                         CC_Export.Content = new ExportLocalControl();
                         break;
+                    case "FileSelection":
+                        CC_Export.Content = new ExportCollectionsControl();
+                        break;
                     case "GeneralSettings":
                         CC_Export.Content = new ExportGeneralControl();
                         break;
@@ -74,6 +77,15 @@ namespace ClipsOrganizer {
                         break;
                 }
             }
+        }
+        
+        private void Btn_Export_Click(object sender, RoutedEventArgs e) {
+            GlobalSettings.Instance.ExportSettings.DoExport();
+        }
+
+        private void Window_Closed(object sender, EventArgs e) {
+            (Owner as MainWindow).TV_clips.IsEnabled = true;
+            (Owner as MainWindow).TV_clips_collections.IsEnabled = true;
         }
     }
 }

@@ -22,7 +22,7 @@ namespace ClipsOrganizer {
         ItemProvider itemProvider = null;
         ContextMenu CT_mark = null;
         List<Item> Items = null;
-        Profile CurrentProfile = null;
+        public static Profile CurrentProfile = null;
 
         private string SettingsPath = "./settings.json";
         private string ProfilePath = "./Profiles/";
@@ -64,7 +64,7 @@ namespace ClipsOrganizer {
             }
             itemProvider = new ItemProvider();
 
-            GlobalSettings.Instance.ffmpegInit(); //maybe change it to init when cut was being made
+            GlobalSettings.Instance.FFmpegInit(); //maybe change it to init when cut was being made
 
             Items = itemProvider.GetItemsFromFolder(CurrentProfile.ClipsFolder, collections: CurrentProfile.Collections);
 
@@ -88,12 +88,12 @@ namespace ClipsOrganizer {
             CB_Profile.ItemsSource = ProfileManager.LoadAllProfiles();
             CB_Profile.SelectedItem = CurrentProfile.ProfileName;
 
-            Btn_Mark.ContextMenu = CT_mark;
+            //Btn_Mark.ContextMenu = CT_mark;
             TV_clips.ContextMenu = CT_mark;
             TV_clips_collections.ContextMenu = CT_mark;
             //Костыль?
             //ДА КОСТЫЛЬ ПОТОМ ПЕРЕПРОВЕРИТЬ И УБРАТЬ, В ТЕГЕ ОСТАЁТСЯ ТОЛЬКО ПОСЛЕДНЕЕ ПРИСВОЕННОЕ ЗНАЧЕНИЕ
-            Btn_Mark.ContextMenu.Tag = Btn_Mark;
+            //Btn_Mark.ContextMenu.Tag = Btn_Mark;
             TV_clips_collections.ContextMenu.Tag = TV_clips_collections;
             TV_clips.ContextMenu.Tag = TV_clips;
             #endregion
@@ -296,56 +296,7 @@ namespace ClipsOrganizer {
             RefreshTreeViewWithColors(TV_clips, CurrentProfile.ClipsFolder, CurrentProfile.Collections);
         }
 
-        #region sliders events
-        private void SL_duration_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e) {
-            is_dragging = false;
-            ME_main.Position = TimeSpan.FromSeconds((double)SL_duration.Value);
-        }
 
-        private void MainGrid_SizeChanged(object sender, SizeChangedEventArgs e) {
-            //-493
-            if (MainGrid.ActualWidth - 700 + 430 > 0) {
-                SL_duration.Width = MainGrid.ActualWidth - 700 + 430;
-            }
-        }
-
-        bool is_dragging = false;
-        private void SL_duration_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
-            if (!is_dragging) ME_main.Position = TimeSpan.FromSeconds((double)SL_duration.Value);
-        }
-
-        private void SL_duration_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e) {
-            is_dragging = true;
-        }
-
-        private void VideoDurationUpdate(object sender, EventArgs e) {
-            if (!is_dragging)
-                SL_duration.Value = ME_main.Position.TotalSeconds;
-            if (SL_duration.IsSelectionRangeEnabled && OwnedWindows.Count == 0)
-                SL_duration.SelectionEnd = ME_main.Position.TotalSeconds;
-        }
-        #endregion
-
-        #region player events
-        private void Btn_Play_Click(object sender, RoutedEventArgs e) {
-            ME_main.Play();
-        }
-
-        private void SL_volume_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
-            ME_main.Volume = (double)e.NewValue;
-        }
-
-        private void ME_main_MediaOpened(object sender, RoutedEventArgs e) {
-            if (ME_main.NaturalDuration.HasTimeSpan) {
-                SL_duration.Maximum = ME_main.NaturalDuration.TimeSpan.TotalSeconds;
-                SliderTimer.Start();
-            }
-        }
-
-        private void Btn_Stop_Click(object sender, RoutedEventArgs e) {
-            ME_main.Pause();
-        }
-        #endregion
 
         private void CB_ParsedFileName_Checked(object sender, RoutedEventArgs e) {
             //TV_clips.ItemsSource = itemProvider.GetItemsFromFolder("H:\\nrtesting");
@@ -473,15 +424,13 @@ namespace ClipsOrganizer {
         }
         private void Btn_export_Click(object sender, RoutedEventArgs e) {
             Window window = new ExportWindow(CurrentProfile);
-            window.ShowDialog();
-            //Profile ProfileAfterMoving = (window as ExportWindow).profile;
-            //bool result = (window as ExportWindow).bresult;
-            //if (result == true) {
-            //    settings.UpdateSettings();
-            //    FileSerializer.WriteAndCreateBackupFile(settings, SettingsPath);
-            //}
-            //else if (result == false) { }
+            window.Owner = this;
+            window.Show();
+            TV_clips.IsEnabled = false;
+            TV_clips_collections.IsEnabled = false;
+
         }
+        
         TimeSpan StartTime = TimeSpan.Zero;
         public event Action<TimeSpan, TimeSpan?> SliderSelectionChanged;
 
@@ -597,6 +546,11 @@ namespace ClipsOrganizer {
                 TV_clips_collections.ItemsSource = CurrentProfile.Collections;
                 TV_clips.ItemsSource = Items;
             }
+        }
+
+        private void MB_OpenLog(object sender, RoutedEventArgs e) {
+            Window window = new LogWindow();
+            window.Show();
         }
 
         private void TB_log_MouseDown(object sender, MouseButtonEventArgs e) {

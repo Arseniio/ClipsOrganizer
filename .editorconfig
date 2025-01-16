@@ -2,3 +2,6 @@
 
 # CA1416: Проверка совместимости платформы
 dotnet_diagnostic.CA1416.severity = none
+
+# S2737: "catch" clauses should do more than rethrow
+dotnet_diagnostic.S2737.severity = silent

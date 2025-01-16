@@ -1,5 +1,7 @@
-﻿using System;
+﻿using ClipsOrganizer.FileUtils;
+using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +26,10 @@ namespace ClipsOrganizer {
 
         private void Btn_Exit_Click(object sender, RoutedEventArgs e) {
             this.Close();
+        }
+
+        private void Btn_Save_Click(object sender, RoutedEventArgs e) {
+            File.WriteAllText("./Log.txt", TB_log_window.Text);
         }
     }
 }

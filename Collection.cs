@@ -24,6 +24,8 @@ namespace ClipsOrganizer.Collections {
         public string KeyBinding { get; set; }
         public List<Item> Files { get; set; }
 
+        [JsonIgnore]
+        public bool IsSelected { get; set; }
         //for json parsing
         public Collection() {
             this.Files = new List<Item>();
@@ -57,7 +59,7 @@ namespace ClipsOrganizer.Collections {
             return this.Files.GetEnumerator();
         }
         public void SafeAddClip(Item File) {
-            if (Files.Find(p=> p.Name == File.Name) == null) Files.Add(File);
+            if (Files.Find(p => p.Name == File.Name) == null) Files.Add(File);
             else Log.Update($"Невозможно добавить файл {File.Name} в коллекцию");
         }
         public override bool Equals(object obj) {

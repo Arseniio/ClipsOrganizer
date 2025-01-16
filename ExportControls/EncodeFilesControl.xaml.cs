@@ -42,5 +42,12 @@ namespace ClipsOrganizer.ExportControls
         private void CB_EnableParallelExport_Checked_Changed(object sender, RoutedEventArgs e) {
             SL_MaxParallelTasks.IsEnabled = (sender as CheckBox).IsChecked == true;
         }
-    }
+
+        private void TextBox_TextChanged(object sender, TextChangedEventArgs e) {
+            if (this.IsLoaded) {
+                GlobalSettings.Instance.ExportSettings.EncodeBitrate = int.Parse((sender as TextBox).Text);
+                TB_TotalAfterEncoding.Text = GlobalSettings.Instance.ExportSettings.TotalFileSizeAfterExportWithEncoding;
+            }
+            }
+        }
 }

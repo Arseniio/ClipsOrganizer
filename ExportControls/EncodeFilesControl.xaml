@@ -17,7 +17,6 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
-            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,5">
             <TextBlock VerticalAlignment="Center" Text="Включить кодирование:" Width="200"/>
@@ -34,18 +33,27 @@
         </StackPanel>
         <StackPanel Name="SL_MaxParallelTasks" Orientation="Horizontal" Grid.Row="3" Margin="0,5">
             <TextBlock VerticalAlignment="Center" Text="Макс. параллельных задач:" Width="180"/>
-            <TextBox Text="{Binding MaxParallelTasks}" PreviewTextInput="TB_IsNumber_check" Width="80"/>
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Grid.Row="4" Margin="0,5">
+                <TextBox Text="{Binding MaxParallelTasks}" PreviewTextInput="TB_IsNumber_check" Width="80"/>
+            </StackPanel>
+            <StackPanel Name="SL_MaxFFmpegThreads" Orientation="Horizontal" Grid.Row="3" Margin="0,5">
+                <TextBlock VerticalAlignment="Center" Text="Потоки FFmpeg:" Width="180"/>
+                <TextBox Text="{Binding MaxFFmpegThreads}" PreviewTextInput="TB_IsNumber_check" Width="80"/>
+            </StackPanel>
+            <StackPanel Orientation="Horizontal" Grid.Row="4" Margin="0,5">
             <TextBlock VerticalAlignment="Center" Text="Формат кодека:" Width="150"/>
             <ComboBox Name="CB_Codec" SelectedItem="{Binding EncodeFormat}" Width="150"/>
         </StackPanel>
 
         <StackPanel Orientation="Horizontal" Grid.Row="5" Margin="0,5">
             <TextBlock VerticalAlignment="Center" Text="Битрейт кодирования:" Width="180"/>
-            <TextBox Text="{Binding EncodeBitrate,TargetNullValue='',FallbackValue='1000'}" PreviewTextInput="TB_IsNumber_check" materialDesign:TextFieldAssist.SuffixText="kbps" Width="80"/>
+            <TextBox Text="{Binding EncodeBitrate,TargetNullValue='',FallbackValue='1000',Mode=TwoWay}" PreviewTextInput="TB_IsNumber_check" TextChanged="TextBox_TextChanged" materialDesign:TextFieldAssist.SuffixText="kbps" Width="80"/>
         </StackPanel>
+            <StackPanel Opacity="{Binding EncodeEnabled}" Orientation="Horizontal" Margin="0,5">
+                <TextBlock VerticalAlignment="Center" Text="Общий размер файлов после перекодирования:"/>
+                <TextBox Name="TB_TotalAfterEncoding" Text="{Binding TotalFileSizeAfterExportWithEncoding,Mode=OneTime}" materialDesign:TextFieldAssist.SuffixText="МБ" IsReadOnly="True" Width="100" />
+            </StackPanel>
         </StackPanel>
+
     </Grid>
 
 </UserControl>

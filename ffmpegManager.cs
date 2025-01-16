@@ -139,7 +139,7 @@ namespace ClipsOrganizer {
             var args = GetCodecArgs(codec, bitrate, inputVideo, outputVideo, StartTime, EndTime);
             bool errorcode = this.Open(this.FFmpegpath, args) == 0;
             if (!errorcode) {
-                MessageBox.Show(Output.ToString());
+                Log.Update(Output.ToString());
                 OnEncodeProgressChanged?.Invoke(0);
                 return false;
             }

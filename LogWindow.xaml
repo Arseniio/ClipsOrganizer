@@ -6,11 +6,12 @@
         xmlns:local="clr-namespace:ClipsOrganizer"
         mc:Ignorable="d"
         MinHeight="130" MinWidth="505"
-        Title="Окно лога" Height="485" Width="505">
+        Title="Окно лога" Height="525" Width="505">
     <Grid>
         <StackPanel>
             <TextBox IsReadOnly="True" VerticalContentAlignment="Top" Name="TB_log_window" d:Text="lkha;dghsjkashdkaweiuawgbefuihgabweguhaweoguhsadklfghjasdkjlfhsaeilufhzseklfhaseklfhbaskleufghaskluehfgklasuehfkluasehfuklsaehfkulashefkuashekulfhasefukshaefkluahsefkluasheufklashefklasehukflasehufklaeshuklsefuhkleuahskleuhkslfaesuhlf" Height="380" TextWrapping="Wrap" VerticalAlignment="Top" Margin="10 10 10 0"  />
-            <Button Margin="0 10 0 0" Name="Btn_Exit" Click="Btn_Exit_Click" Content="Выход" Width="130"/>
+            <Button Margin="0 10 0 0" Name="Btn_Exit" Click="Btn_Exit_Click" Content="Выход" Width="122"/>
+            <Button Margin="0 10 0 0" Name="Btn_Save" Click="Btn_Save_Click" Content="Сохранить в файл" Width="165"/>
         </StackPanel>
     </Grid>
 </Window>

@@ -7,11 +7,11 @@
              xmlns:local="clr-namespace:ClipsOrganizer.ExportControls"
              xmlns:validator="clr-namespace:DataValidation"
              xmlns:Settings="clr-namespace:ClipsOrganizer.Settings"
-             
              mc:Ignorable="d" 
              d:DesignHeight="408" d:DesignWidth="408">
     <Grid d:Background="White">
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
@@ -26,31 +26,27 @@
             <TextBlock VerticalAlignment="Center" Text="Конечная папка:" Width="150"/>
             <TextBox Name="TB_TargetFolder" Text="{Binding TargetFolder}" PreviewKeyUp="TB_TargetFolder_PreviewKeyUp" Width="250"/>
         </StackPanel>
-        <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0,5">
-            <TextBlock VerticalAlignment="Center" Text="Экспортировать все файлы:" Width="162"/>
-            <CheckBox IsChecked="{Binding ExportAllFiles}" />
-        </StackPanel>
-        <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="0,5">
+        <StackPanel IsEnabled="False" Orientation="Horizontal" Grid.Row="2" Margin="0,5">
             <TextBlock VerticalAlignment="Center" Text="Включить логирование:" Width="150"/>
             <CheckBox IsChecked="{Binding EnableLogging}" Checked="CB_EnableLogging_CheckedChanged" Unchecked="CB_EnableLogging_CheckedChanged" Name="CB_EnableLogging" />
         </StackPanel>
-        <StackPanel Name="SP_LogPath" Orientation="Horizontal" Grid.Row="3" Margin="0,5">
+        <StackPanel IsEnabled="False" Name="SP_LogPath" Orientation="Horizontal" Grid.Row="3" Margin="0,5">
             <TextBlock VerticalAlignment="Center" Text="Путь к файлу лога:" Width="150"/>
             <TextBox Text="{Binding LogFilePath, TargetNullValue='',FallbackValue='./Log/Log_{date}.log'}" Width="250"/>
         </StackPanel>
-        <StackPanel Orientation="Horizontal" Grid.Row="4" Margin="0,5">
+        <StackPanel IsEnabled="False" Orientation="Horizontal" Grid.Row="4" Margin="0,5">
             <TextBlock VerticalAlignment="Center" Text="Максимальный размер файла:" Width="198"/>
             <TextBox Text="{Binding MaxFileSizeMB, TargetNullValue='', FallbackValue='0'}" materialDesign:TextFieldAssist.SuffixText="МБ" materialDesign:HintAssist.Hint="Отключено" PreviewKeyDown="TextBox_PreviewKeyDown" PreviewTextInput="TextBox_PreviewTextInput" Width="100"/>
         </StackPanel>
-        <StackPanel Orientation="Horizontal" Grid.Row="5" Margin="0,5">
+        <StackPanel IsEnabled="False" Orientation="Horizontal" Grid.Row="5" Margin="0,5">
             <TextBlock VerticalAlignment="Center" Text="Использовать Regex для имен:" Width="176"/>
             <CheckBox IsChecked="{Binding UseRegex}" Name="CB_UseRegex" Checked="CB_UseRegex_CheckedChanged" Unchecked="CB_UseRegex_CheckedChanged" />
         </StackPanel>
-        <StackPanel Name="SL_FileNameTemplate" Orientation="Horizontal" Grid.Row="6" Margin="0,5">
+        <StackPanel IsEnabled="False" Name="SL_FileNameTemplate" Orientation="Horizontal" Grid.Row="6" Margin="0,5">
             <TextBlock VerticalAlignment="Center" Text="Шаблон имени файла:" Width="130"/>
             <TextBox Text="{Binding FileNameTemplate}" Width="250"/>
         </StackPanel>
-        <StackPanel Name="SL_ExportFileNameTepmlate" Orientation="Horizontal" Grid.Row="7" Margin="0,5">
+        <StackPanel IsEnabled="False" Name="SL_ExportFileNameTepmlate" Orientation="Horizontal" Grid.Row="7" Margin="0,5">
             <TextBlock VerticalAlignment="Center" Width="198">
                 Конечный шаблон имени файла
                 <InlineUIContainer>
@@ -61,8 +57,12 @@
             <TextBox Text="{Binding ExportFileNameTepmlate}" Width="202"/>
         </StackPanel>
         <StackPanel Orientation="Horizontal" Grid.Row="8" Margin="0,5">
-            <TextBlock VerticalAlignment="Center" Text="Общий размер файлов (МБ):" Width="167"/>
-            <TextBox Text="{Binding TotalFileSizeAfterExport}" IsReadOnly="True" Width="100" />
+            <TextBlock VerticalAlignment="Center" Text="Общий размер файлов до перекодирования:"/>
+            <TextBox Text="{Binding TotalFileSizeAfterExport,Mode=OneTime}" materialDesign:TextFieldAssist.SuffixText="МБ" IsReadOnly="True" Width="100" />
+        </StackPanel>
+        <StackPanel Opacity="{Binding EncodeEnabled}" Orientation="Horizontal" Grid.Row="9" Margin="0,5">
+            <TextBlock VerticalAlignment="Center" Text="Общий размер файлов после перекодирования:"/>
+            <TextBox Text="{Binding TotalFileSizeAfterExportWithEncoding,Mode=OneTime}" materialDesign:TextFieldAssist.SuffixText="МБ" IsReadOnly="True" Width="100" />
         </StackPanel>
     </Grid>
 

@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ClipsOrganizer.Settings;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -20,6 +21,25 @@ namespace ClipsOrganizer.ExportControls {
     public partial class ExportCollectionsControl : UserControl {
         public ExportCollectionsControl() {
             InitializeComponent();
+            LV_Collection.ItemsSource = MainWindow.CurrentProfile.Collections;
+        }
+
+        private void Btn_Select_all_Click(object sender, RoutedEventArgs e) {
+            var items = LV_Collection.Items.Cast<Collections.Collection>().ToList();
+
+            bool allSelected = items.All(item => item.IsSelected);
+            bool noneSelected = items.All(item => !item.IsSelected);
+
+            bool newState = allSelected ? false : true;
+
+            foreach (var item in items) {
+                item.IsSelected = newState;
+                Log.Update($"{item.CollectionTag} {item.IsSelected} newstate: {newState}");
+            }
+
+            LV_Collection.ItemsSource = null;
+            LV_Collection.ItemsSource = MainWindow.CurrentProfile.Collections;
+            LV_Collection.Items.Refresh();
         }
     }
 }

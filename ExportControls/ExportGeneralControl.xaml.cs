@@ -16,6 +16,7 @@ using System.Windows.Navigation;
 using MaterialDesignThemes.Wpf;
 using System.Windows.Shapes;
 using MaterialDesignColors;
+using System.IO;
 
 namespace ClipsOrganizer.ExportControls {
     /// <summary>
@@ -39,7 +40,7 @@ namespace ClipsOrganizer.ExportControls {
 
         private void TextBox_PreviewTextInput(object sender, TextCompositionEventArgs e) {
             if (e.Text.Length > 0) {
-                if (!InputValidator.IsNumber(e.Text,sender)) {
+                if (!InputValidator.IsNumber(e.Text, sender)) {
                     e.Handled = true;
                     return;
                 }
@@ -65,7 +66,8 @@ namespace ClipsOrganizer.ExportControls {
             }
         }
         private void TB_TargetFolder_PreviewKeyUp(object sender, KeyEventArgs e) {
-            InputValidator.IsFolderExists((sender as TextBox).Text,sender);
+            InputValidator.IsFolderExists((sender as TextBox).Text, sender);
         }
+
     }
 }

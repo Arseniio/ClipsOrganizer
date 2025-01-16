@@ -6,26 +6,25 @@
              xmlns:local="clr-namespace:ClipsOrganizer.ExportControls"
              mc:Ignorable="d" 
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-             d:DesignHeight="408" d:DesignWidth="408">
+             d:DesignHeight="408" d:DesignWidth="700">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition/>
             <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
-        <ListView Name="CollectionListView" ItemsSource="{Binding }" SelectionMode="Single">
+        <ListView Name="LV_Collection" SelectionMode="Single" d:ItemsSource="{d:SampleData ItemCount=5}">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Width="50">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <CheckBox IsChecked="{Binding IsSelected, Mode=TwoWay}" />
+                                <CheckBox IsChecked="{Binding IsSelected}" />
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>
-                    <GridViewColumn Header="Tag" DisplayMemberBinding="{Binding CollectionTag}" Width="150" />
-                    <GridViewColumn Header="Color" DisplayMemberBinding="{Binding Color}" Width="100" />
-                    <GridViewColumn Header="Key Binding" DisplayMemberBinding="{Binding KeyBinding}" Width="150" />
-                    <GridViewColumn Header="Files Count" Width="100">
+                    <GridViewColumn Header="Название" DisplayMemberBinding="{Binding CollectionTag}" Width="150" />
+                    <GridViewColumn Header="Цвет" DisplayMemberBinding="{Binding Color}" Width="100" />
+                    <GridViewColumn Header="Кол-во файлов" Width="180">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Files.Count}" />
@@ -35,5 +34,8 @@
                 </GridView>
             </ListView.View>
         </ListView>
+        <UniformGrid Grid.Row="1" Columns="3">
+            <Button Name="Btn_Select_all" Content="Выбрать всё" Click="Btn_Select_all_Click"/>
+        </UniformGrid>
     </Grid>
 </UserControl>

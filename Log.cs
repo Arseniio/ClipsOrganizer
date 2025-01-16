@@ -16,7 +16,7 @@ namespace ClipsOrganizer {
         public static StringBuilder AllLogInfo = new StringBuilder();
         public static void Update(string text) {
             if (TB_log != null) {
-                TB_log.Text = text;
+                TB_log.Text = text.Replace("\r\n","");
                 TB_log.BeginAnimation(TextBlock.OpacityProperty, null);
                 TB_log.Opacity = 1.0;
                 _resetTimer?.Stop();
