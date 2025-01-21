@@ -12,6 +12,7 @@ using System.IO;
 using Gma.System.MouseKeyHook;
 using ClipsOrganizer.Profiles;
 using ClipsOrganizer.FileUtils;
+using ClipsOrganizer.ViewableControls;
 
 namespace ClipsOrganizer {
     /// <summary>
@@ -102,11 +103,7 @@ namespace ClipsOrganizer {
 
             TV_clips.ItemsSource = Items;
 
-            #region Slider timer init
-            SliderTimer = new DispatcherTimer();
-            SliderTimer.Interval = TimeSpan.FromMilliseconds(100);
-            SliderTimer.Tick += VideoDurationUpdate;
-            #endregion 
+
             #region AutoSave timer init
             AutoSaveTimer = new DispatcherTimer();
             AutoSaveTimer.Interval = TimeSpan.FromMinutes(3);
@@ -292,50 +289,31 @@ namespace ClipsOrganizer {
 
             RestoreExpandedItems(treeView.Items, expandedItems, treeView);
         }
-        private void UpdateColors() {
+        public void UpdateColors() {
             RefreshTreeViewWithColors(TV_clips, CurrentProfile.ClipsFolder, CurrentProfile.Collections);
-        }
-
-
-
-        private void CB_ParsedFileName_Checked(object sender, RoutedEventArgs e) {
-            //TV_clips.ItemsSource = itemProvider.GetItemsFromFolder("H:\\nrtesting");
-            //TV_clips_collections.ItemsSource = itemProvider.GetItemsFromCollections(CurrentProfile.Collections);
-            throw new NotImplementedException("NE");
-        }
-        private void CB_ParsedFileName_Unchecked(object sender, RoutedEventArgs e) {
-            //TV_clips.ItemsSource = itemProvider.GetItemsFromFolder("H:\\nrtesting");
-            //TV_clips_collections.ItemsSource = itemProvider.GetItemsFromCollections(CurrentProfile.Collections);
-            throw new NotImplementedException("NE");
         }
 
         #region Clip selection
         private void TV_clips_MouseDoubleClick(object sender, MouseButtonEventArgs e) {
             if (e.RightButton != MouseButtonState.Pressed)
-                LoadNewVideoClip();
+                LoadNewFile();
         }
 
-        private void LoadNewVideoClip(Uri VideoPath = null) {
-            RemoveSelection();
+        private void LoadNewFile(string VideoPath = null) {
             if (VideoPath != null) {
-                ME_main.Source = VideoPath;
-                ME_main.Play();
-                return;
+                ViewableController.LoadNewFile(VideoPath);
             }
             if (_lastSelectedTreeView?.SelectedItem == null) return;
             if (_lastSelectedTreeView?.SelectedItem.GetType() == typeof(Item)) {
-                ME_main.Source = new Uri((_lastSelectedTreeView?.SelectedItem as Item).Path);
+                ViewableController.LoadNewFile((_lastSelectedTreeView?.SelectedItem as Item).Path);
             }
             if (_lastSelectedTreeView?.SelectedItem.GetType() == typeof(FileItem)) {
-                ME_main.Source = new Uri((_lastSelectedTreeView?.SelectedItem as FileItem).Path);
+                ViewableController.LoadNewFile((_lastSelectedTreeView?.SelectedItem as FileItem).Path);
             }
             //TODO USE OR DELETE LATER
-            if (_lastSelectedTreeView?.SelectedItem.GetType() == typeof(DirectoryItem)) { }
-            if (_lastSelectedTreeView?.SelectedItem.GetType() == typeof(Collection)) { }
-            ME_main.Play();
-            if (ME_main.Source?.LocalPath != null)
-                this.Title = string.Format("ClipsOrganizer / {0}", System.IO.Path.GetFileName(ME_main.Source.LocalPath));
-            TB_loading_info.Visibility = Visibility.Hidden;
+            //if (ME_main.Source?.LocalPath != null)
+                //this.Title = string.Format("ClipsOrganizer / {0}", System.IO.Path.GetFileName(ME_main.Source.LocalPath));
+            //TB_loading_info.Visibility = Visibility.Hidden;
         }
 
         private void CB_sortType_SelectionChanged(object sender, SelectionChangedEventArgs e) {
@@ -355,7 +333,7 @@ namespace ClipsOrganizer {
             if ((clickeditem.Parent as ContextMenu).PlacementTarget is TreeView sourceElement) {
                 //((clickeditem.Parent as ContextMenu)).Name
 
-                ME_main.Volume = 0; //TODO: remove this, this is only for not get hear loss while debugging
+                //ME_main.Volume = 0; //TODO: remove this, this is only for not get hear loss while debugging
                 //TODO: redolater
                 //if (sourceElement == Btn_Mark) {
                 //    (clickeditem.Tag as Collection).Files.Add(new Item
@@ -431,82 +409,26 @@ namespace ClipsOrganizer {
 
         }
         
-        TimeSpan StartTime = TimeSpan.Zero;
-        public event Action<TimeSpan, TimeSpan?> SliderSelectionChanged;
-
-        private void RemoveSelection() {
-            StartTime = TimeSpan.Zero;
-            SL_duration.SelectionStart = 0;
-            SL_duration.SelectionEnd = 0;
-            SL_duration.IsSelectionRangeEnabled = false;
-        }
 
         private void Window_KeyDown(object sender, KeyEventArgs e) {
             if (e.Key == Key.Enter) {
-                LoadNewVideoClip();
+                LoadNewFile();
             }
-            if (e.Key == Key.M) {
+            else if (e.Key == Key.M) {
                 if (_lastSelectedItem is Item && _lastSelectedItem.GetType() != typeof(DirectoryItem) && _lastSelectedCollection != null) {
                     _lastSelectedCollection.SafeAddClip(_lastSelectedItem as Item);
                     UpdateCollectionsUI(TV_clips_collections);
                     UpdateColors();
                 }
             }
-            if (e.Key == Key.S && Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) {
+            else if (e.Key == Key.S && Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) {
                 FileSerializer.WriteAndCreateBackupFile(GlobalSettings.Instance, SettingsPath);
                 Log.Update("Настройки сохранены");
             }
-            //почему то не работает
-            //if (e.Key == Key.Left) {
-            //    ME_main.Position.Subtract(TimeSpan.FromSeconds(10));
-            //}
-
-            #region Clips encoding binds
-            if (e.Key == Key.S) {
-                RemoveSelection();
-            }
-            if (e.Key == Key.C) {
-                StartTime = ME_main.Position;
-                Log.Update(string.Format("Обрезка с {0}", StartTime.TotalMilliseconds));
-                SL_duration.IsSelectionRangeEnabled = true;
-                SL_duration.SelectionStart = ME_main.Position.TotalSeconds;
-                SliderSelectionChanged?.Invoke(StartTime, null);
-            }
-            if (e.Key == Key.C && Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) {
-                Log.Update(string.Format("Обрезка с {0} до конца", StartTime.TotalMilliseconds));
-                if (OwnedWindows.Count == 0) {
-                    OpenRendererWindow(ME_main.Position, ME_main.NaturalDuration.TimeSpan);
-                    SL_duration.SelectionEnd = ME_main.NaturalDuration.TimeSpan.TotalSeconds;
-                    UpdateColors();
-                }
-
-            }
-            if (e.Key == Key.E) {
-                Log.Update(string.Format("Обрезка до {0}", ME_main.Position.TotalMilliseconds));
-                SL_duration.IsSelectionRangeEnabled = true;
-                if (StartTime == TimeSpan.Zero) SL_duration.SelectionStart = 0;
-                SL_duration.SelectionEnd = ME_main.Position.TotalSeconds;
-                if (OwnedWindows.Count == 0) {
-                    OpenRendererWindow(StartTime, ME_main.Position);
-                    UpdateColors();
-                }
-                else {
-                    SliderSelectionChanged?.Invoke(StartTime, ME_main.Position);
-                }
-
-            }
-            if (e.Key == Key.D && OwnedWindows.Count != 0) {
-                OpenRendererWindow(null, ME_main.NaturalDuration.TimeSpan);
-                UpdateColors();
+            else {
+                ViewableController.PassKeyStroke(e);
             }
 
-            void OpenRendererWindow(TimeSpan? StartTime, TimeSpan? EndTime) {
-                RendererWindow rendererwindow = new RendererWindow(ME_main.Source, StartTime, EndTime) { Owner = this };
-                ME_main.Pause();
-                SliderSelectionChanged += rendererwindow.RendererWindow_SliderSelectionChanged;
-                rendererwindow.Show();
-            }
-            #endregion
         }
         private void TV_UpdateLastUsed(object sender, RoutedPropertyChangedEventArgs<object> e) {
             _lastSelectedTreeView = sender as TreeView;
@@ -532,7 +454,7 @@ namespace ClipsOrganizer {
         }
 
         private void Window_Drop(object sender, DragEventArgs e) {
-            LoadNewVideoClip(new Uri((e.Data.GetData(DataFormats.FileDrop) as string[]).First()));
+            LoadNewFile((e.Data.GetData(DataFormats.FileDrop) as string[]).First());
         }
 
         private void CB_Profile_SelectionChanged(object sender, SelectionChangedEventArgs e) {

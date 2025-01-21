@@ -15,7 +15,7 @@
     Title="ClipsOrganizer" Height="550" Width="1018" Closing="Window_Closing"
         KeyDown="Window_KeyDown">
 
-    <Grid Name="MainGrid" SizeChanged="MainGrid_SizeChanged">
+    <Grid Name="MainGrid" >
         <Grid.RowDefinitions>
             <RowDefinition Height="22.35"/>
             <RowDefinition/>

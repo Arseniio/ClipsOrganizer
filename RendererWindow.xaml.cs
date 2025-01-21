@@ -63,7 +63,7 @@ namespace ClipsOrganizer {
             }
             CB_OpenFolderAfterEncoding.IsChecked = Settings.GlobalSettings.Instance.OpenFolderAfterEncoding;
             if (Owner != null) {
-                (Owner as MainWindow).SliderSelectionChanged += RendererWindow_SliderSelectionChanged;
+                ViewableControls.ViewableController.VideoViewerInstance.SliderSelectionChanged += RendererWindow_SliderSelectionChanged;
             }
             Btn_Crop.DataContext = this;
             UpdateVideoSize();
@@ -79,7 +79,6 @@ namespace ClipsOrganizer {
         public void RendererWindow_SliderSelectionChanged(TimeSpan Start, TimeSpan? End) {
             TB_Crop_From.Text = Start.ToString(@"hh\:mm\:ss\.fff");
             if (End != null) TB_Crop_To.Text = End?.ToString(@"hh\:mm\:ss\.fff");
-
         }
 
 
@@ -188,8 +187,8 @@ namespace ClipsOrganizer {
             if (TimeSpan.TryParse(TB_Crop_From.Text, out var startTime) &&
                 TimeSpan.TryParse(TB_Crop_To.Text, out var endTime)) {
                 if (Owner == null) return;
-                (Owner as MainWindow).SL_duration.SelectionStart = startTime.TotalSeconds;
-                (Owner as MainWindow).SL_duration.SelectionEnd = endTime.TotalSeconds;
+                ViewableControls.ViewableController.VideoViewerInstance.SL_duration.SelectionStart = startTime.TotalSeconds;
+                ViewableControls.ViewableController.VideoViewerInstance.SL_duration.SelectionEnd = endTime.TotalSeconds;
             }
         }
 
