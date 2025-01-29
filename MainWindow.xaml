@@ -25,7 +25,7 @@
             <ColumnDefinition Width="200"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <GridSplitter IsTabStop="False" Grid.Column="0" Width="2" HorizontalAlignment="Left" Panel.ZIndex="10" Background="Gray" Margin="198,22,0,0" Grid.RowSpan="2"/>
+        <GridSplitter IsTabStop="False" Grid.Column="0" Width="2" HorizontalAlignment="Right" Panel.ZIndex="10" Background="Gray" Grid.RowSpan="2"/>
 
         <Menu materialDesign:MenuAssist.TopLevelMenuItemHeight="22"
              Panel.ZIndex="99" Grid.ColumnSpan="2">
@@ -61,16 +61,6 @@
             <Grid.RowDefinitions>
                 <RowDefinition Height="2*"/>
             </Grid.RowDefinitions>
-            <!-- <TextBlock Text="тут чёто обязательно будет" VerticalAlignment="Bottom" Margin="0 0 0 30"/> -->
-            <!-- <StackPanel VerticalAlignment="Bottom">
-                 <ComboBox Name="CB_sortType" SelectionChanged="CB_sortType_SelectionChanged">
-                    <ComboBoxItem Tag="{x:Static Model:Sorts.Default}" IsSelected="True" >Default</ComboBoxItem>
-                    <ComboBoxItem Tag="{x:Static Model:Sorts.Ascending_date}">Date ascending</ComboBoxItem>
-                    <ComboBoxItem Tag="{x:Static Model:Sorts.Descending_date}" >Date descending</ComboBoxItem>
-                    <ComboBoxItem Tag="{x:Static Model:Sorts.MarkedGrouping}" >Maked</ComboBoxItem>
-                </ComboBox>
-                 <CheckBox Name="CB_ParsedFileName" Content="Parse clip names to uniform"  Margin="5" Unchecked="CB_ParsedFileName_Unchecked" Checked="CB_ParsedFileName_Checked"/>
-            </StackPanel> -->
             <Grid Grid.Row="1">
                 <Grid.RowDefinitions>
                     <RowDefinition Height="17*"/>

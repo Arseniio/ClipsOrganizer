@@ -13,6 +13,8 @@ using Gma.System.MouseKeyHook;
 using ClipsOrganizer.Profiles;
 using ClipsOrganizer.FileUtils;
 using ClipsOrganizer.ViewableControls;
+using MetadataExtractor.Util;
+using Windows.ApplicationModel.Appointments;
 
 namespace ClipsOrganizer {
     /// <summary>
@@ -450,7 +452,19 @@ namespace ClipsOrganizer {
         }
 
         private void Window_DragEnter(object sender, DragEventArgs e) {
-            e.Effects = new FileInfo((e.Data.GetData(DataFormats.FileDrop) as string[]).First()).Extension == ".mp4" ? DragDropEffects.Link : DragDropEffects.None;
+            var files = e.Data.GetData(DataFormats.FileDrop) as string[];
+            if (files == null || files.Length != 1) {
+                e.Effects = DragDropEffects.None;
+                return;
+            }
+            var fileExt = new FileInfo(files.First()).Extension;
+            var fileType = ViewableController.FileTypeDetector.DetectFileType(files.First());
+            if (fileType != SupportedFileTypes.Unknown) {
+                e.Effects = DragDropEffects.Link;
+            }
+            else {
+                e.Effects = DragDropEffects.None;
+            }
         }
 
         private void Window_Drop(object sender, DragEventArgs e) {
