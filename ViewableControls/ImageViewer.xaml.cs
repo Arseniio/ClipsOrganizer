@@ -13,6 +13,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using ClipsOrganizer.Settings;
 using MetadataExtractor;
 
 
@@ -24,7 +25,7 @@ namespace ClipsOrganizer.ViewableControls {
     public partial class ImageViewer : UserControl {
         public ImageViewer() {
             InitializeComponent();
-            
+            Img_Border.Background = (SolidColorBrush)new BrushConverter().ConvertFromString(GlobalSettings.Instance.ImageBackgroundColor);
         }
         public void LoadImage(string filePath) {
             BitmapImage bitmap = new BitmapImage(new Uri(filePath));

@@ -27,6 +27,12 @@ namespace ClipsOrganizer.Settings {
         public string LastUsedQuality { get; set; }
         public string LastUsedEncoderPath { get; set; }
         public bool OpenFolderAfterEncoding { get; set; }
+        // Image settings
+        public string ImageBackgroundColor { get; set; } = "#999999";
+        // Video settings
+        public double DefaultVolumeLevel { get; set; } = 0.5;
+        public bool AutoPlay { get; set; } = false;
+
         public ExportSettings ExportSettings { get; set; } = new ExportSettings();
         [JsonIgnore]
         public FFmpegManager ffmpegManager { get; set; }
@@ -69,6 +75,7 @@ namespace ClipsOrganizer.Settings {
             this.LastUsedEncoderPath = ChangedSettings.LastUsedEncoderPath;
             this.LastUsedQuality = ChangedSettings.LastUsedQuality;
         }
+
 
     }
     public class ExportSettings {

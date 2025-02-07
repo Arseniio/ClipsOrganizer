@@ -29,7 +29,6 @@ namespace ClipsOrganizer.ViewableControls {
                 throw new InvalidOperationException("MainWindow не инициализирован");
             }
         }
-
         public static void LoadNewFile(string filePath) {
             SupportedFileTypes FileType = FileTypeDetector.DetectFileType(filePath);
             switch (FileType) {
@@ -67,10 +66,14 @@ namespace ClipsOrganizer.ViewableControls {
                     }
                     break;
             }
+            UpdateWindowName(filePath);
         }
         public static void PassKeyStroke(KeyEventArgs e) {
             if (MainWindowCC.Content is VideoViewer)
                 ((VideoViewer)MainWindowCC.Content).HandleKeyStroke(e);
+        }
+        private static void UpdateWindowName(string filepath) {
+            App.Current.MainWindow.Title = string.Format("ClipsOrganizer / {0}", System.IO.Path.GetFileName(filepath));
         }
 
         public static class FileTypeDetector {

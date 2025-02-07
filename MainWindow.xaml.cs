@@ -23,7 +23,8 @@ namespace ClipsOrganizer {
     public partial class MainWindow : Window {
         DispatcherTimer SliderTimer, AutoSaveTimer;
         ItemProvider itemProvider = null;
-        ContextMenu CT_mark = null;
+        ContextMenu CT_clips = null;
+        ContextMenu CT_collections = null;
         List<Item> Items = null;
         public static Profile CurrentProfile = null;
 
@@ -78,25 +79,18 @@ namespace ClipsOrganizer {
             LoadGlobalKeyboardHook();
 
             #region Context Menu init
-            CT_mark = new ContextMenu() { Name = "CT_mark" };
-            if (CurrentProfile.Collections.Count == 0) {
-                CT_mark.Items.Add("Нет коллекций");
-                AddNewCollectionMI();
-            }
-            else {
-                UpdateCollectionsMI();
-            }
-            CT_mark.Opened += CT_mark_Opened;
+            CT_clips = new ContextMenu() { Name = "CT_clips" };
+            CT_collections = new ContextMenu() { Name = "CT_collections" };
+
+            UpdateCollectionsMI();
+
+            CT_collections.Opened += CT_mark_Opened;
 
             CB_Profile.ItemsSource = ProfileManager.LoadAllProfiles();
             CB_Profile.SelectedItem = CurrentProfile.ProfileName;
 
-            //Btn_Mark.ContextMenu = CT_mark;
-            TV_clips.ContextMenu = CT_mark;
-            TV_clips_collections.ContextMenu = CT_mark;
-            //Костыль?
-            //ДА КОСТЫЛЬ ПОТОМ ПЕРЕПРОВЕРИТЬ И УБРАТЬ, В ТЕГЕ ОСТАЁТСЯ ТОЛЬКО ПОСЛЕДНЕЕ ПРИСВОЕННОЕ ЗНАЧЕНИЕ
-            //Btn_Mark.ContextMenu.Tag = Btn_Mark;
+            TV_clips.ContextMenu = CT_clips;
+            TV_clips_collections.ContextMenu = CT_collections;
             TV_clips_collections.ContextMenu.Tag = TV_clips_collections;
             TV_clips.ContextMenu.Tag = TV_clips;
             #endregion
@@ -141,20 +135,13 @@ namespace ClipsOrganizer {
             }
             Hook.GlobalEvents().OnCombination(CombinationDict);
         }
-
+        
+        #region MenuStuff
         private void CT_mark_Opened(object sender, RoutedEventArgs e) {
             if (sender is ContextMenu contextMenu) {
                 if (contextMenu.PlacementTarget is FrameworkElement placementTarget) {
-                    if (placementTarget == TV_clips) {
-                        if (TV_clips.SelectedItem is DirectoryItem) {
-                            CT_mark.IsOpen = false;
-                            e.Handled = false;
-                            return;
-                        }
-                        UpdateCollectionsMI();
-                        return;
-                    }
                     if (placementTarget == TV_clips_collections) {
+                        CT_collections.Items.Clear();
                         if (!(TV_clips_collections.SelectedItem is null)) {
                             if (TV_clips_collections.SelectedItem.GetType() == typeof(Item)) {
                                 UpdateCollectionsMI();
@@ -162,20 +149,18 @@ namespace ClipsOrganizer {
                                 var MI = new MenuItem { Header = "Удалить" };
                                 MI.Tag = sel_item;
                                 MI.Click += MI_CT_remove_Click;
-                                CT_mark.Items.Add(MI);
+                                CT_collections.Items.Add(MI);
                             }
                             if (TV_clips_collections.SelectedItem.GetType() == typeof(Collection)) {
-                                //UpdateCollectionsMI();
-                                CT_mark.Items.Clear();
                                 var sel_item = TV_clips_collections.SelectedItem as Collection;
                                 var MI = new MenuItem { Header = "Удалить коллекцию" };
                                 MI.Tag = sel_item;
                                 MI.Click += MI_CT_DeleteCollection_Click;
-                                CT_mark.Items.Add(MI);
+                                CT_collections.Items.Add(MI);
                                 MI = new MenuItem { Header = "Изменить" };
                                 MI.Tag = sel_item;
                                 MI.Click += MI_CT_edit_Click;
-                                CT_mark.Items.Add(MI);
+                                CT_collections.Items.Add(MI);
                             }
                         }
                     }
@@ -230,14 +215,14 @@ namespace ClipsOrganizer {
         }
 
         private void UpdateCollectionsMI() {
-            CT_mark.Items.Clear();
+            CT_clips.Items.Clear();
             LoadGlobalKeyboardHook();
             CurrentProfile.Collections.ForEach(x =>
             {
                 var MI = new MenuItem { Header = x.CollectionTag };
                 MI.Tag = x;
                 MI.Click += MI_CT_mark_Click;
-                CT_mark.Items.Add(MI);
+                CT_clips.Items.Add(MI);
             });
 
             AddNewCollectionMI();
@@ -246,8 +231,8 @@ namespace ClipsOrganizer {
         private void AddNewCollectionMI() {
             var MI_create = new MenuItem { Header = "Создать новую коллекцию" };
             MI_create.Click += create_collection;
-            CT_mark.Items.Add(new Separator());
-            CT_mark.Items.Add(MI_create);
+            CT_clips.Items.Add(new Separator());
+            CT_clips.Items.Add(MI_create);
         }
 
         private void UpdateCollectionsUI(TreeView treeView) {
@@ -258,6 +243,7 @@ namespace ClipsOrganizer {
 
             RestoreExpandedItems(treeView.Items, expandedItems, treeView);
         }
+        #endregion
 
         private void SaveExpandedItems(ItemCollection items, List<object> expandedItems, TreeView treeView) {
             foreach (var item in items) {

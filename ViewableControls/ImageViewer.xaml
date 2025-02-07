@@ -15,7 +15,7 @@
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
 
-        <Zoom:ZoomBorder x:Name="border" ClipToBounds="True" Background="Gray">
+        <Zoom:ZoomBorder x:Name="Img_Border" ClipToBounds="True" Background="Gray">
             <Image Name="Img_Displayed" Source="image.jpg"/>
         </Zoom:ZoomBorder>
 

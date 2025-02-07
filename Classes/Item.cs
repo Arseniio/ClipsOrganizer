@@ -16,8 +16,7 @@ namespace ClipsOrganizer.Model {
     public enum Sorts {
         Default = 0,
         Ascending_date = 1,
-        Descending_date = 2,
-        MarkedGrouping = 3
+        Descending_date = 2
     }
 
     public class Item {
@@ -145,9 +144,6 @@ namespace ClipsOrganizer.Model {
                     break;
                 case Sorts.Descending_date:
                     items = items.OrderByDescending(p => p.Date).ToList();
-                    break;
-                case Sorts.MarkedGrouping:
-                    //
                     break;
             }
 

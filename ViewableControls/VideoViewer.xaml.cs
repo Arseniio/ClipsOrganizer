@@ -42,10 +42,10 @@ namespace ClipsOrganizer.ViewableControls {
         }
 
         private void MainGrid_SizeChanged(object sender, SizeChangedEventArgs e) {
-            //-493
-            if (MainGrid.ActualWidth - 700 + 430 > 0) {
-                SL_duration.Width = MainGrid.ActualWidth - 700 + 430;
-            }
+            ////-493
+            //if (MainGrid.ActualWidth - 700 + 430 > 0) {
+            //    SL_duration.Width = MainGrid.ActualWidth - 700 + 430;
+            //}
         }
 
         bool is_dragging = false;
