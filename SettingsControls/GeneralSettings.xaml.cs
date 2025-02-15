@@ -1,4 +1,5 @@
 ﻿using ClipsOrganizer.Settings;
+using DataValidation;
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -34,6 +35,12 @@ namespace ClipsOrganizer.SettingsControls {
                 Btn_OpenColorDialog.Background = new SolidColorBrush(System.Windows.Media.Color.FromRgb(color.R, color.G, color.B));
                 // Обновляем текстовое поле с HEX значением
                 TB_BGColor.Text = $"#{color.R:X2}{color.G:X2}{color.B:X2}";
+            }
+        }
+
+        private void TB_AutoPlayOffset_PreviewTextInput(object sender, TextCompositionEventArgs e) {
+                if(InputValidator.MatchesExpectedBool(TimeSpan.TryParse(e.Text,out TimeSpan result), true, sender)){
+                e.Handled = false;
             }
         }
     }

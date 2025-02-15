@@ -36,7 +36,14 @@ namespace DataValidation {
 
         public static bool IsUnique(string input, IEnumerable<string> collection) =>
             !collection.Contains(input);
-        public static bool MatchesPattern(string input, string pattern) =>
-            Regex.IsMatch(input, pattern);
+        public static bool MatchesPattern(string input, string pattern, object Sender) {
+            var IsMatch = Regex.IsMatch(input, pattern);
+            SetUnderline(IsMatch, Sender);
+            return IsMatch;
+        }
+        public static bool MatchesExpectedBool(bool input,bool expected, object Sender) {
+            SetUnderline(input == expected, Sender);
+            return input == expected;
+        }
     }
 }

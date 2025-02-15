@@ -29,9 +29,11 @@ namespace ClipsOrganizer.Settings {
         public bool OpenFolderAfterEncoding { get; set; }
         // Image settings
         public string ImageBackgroundColor { get; set; } = "#999999";
+        public double ImageZoomLevel { get; set; }
         // Video settings
         public double DefaultVolumeLevel { get; set; } = 0.5;
         public bool AutoPlay { get; set; } = false;
+        public TimeSpan AutoPlayOffset { get; set; } = TimeSpan.Zero;
 
         public ExportSettings ExportSettings { get; set; } = new ExportSettings();
         [JsonIgnore]

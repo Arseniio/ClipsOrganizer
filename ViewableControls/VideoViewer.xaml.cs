@@ -28,6 +28,7 @@ namespace ClipsOrganizer.ViewableControls {
         MainWindow Owner = null;
         public VideoViewer() {
             InitializeComponent();
+            SL_volume.Value = GlobalSettings.Instance.DefaultVolumeLevel;
             #region Slider timer init
             SliderTimer = new DispatcherTimer();
             SliderTimer.Interval = TimeSpan.FromMilliseconds(100);
@@ -39,13 +40,6 @@ namespace ClipsOrganizer.ViewableControls {
         private void SL_duration_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e) {
             is_dragging = false;
             ME_main.Position = TimeSpan.FromSeconds((double)SL_duration.Value);
-        }
-
-        private void MainGrid_SizeChanged(object sender, SizeChangedEventArgs e) {
-            ////-493
-            //if (MainGrid.ActualWidth - 700 + 430 > 0) {
-            //    SL_duration.Width = MainGrid.ActualWidth - 700 + 430;
-            //}
         }
 
         bool is_dragging = false;
@@ -68,6 +62,8 @@ namespace ClipsOrganizer.ViewableControls {
         #region player events
         private void Btn_Play_Click(object sender, RoutedEventArgs e) {
             ME_main.Play();
+            Log.Update($"{IsPlaying} -> {!IsPlaying}");
+            IsPlaying = true;
         }
 
         private void SL_volume_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
@@ -79,10 +75,23 @@ namespace ClipsOrganizer.ViewableControls {
                 SL_duration.Maximum = ME_main.NaturalDuration.TimeSpan.TotalSeconds;
                 SliderTimer.Start();
             }
+            if (GlobalSettings.Instance.AutoPlay) {
+                if (GlobalSettings.Instance.AutoPlayOffset != TimeSpan.Zero && GlobalSettings.Instance.AutoPlayOffset < ME_main.NaturalDuration.TimeSpan) {
+                    ME_main.Position = GlobalSettings.Instance.AutoPlayOffset;
+                }
+                else { Log.Update($"Автоплей выставлен на значение {GlobalSettings.Instance.AutoPlayOffset}, длинна клипа {ME_main.NaturalDuration}, невозможно применить переход, возврат к стандартному значению"); }
+                Log.Update($"{IsPlaying} -> {!IsPlaying}");
+            }
+            else {
+                ME_main.Pause();
+                IsPlaying = false;
+            }
         }
 
         private void Btn_Stop_Click(object sender, RoutedEventArgs e) {
             ME_main.Pause();
+            Log.Update($"{IsPlaying} -> {!IsPlaying}");
+            IsPlaying = false;
         }
         #endregion
 
@@ -92,7 +101,6 @@ namespace ClipsOrganizer.ViewableControls {
             if (VideoPath != null) {
                 ME_main.Source = new Uri(VideoPath);
                 ME_main.Play();
-                return;
             }
         }
 
@@ -102,9 +110,20 @@ namespace ClipsOrganizer.ViewableControls {
             SL_duration.SelectionEnd = 0;
             SL_duration.IsSelectionRangeEnabled = false;
         }
+        bool IsPlaying = true;
 
+        private void SwapPlaying() {
+            Log.Update($"{IsPlaying} -> {!IsPlaying}");
+            if (!IsPlaying) {
+                IsPlaying = true;
+                ME_main.Play();
+            }
+            else {
+                IsPlaying = false;
+                ME_main.Pause();
+            }
+        }
         public void HandleKeyStroke(KeyEventArgs e) {
-
             #region Clips encoding binds
             if (e.Key == Key.S) {
                 RemoveSelection();
@@ -132,21 +151,23 @@ namespace ClipsOrganizer.ViewableControls {
                 SL_duration.SelectionEnd = ME_main.Position.TotalSeconds;
                 if (App.Current.MainWindow.OwnedWindows.Count == 0) {
                     OpenRendererWindow(StartTime, ME_main.Position);
-                    Owner.UpdateColors();
+                    
                 }
                 else {
                     SliderSelectionChanged?.Invoke(StartTime, ME_main.Position);
                 }
 
             }
-            if (e.Key == Key.D && App.Current.MainWindow.OwnedWindows.Count != 0) {
-                OpenRendererWindow(null, ME_main.NaturalDuration.TimeSpan);
+            if (e.Key == Key.D && App.Current.MainWindow.OwnedWindows.Count == 0) {
+                OpenRendererWindow(TimeSpan.Zero, ME_main.NaturalDuration.TimeSpan);
                 Owner.UpdateColors();
             }
+            if (e.Key == Key.Space) SwapPlaying();
 
             void OpenRendererWindow(TimeSpan? StartTime, TimeSpan? EndTime) {
                 RendererWindow rendererwindow = new RendererWindow(ME_main.Source, StartTime, EndTime) { Owner = Owner };
                 ME_main.Pause();
+                IsPlaying = false;
                 SliderSelectionChanged += rendererwindow.RendererWindow_SliderSelectionChanged;
                 rendererwindow.Show();
             }
