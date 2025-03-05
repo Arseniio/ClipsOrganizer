@@ -27,6 +27,7 @@ namespace ClipsOrganizer {
             InitializeComponent();
             this.settings = settings;
             this.Profile = profile;
+            CC_Content.Content = new GeneralSettings();
         }
         private void LB_Menu_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             if (LB_Menu.SelectedItem is ListBoxItem selectedItem) {
@@ -42,8 +43,7 @@ namespace ClipsOrganizer {
             }
         }
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
-
+            (App.Current.MainWindow as MainWindow).UpdateItems();
         }
-
     }
 }

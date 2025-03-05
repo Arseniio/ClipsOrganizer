@@ -85,6 +85,7 @@ namespace ClipsOrganizer {
             UpdateCollectionsMI();
 
             CT_collections.Opened += CT_mark_Opened;
+            CT_clips.Opened += CT_clips_opened;
 
             CB_Profile.ItemsSource = ProfileManager.LoadAllProfiles();
             CB_Profile.SelectedItem = CurrentProfile.ProfileName;
@@ -135,8 +136,15 @@ namespace ClipsOrganizer {
             }
             Hook.GlobalEvents().OnCombination(CombinationDict);
         }
-        
+
         #region MenuStuff
+
+        private void CT_clips_opened(object sender, RoutedEventArgs e) {
+            if (sender is ContextMenu contextMenu) {
+                UpdateCollectionsMI();
+            }
+        }
+
         private void CT_mark_Opened(object sender, RoutedEventArgs e) {
             if (sender is ContextMenu contextMenu) {
                 if (contextMenu.PlacementTarget is FrameworkElement placementTarget) {
@@ -290,6 +298,7 @@ namespace ClipsOrganizer {
         private void LoadNewFile(string VideoPath = null) {
             if (VideoPath != null) {
                 ViewableController.LoadNewFile(VideoPath);
+                return;
             }
             if (_lastSelectedTreeView?.SelectedItem == null) return;
             if (_lastSelectedTreeView?.SelectedItem.GetType() == typeof(Item)) {
@@ -298,18 +307,9 @@ namespace ClipsOrganizer {
             if (_lastSelectedTreeView?.SelectedItem.GetType() == typeof(FileItem)) {
                 ViewableController.LoadNewFile((_lastSelectedTreeView?.SelectedItem as FileItem).Path);
             }
-            //TODO USE OR DELETE LATER
-            //if (ME_main.Source?.LocalPath != null)
-                //this.Title = string.Format("ClipsOrganizer / {0}", System.IO.Path.GetFileName(ME_main.Source.LocalPath));
-            //TB_loading_info.Visibility = Visibility.Hidden;
         }
 
-        private void CB_sortType_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            //if (this.IsLoaded) {
-            //    DataContext = itemProvider.GetItemsFromFolder("H:\\nrtesting", (bool)CB_ParsedFileName.IsChecked, (Sorts)(CB_sortType.SelectedItem as ComboBoxItem).Tag);
-            //    TV_clips.Items.Refresh();
-            //}
-        }
+
         #endregion
 
         #region Marking clips
@@ -319,19 +319,7 @@ namespace ClipsOrganizer {
         private void MI_CT_mark_Click(object sender, RoutedEventArgs e) {
             var clickeditem = sender as MenuItem;
             if ((clickeditem.Parent as ContextMenu).PlacementTarget is TreeView sourceElement) {
-                //((clickeditem.Parent as ContextMenu)).Name
-
                 //ME_main.Volume = 0; //TODO: remove this, this is only for not get hear loss while debugging
-                //TODO: redolater
-                //if (sourceElement == Btn_Mark) {
-                //    (clickeditem.Tag as Collection).Files.Add(new Item
-                //    {
-                //        Date = new FileInfo(ME_main.Source.LocalPath).CreationTime,
-                //        Path = ME_main.Source.LocalPath,
-                //        Color = itemProvider.FindColorByCollections(clickeditem.Tag as Collection, ME_main.Source.AbsolutePath.Split('/').Last()),
-                //        Name = ME_main.Source.AbsolutePath.Split('/').Last()
-                //    });
-                //}
                 if (sourceElement == TV_clips) {
                     if (TV_clips.SelectedItem == null) return;
                     FileItem SelectedItem = TV_clips.SelectedItem as FileItem;
@@ -344,6 +332,7 @@ namespace ClipsOrganizer {
                     });
                 }
             }
+
             _lastSelectedCollection = clickeditem.Tag as Collection;
             UpdateCollectionsUI(TV_clips_collections);
             UpdateColors();
@@ -359,8 +348,7 @@ namespace ClipsOrganizer {
                     TV_clips_collections.Items.Refresh();
                 }
                 else {
-                    MessageBox.Show("Коллекция с таким названием уже существует");
-                    return;
+                    Log.Update("Коллекция с таким названием уже существует");
                 }
             }
         }
@@ -396,7 +384,7 @@ namespace ClipsOrganizer {
             TV_clips_collections.IsEnabled = false;
 
         }
-        
+
 
         private void Window_KeyDown(object sender, KeyEventArgs e) {
             if (e.Key == Key.Enter) {
@@ -418,6 +406,9 @@ namespace ClipsOrganizer {
             }
 
         }
+
+
+
         private void TV_UpdateLastUsed(object sender, RoutedPropertyChangedEventArgs<object> e) {
             _lastSelectedTreeView = sender as TreeView;
             _lastSelectedItem = e.NewValue;
@@ -429,12 +420,16 @@ namespace ClipsOrganizer {
             if (!ProfileManager.LoadAllProfiles().Exists(p => p == CurrentProfile.ProfileName)) {
                 CurrentProfile = FileSerializer.ReadFile<Profile>($"./Profiles/{ProfileManager.LoadAllProfiles().First()}.json");
                 FileSerializer.WriteAndCreateBackupFile(CurrentProfile, CurrentProfile.ProfilePath);
-                Items = itemProvider.GetItemsFromFolder(CurrentProfile.ClipsFolder, collections: CurrentProfile.Collections);
-                TV_clips_collections.ItemsSource = CurrentProfile.Collections;
-                TV_clips.ItemsSource = Items;
+                UpdateItems();
             }
             CB_Profile.SelectedItem = CurrentProfile.ProfileName;
             CB_Profile.ItemsSource = ProfileManager.LoadAllProfiles();
+        }
+
+        public void UpdateItems() {
+            Items = itemProvider.GetItemsFromFolder(CurrentProfile.ClipsFolder, collections: CurrentProfile.Collections);
+            TV_clips_collections.ItemsSource = CurrentProfile.Collections;
+            TV_clips.ItemsSource = Items;
         }
 
         private void Window_DragEnter(object sender, DragEventArgs e) {
@@ -464,9 +459,7 @@ namespace ClipsOrganizer {
             else {
                 FileSerializer.WriteAndCreateBackupFile(CurrentProfile, CurrentProfile.ProfilePath);
                 CurrentProfile = FileSerializer.ReadFile<Profile>(ProfileManager.ProfilePath + $"/{SelectedProfile}.json");
-                Items = itemProvider.GetItemsFromFolder(CurrentProfile.ClipsFolder, collections: CurrentProfile.Collections);
-                TV_clips_collections.ItemsSource = CurrentProfile.Collections;
-                TV_clips.ItemsSource = Items;
+                UpdateItems();
             }
         }
 

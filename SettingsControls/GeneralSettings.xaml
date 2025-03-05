@@ -3,6 +3,7 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+             xmlns:model="clr-namespace:ClipsOrganizer.Model"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ClipsOrganizer.SettingsControls"
              mc:Ignorable="d" 
@@ -20,33 +21,30 @@
         </Grid.RowDefinitions>
         <StackPanel VerticalAlignment="Center" Orientation="Horizontal">
             <TextBlock VerticalAlignment="Center" Text="Метод сортировки: "/>
-            <ComboBox Name="SP_SortMethod" Width="160">
-                <ComboBoxItem/>
+            <ComboBox Name="SP_SortMethod" SelectionChanged="SP_SortMethod_SelectionChanged" Width="189">
+                <ComboBoxItem Tag="Default">Стандартное</ComboBoxItem>
+                <ComboBoxItem Tag="Ascending_date" d:IsSelected="True">По возрастанию даты</ComboBoxItem>
+                <ComboBoxItem Tag="Descending_date">По убыванию даты</ComboBoxItem>
                 <!--TODO: FINISH IMPLEMENTING SORTING-->
             </ComboBox>
         </StackPanel>
-
         <!-- Image Settings -->
         <StackPanel Grid.Row="1" VerticalAlignment="Center" Orientation="Horizontal">
-            <TextBlock VerticalAlignment="Center" Text="Уровень увеличения изображения: "/>
-            <Slider Minimum="0.1" Maximum="5.0" Value="{Binding ImageZoomLevel}" Width="160"/>
-        </StackPanel>
-        <StackPanel Grid.Row="2" VerticalAlignment="Center" Orientation="Horizontal">
             <TextBlock VerticalAlignment="Center" Text="Цвет фона изображения: "/>
             <TextBox Width="76" Name="TB_BGColor" d:Text="#FFFFFF" Text="{Binding ImageBackgroundColor}" VerticalAlignment="Center" Margin="5,0"/>
             <Button Width="27" Height="27" Click="Btn_OpenColorDialog_Click" Name="Btn_OpenColorDialog" Background="{Binding ImageBackgroundColor}" BorderBrush="Black" BorderThickness="1" Margin="5,0"/>
         </StackPanel>
 
         <!-- Video Settings -->
-        <StackPanel Grid.Row="3" VerticalAlignment="Center" Orientation="Horizontal">
+        <StackPanel Grid.Row="2" VerticalAlignment="Center" Orientation="Horizontal">
             <TextBlock VerticalAlignment="Center" Text="Уровень громкости по умолчанию: "/>
             <Slider Minimum="0" Maximum="1" Value="{Binding DefaultVolumeLevel}" Width="160"/>
         </StackPanel>
-        <StackPanel Grid.Row="4" VerticalAlignment="Center" Orientation="Horizontal">
+        <StackPanel Grid.Row="3" VerticalAlignment="Center" Orientation="Horizontal">
             <TextBlock VerticalAlignment="Center" Text="Автовоспроизведение: "/>
             <CheckBox IsChecked="{Binding AutoPlay}"/>
         </StackPanel>
-        <StackPanel Grid.Row="5" VerticalAlignment="Center" Orientation="Horizontal">
+        <StackPanel Grid.Row="4" VerticalAlignment="Center" Orientation="Horizontal">
             <TextBlock VerticalAlignment="Center" Text="Оффсет начала воспроизведения: "/>
             <TextBox Width="76" Text="{Binding AutoPlayOffset}" Name="TB_AutoPlayOffset" PreviewTextInput="TB_AutoPlayOffset_PreviewTextInput" VerticalAlignment="Center" Margin="5,0"/>
         </StackPanel>

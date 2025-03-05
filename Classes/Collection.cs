@@ -37,7 +37,6 @@ namespace ClipsOrganizer.Collections {
 
             Files = new List<Item>();
             foreach (var item in directoryItem.Items) {
-                var fileInfo = new FileUtils.FileUtils().GetFileinfo(item.Path);
                 Files.Add(new Item
                 {
                     Name = item.Name,

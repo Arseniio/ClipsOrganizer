@@ -1,4 +1,5 @@
 ﻿using ClipsOrganizer.Collections;
+using ClipsOrganizer.Settings;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -51,29 +52,27 @@ namespace ClipsOrganizer.Model {
         public bool ParsedFileNames = false;
 
         public static FileInfo GetLastFile(string path,List<Item> OldItems) {
-            //List<Item> NewItems = GetItemsFromFolder(path);
             var allFiles = Directory.GetFiles(path, "*", SearchOption.AllDirectories).Select(f => new FileInfo(f));
             var newFiles = allFiles.Where(file => !OldItems.Select(p=>p.Name).Contains(file.Name)).ToList();
             return newFiles.OrderByDescending(file => file.CreationTime).FirstOrDefault();
         }
 
-        public List<Item> GetItemsFromFolder(string path, Sorts sortMethod = Sorts.Default, List<Collection> collections = null) {
+        public List<Item> GetItemsFromFolder(string path, List<Collection> collections = null) {
             var items = new List<Item>();
             var dirInfo = new DirectoryInfo(path);
-
             foreach (var directory in dirInfo.GetDirectories()) {
                 var item = new DirectoryItem
                 {
                     Name = directory.Name,
                     Path = directory.FullName,
-                    Items = GetItemsFromFolder(directory.FullName, sortMethod, collections)
+                    Items = GetItemsFromFolder(directory.FullName, collections)
                 };
                 items.Add(item);
             }
 
             items.AddRange(GetFileItems(dirInfo, collections));
 
-            items = SortItems(sortMethod, items);
+            items = SortItems(GlobalSettings.Instance.SortMethod, items);
 
             return items;
         }

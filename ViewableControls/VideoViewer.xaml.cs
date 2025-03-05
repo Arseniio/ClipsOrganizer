@@ -15,7 +15,6 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
-using Windows.UI.ApplicationSettings;
 
 namespace ClipsOrganizer.ViewableControls {
     /// <summary>
@@ -25,6 +24,7 @@ namespace ClipsOrganizer.ViewableControls {
         DispatcherTimer SliderTimer;
         TimeSpan StartTime = TimeSpan.Zero;
         public event Action<TimeSpan, TimeSpan?> SliderSelectionChanged;
+        public event Action<Uri> UpdateFilename;
         MainWindow Owner = null;
         public VideoViewer() {
             InitializeComponent();
@@ -102,6 +102,7 @@ namespace ClipsOrganizer.ViewableControls {
                 ME_main.Source = new Uri(VideoPath);
                 ME_main.Play();
             }
+            if(Application.Current.MainWindow.OwnedWindows.Count != 0) UpdateFilename(new Uri(VideoPath));
         }
 
         private void RemoveSelection() {
@@ -124,6 +125,31 @@ namespace ClipsOrganizer.ViewableControls {
             }
         }
         public void HandleKeyStroke(KeyEventArgs e) {
+            if (e.Key == Key.Left && !Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) {
+                var step = TimeSpan.FromSeconds(1);
+                ME_main.Position = ME_main.Position - step;
+                SL_duration.Value = ME_main.Position.TotalSeconds;
+                Log.Update($"Перемотка назад: {ME_main.Position.TotalMilliseconds} мс");
+            }
+            else if (e.Key == Key.Right && !Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) {
+                var step = TimeSpan.FromSeconds(1);
+                ME_main.Position = ME_main.Position + step;
+                SL_duration.Value = ME_main.Position.TotalSeconds;
+                Log.Update($"Перемотка вперед: {ME_main.Position.TotalMilliseconds} мс");
+            }
+            else if (e.Key == Key.Up && Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) {
+                double stepVolume = 0.1;
+                ME_main.Volume = Math.Min(ME_main.Volume + stepVolume, 1.0);
+                SL_volume.Value = ME_main.Volume;
+                Log.Update("Громкость увеличена");
+            }
+            else if (e.Key == Key.Down && Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) {
+                double stepVolume = 0.1;
+                ME_main.Volume = Math.Max(ME_main.Volume - stepVolume, 0.0);
+                SL_volume.Value = ME_main.Volume;
+                Log.Update("Громкость уменьшена");
+            }
+
             #region Clips encoding binds
             if (e.Key == Key.S) {
                 RemoveSelection();
@@ -169,9 +195,11 @@ namespace ClipsOrganizer.ViewableControls {
                 ME_main.Pause();
                 IsPlaying = false;
                 SliderSelectionChanged += rendererwindow.RendererWindow_SliderSelectionChanged;
+                UpdateFilename += rendererwindow.RendererWindow_ChangeSelectedFile;
                 rendererwindow.Show();
             }
             #endregion
         }
+
     }
 }

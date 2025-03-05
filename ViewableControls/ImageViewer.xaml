@@ -9,21 +9,25 @@
              xmlns:Zoom="clr-namespace:ClipsOrganizer.PanAndZoom"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
+    <Grid Name="MainGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="5*" />
-            <ColumnDefinition Width="1*" />
+            <ColumnDefinition Width="0" d:Width="200" />
         </Grid.ColumnDefinitions>
 
         <Zoom:ZoomBorder x:Name="Img_Border" ClipToBounds="True" Background="Gray">
             <Image Name="Img_Displayed" Source="image.jpg"/>
         </Zoom:ZoomBorder>
 
-
-        <GridSplitter IsTabStop="False" Grid.Column="1" Width="2" HorizontalAlignment="Left" Panel.ZIndex="10" Background="Gray" Grid.RowSpan="2"/>
-        <StackPanel Grid.Column="1" Margin="10">
-            
-        </StackPanel>
+        <GridSplitter Name="GP_col" IsTabStop="False" Grid.Column="1" Width="2" HorizontalAlignment="Left" Panel.ZIndex="10" Background="Gray" Grid.RowSpan="2"/>
+        <ListView  Grid.Column="1" Name="LV_metadata" ItemsSource="{Binding Items}" d:ItemsSource="{d:SampleData ItemCount=5}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Параметр" DisplayMemberBinding="{Binding Name}" Width="145"/>
+                    <GridViewColumn Header="Значение" DisplayMemberBinding="{Binding Value}" Width="250"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
     </Grid>
 
 </UserControl>

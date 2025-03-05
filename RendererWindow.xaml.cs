@@ -48,7 +48,6 @@ namespace ClipsOrganizer {
 
         public RendererWindow(Uri VideoPath, TimeSpan? Crop_From = null, TimeSpan? Crop_To = null) {
             InitializeComponent();
-            ;
             this.VideoPath = VideoPath;
             CB_codec.ItemsSource = Enum.GetValues(typeof(VideoCodec)).Cast<VideoCodec>();
             CB_codec.SelectedIndex = 0; //TODO: change later
@@ -64,6 +63,7 @@ namespace ClipsOrganizer {
             CB_OpenFolderAfterEncoding.IsChecked = Settings.GlobalSettings.Instance.OpenFolderAfterEncoding;
             if (Owner != null) {
                 ViewableControls.ViewableController.VideoViewerInstance.SliderSelectionChanged += RendererWindow_SliderSelectionChanged;
+                ViewableControls.ViewableController.VideoViewerInstance.UpdateFilename += RendererWindow_ChangeSelectedFile;
             }
             Btn_Crop.DataContext = this;
             UpdateVideoSize();
@@ -79,6 +79,12 @@ namespace ClipsOrganizer {
         public void RendererWindow_SliderSelectionChanged(TimeSpan Start, TimeSpan? End) {
             TB_Crop_From.Text = Start.ToString(@"hh\:mm\:ss\.fff");
             if (End != null) TB_Crop_To.Text = End?.ToString(@"hh\:mm\:ss\.fff");
+        }
+        
+        public void RendererWindow_ChangeSelectedFile(Uri Filename) {
+            this.VideoPath = Filename;
+            TB_outputPath.Text = getNextFileName(Path.GetDirectoryName(VideoPath.LocalPath));
+            UpdateVideoSize();
         }
 
 
@@ -154,7 +160,7 @@ namespace ClipsOrganizer {
             if (CB_codec.SelectedItem != null && selectedCodec != VideoCodec.Unknown && !string.IsNullOrEmpty(TB_Quality.Text) && int.TryParse(TB_Quality.Text, out int bitrate)) {
                 if (TimeSpan.TryParse(TB_Crop_From.Text, out TimeSpan startTime) && TimeSpan.TryParse(TB_Crop_To.Text, out TimeSpan endTime)) {
                     if (startTime == TimeSpan.Zero && startTime > endTime) {
-                        MessageBox.Show("Невозможно обрезать клип в обратную сторону.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                        Log.Update("Невозможно обрезать клип в обратную сторону.");
 
                     }
                     Settings.GlobalSettings.Instance.ffmpegManager.StartEncodingAsync(VideoPath.LocalPath, TB_outputPath.Text, selectedCodec, bitrate, startTime, endTime);
@@ -166,7 +172,7 @@ namespace ClipsOrganizer {
                 }
             }
             else {
-                MessageBox.Show("Пожалуйста, убедитесь, что выбраны параметры кодека и указано значение качества.", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Warning);
+                Log.Update("Пожалуйста, убедитесь, что выбраны параметры кодека и указано значение качества.");
             }
         }
         private void UpdateProgressBar(int Precent) {

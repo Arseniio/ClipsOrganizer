@@ -27,6 +27,7 @@ namespace ClipsOrganizer.Settings {
         public string LastUsedQuality { get; set; }
         public string LastUsedEncoderPath { get; set; }
         public bool OpenFolderAfterEncoding { get; set; }
+        public Model.Sorts SortMethod { get; set; }
         // Image settings
         public string ImageBackgroundColor { get; set; } = "#999999";
         public double ImageZoomLevel { get; set; }
