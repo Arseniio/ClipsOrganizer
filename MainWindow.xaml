@@ -22,10 +22,10 @@
             <RowDefinition Height="16"/>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="200"/>
-            <ColumnDefinition Width="*"/>
+            <ColumnDefinition Width="355"/>
+            <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <GridSplitter IsTabStop="False" Grid.Column="0" Width="2" HorizontalAlignment="Right" Panel.ZIndex="10" Background="Gray" Grid.RowSpan="2"/>
+        <GridSplitter IsTabStop="False" Grid.Column="0" Width="2" HorizontalAlignment="Right" Panel.ZIndex="10" Background="Gray" Grid.RowSpan="2" Margin="218,0,0,0"/>
 
         <Menu materialDesign:MenuAssist.TopLevelMenuItemHeight="22"
              Panel.ZIndex="99" Grid.ColumnSpan="2">
@@ -57,60 +57,68 @@
 
 
         <!--#region Left part-->
-        <Grid Grid.Column="0" Margin="0,22,0,0" Grid.RowSpan="2">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="2*"/>
-            </Grid.RowDefinitions>
-            <Grid Grid.Row="1">
-                <Grid.RowDefinitions>
-                    <RowDefinition Height="17*"/>
-                    <RowDefinition Height="31*"/>
-                    <RowDefinition Height="26"/>
-                </Grid.RowDefinitions>
-                <GridSplitter IsTabStop="False" VerticalAlignment="Top" Width="auto" Height="1" HorizontalAlignment="Stretch" Panel.ZIndex="10" Background="Gray" Grid.Row="1"/>
+        <TabControl TabStripPlacement="Bottom" Grid.Column="0" Margin="0,22,0,0" Grid.RowSpan="2">
+            <TabItem Height="44" IsSelected="True" Header="Коллекции">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="2*"/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="1">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="17*"/>
+                            <RowDefinition Height="31*"/>
+                            <RowDefinition Height="26"/>
+                        </Grid.RowDefinitions>
+                        <GridSplitter IsTabStop="False" VerticalAlignment="Top" Width="auto" Height="1" HorizontalAlignment="Stretch" Panel.ZIndex="10" Background="Gray" Grid.Row="1"/>
 
-                <TreeView TabIndex="0" ItemsSource="{Binding}" Grid.Row="0" Name="TV_clips_collections" MouseDoubleClick="TV_clips_MouseDoubleClick" SelectedItemChanged="TV_UpdateLastUsed">
-                    <TreeView.Resources>
-                        <Style TargetType="TreeViewItem" BasedOn="{StaticResource {x:Type TreeViewItem}}">
-                            <Setter Property="Padding" Value="0" />
-                        </Style>
-                        <HierarchicalDataTemplate DataType="{x:Type Collection:Collection}" ItemsSource="{Binding Files}" >
-                            <TextBlock Text="{Binding Path=CollectionTag}" ToolTip="{Binding Path=Files}" />
-                        </HierarchicalDataTemplate>
+                        <TreeView TabIndex="0" ItemsSource="{Binding}" Grid.Row="0" Name="TV_clips_collections" MouseDoubleClick="TV_clips_MouseDoubleClick" SelectedItemChanged="TV_UpdateLastUsed">
+                            <TreeView.Resources>
+                                <Style TargetType="TreeViewItem" BasedOn="{StaticResource {x:Type TreeViewItem}}">
+                                    <Setter Property="Padding" Value="0" />
+                                </Style>
+                                <HierarchicalDataTemplate DataType="{x:Type Collection:Collection}" ItemsSource="{Binding Files}" >
+                                    <TextBlock Text="{Binding Path=CollectionTag}" ToolTip="{Binding Path=Files}" />
+                                </HierarchicalDataTemplate>
 
-                        <DataTemplate DataType="{x:Type Model:Item}">
-                            <TextBlock Text="{Binding Path=Name}" ToolTip="{Binding Path=Name}" />
-                        </DataTemplate>
-                    </TreeView.Resources>
-                </TreeView>
+                                <DataTemplate DataType="{x:Type Model:Item}">
+                                    <TextBlock Text="{Binding Path=Name}" ToolTip="{Binding Path=Name}" />
+                                </DataTemplate>
+                            </TreeView.Resources>
+                        </TreeView>
 
-                <TreeView materialDesign:RippleAssist.IsDisabled="True" TabIndex="0" ItemsSource="{Binding}" Grid.Row="1" Name="TV_clips" 
+                        <TreeView materialDesign:RippleAssist.IsDisabled="True" TabIndex="0" ItemsSource="{Binding}" Grid.Row="1" Name="TV_clips" 
           MouseDoubleClick="TV_clips_MouseDoubleClick" SelectedItemChanged="TV_UpdateLastUsed" Grid.RowSpan="2">
-                    <TreeView.Resources>
-                        <Style TargetType="TreeViewItem" BasedOn="{StaticResource {x:Type TreeViewItem}}">
-                            <Setter Property="Padding" Value="0" />
-                        </Style>
-                        <HierarchicalDataTemplate DataType="{x:Type Model:DirectoryItem}" ItemsSource="{Binding Items}">
-                            <TextBlock  Text="{Binding Path=Name}" ToolTip="{Binding Path=Path}" Padding="0" />
-                        </HierarchicalDataTemplate>
+                            <TreeView.Resources>
+                                <Style TargetType="TreeViewItem" BasedOn="{StaticResource {x:Type TreeViewItem}}">
+                                    <Setter Property="Padding" Value="0" />
+                                </Style>
+                                <HierarchicalDataTemplate DataType="{x:Type Model:DirectoryItem}" ItemsSource="{Binding Items}">
+                                    <TextBlock  Text="{Binding Path=Name}" ToolTip="{Binding Path=Path}" Padding="0" />
+                                </HierarchicalDataTemplate>
 
-                        <DataTemplate DataType="{x:Type Model:Item}">
-                            <Border Background="{Binding Path=Color}" Padding="1">
-                                <TextBlock Text="{Binding Path=Name}" ToolTip="{Binding Path=Path}" />
-                            </Border>
-                        </DataTemplate>
-                    </TreeView.Resources>
-                </TreeView>
+                                <DataTemplate DataType="{x:Type Model:Item}">
+                                    <Border Background="{Binding Path=Color}" Padding="1">
+                                        <TextBlock Text="{Binding Path=Name}" ToolTip="{Binding Path=Path}" />
+                                    </Border>
+                                </DataTemplate>
+                            </TreeView.Resources>
+                        </TreeView>
 
-            </Grid>
-
-        </Grid>
+                    </Grid>
+                </Grid>
+            </TabItem>
+            <TabItem Height="44" Header="Информация">
+                <UserControl Name="CC_Actions"/>
+            </TabItem>
+            <TabItem Height="44" Header="Действия">
+            </TabItem>
+        </TabControl>
         <!--#endregion-->
 
         <!--#region Right part-->
-        <ContentControl Grid.Row="1" Grid.Column="1" Name="CC_Viewable"/>
+        <ContentControl Grid.Column="1" Name="CC_Viewable" Margin="0,22,0,0" Grid.RowSpan="2"/>
         <!--#endregion-->
-        <Rectangle Grid.Row="3" Grid.ColumnSpan="2" Height="1" Fill="Gray" VerticalAlignment="Top"/>
-        <TextBlock Grid.Row="3" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" MouseDown="TB_log_MouseDown" d:Text="LOG DEFAULT TEXT" Margin="10 0 0 0" Name="TB_log" VerticalAlignment="Center"/>
+        <Rectangle Grid.ColumnSpan="2" Height="1" Fill="Gray" VerticalAlignment="Top" Grid.RowSpan="2" Margin="0,22,0,0"/>
+        <TextBlock Grid.Row="2" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" MouseDown="TB_log_MouseDown" d:Text="LOG DEFAULT TEXT" Margin="10,0,0,0" Name="TB_log" VerticalAlignment="Center" Height="16"/>
     </Grid>
 </Window>

@@ -3,31 +3,22 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
-             
+
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ClipsOrganizer.ViewableControls"
-             xmlns:Zoom="clr-namespace:ClipsOrganizer.PanAndZoom"
+             xmlns:Zoom="clr-namespace:ClipsOrganizer.ViewableControls"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800">
     <Grid Name="MainGrid">
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="5*" />
-            <ColumnDefinition Width="0" d:Width="200" />
         </Grid.ColumnDefinitions>
 
         <Zoom:ZoomBorder x:Name="Img_Border" ClipToBounds="True" Background="Gray">
             <Image Name="Img_Displayed" Source="image.jpg"/>
         </Zoom:ZoomBorder>
 
-        <GridSplitter Name="GP_col" IsTabStop="False" Grid.Column="1" Width="2" HorizontalAlignment="Left" Panel.ZIndex="10" Background="Gray" Grid.RowSpan="2"/>
-        <ListView  Grid.Column="1" Name="LV_metadata" ItemsSource="{Binding Items}" d:ItemsSource="{d:SampleData ItemCount=5}">
-            <ListView.View>
-                <GridView>
-                    <GridViewColumn Header="Параметр" DisplayMemberBinding="{Binding Name}" Width="145"/>
-                    <GridViewColumn Header="Значение" DisplayMemberBinding="{Binding Value}" Width="250"/>
-                </GridView>
-            </ListView.View>
-        </ListView>
+
     </Grid>
 
 </UserControl>

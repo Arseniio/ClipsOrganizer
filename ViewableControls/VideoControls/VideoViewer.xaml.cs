@@ -34,6 +34,17 @@ namespace ClipsOrganizer.ViewableControls {
             SliderTimer.Interval = TimeSpan.FromMilliseconds(100);
             SliderTimer.Tick += VideoDurationUpdate;
             #endregion 
+            ViewableController.FileLoaded += ViewableController_FileLoaded;
+        }
+
+        private void ViewableController_FileLoaded(object sender, FileLoadedEventArgs e) {
+            Owner = Window.GetWindow(this) as MainWindow;
+            RemoveSelection();
+            if (e.FilePath != null) {
+                ME_main.Source = new Uri(e.FilePath);
+                ME_main.Play();
+            }
+            if (Application.Current.MainWindow.OwnedWindows.Count != 0) UpdateFilename(new Uri(e.FilePath));
         }
 
         #region sliders events
@@ -94,16 +105,6 @@ namespace ClipsOrganizer.ViewableControls {
             IsPlaying = false;
         }
         #endregion
-
-        public void LoadVideoFile(string VideoPath) {
-            Owner = Window.GetWindow(this) as MainWindow;
-            RemoveSelection();
-            if (VideoPath != null) {
-                ME_main.Source = new Uri(VideoPath);
-                ME_main.Play();
-            }
-            if(Application.Current.MainWindow.OwnedWindows.Count != 0) UpdateFilename(new Uri(VideoPath));
-        }
 
         private void RemoveSelection() {
             StartTime = TimeSpan.Zero;

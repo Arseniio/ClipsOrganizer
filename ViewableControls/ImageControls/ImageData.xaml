@@ -1,0 +1,19 @@
+﻿<UserControl x:Class="ClipsOrganizer.ViewableControls.ImageControls.ImageData"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ClipsOrganizer.ViewableControls.ImageControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="300">
+    <Grid>
+        <ListView Grid.Column="1" Name="LV_metadata" ItemsSource="{Binding Items}" d:ItemsSource="{d:SampleData ItemCount=5}">
+            <ListView.View>
+                <GridView>
+                    <GridViewColumn Header="Параметр" DisplayMemberBinding="{Binding Name}" Width="145"/>
+                    <GridViewColumn Header="Значение" DisplayMemberBinding="{Binding Value}" Width="250"/>
+                </GridView>
+            </ListView.View>
+        </ListView>
+    </Grid>
+</UserControl>

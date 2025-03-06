@@ -22,7 +22,7 @@ namespace ClipsOrganizer.FileUtils {
                 return file;
             }
             catch (Exception ex) {
-                Console.WriteLine($"Ошибка при чтении файла: {ex.Message}");
+                Log.Update($"Ошибка при чтении файла: {ex.Message}");
                 return null;
             }
         }

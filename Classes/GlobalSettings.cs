@@ -16,6 +16,7 @@ using System.Threading;
 using System.Runtime;
 using System.Diagnostics;
 using Microsoft.WindowsAPICodePack.Shell;
+using ClipsOrganizer.Model;
 
 namespace ClipsOrganizer.Settings {
     [Serializable]
@@ -81,12 +82,20 @@ namespace ClipsOrganizer.Settings {
 
 
     }
+
+    public class ImageSetting {
+        public string OutputFormat { get; set; }
+    }
+
     public class ExportSettings {
         //<ListBoxItem Tag = "ExportLocal" > Экспорт в папку</ListBoxItem>
         //<ListBoxItem Tag = "EncodeFiles" > Перекодирование файлов</ListBoxItem>
         //<ListBoxItem Tag = "UploadToCloud" > Выгрузка на файлообменник</ListBoxItem>
         //<ListBoxItem Tag = "CollectionSettings" > Настройки коллекции</ListBoxItem>
         //<ListBoxItem Tag = "FileSelection" > Выбор файлов для экспорта</ListBoxItem>
+
+        //Export Queue
+        List<Item> Queue = new List<Item>();
 
         //Export to cloud
         public bool UploadToCloud { get; set; }

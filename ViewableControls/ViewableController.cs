@@ -9,6 +9,7 @@ using System.Windows.Controls;
 using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
+using ClipsOrganizer.ViewableControls.ImageControls;
 
 namespace ClipsOrganizer.ViewableControls {
     public enum SupportedFileTypes {
@@ -17,13 +18,25 @@ namespace ClipsOrganizer.ViewableControls {
         Image,
         Video
     }
+    public class FileLoadedEventArgs : EventArgs {
+        public string FilePath { get; }
+
+        public FileLoadedEventArgs(string filePath) {
+            FilePath = filePath;
+        }
+    }
+
     public static class ViewableController {
+        public static event EventHandler<FileLoadedEventArgs> FileLoaded;
         public static ContentControl MainWindowCC { get; private set; }
+        public static ContentControl MainwindowCC_Actions { get; private set; }
         public static VideoViewer VideoViewerInstance;
         public static ImageViewer ImageViewerInstance;
+        public static ImageData ImageViewerDataInstance;
         static ViewableController() {
             if (App.Current.MainWindow is MainWindow mainWindow) {
                 MainWindowCC = mainWindow.CC_Viewable;
+                MainwindowCC_Actions = mainWindow.CC_Actions;
             }
             else {
                 throw new InvalidOperationException("MainWindow не инициализирован");
@@ -39,14 +52,9 @@ namespace ClipsOrganizer.ViewableControls {
                 case SupportedFileTypes.Image:
                     if (MainWindowCC.Content is not ImageViewer) {
                         ImageViewerInstance = new ImageViewer();
+                        ImageViewerDataInstance = new ImageData();
                         MainWindowCC.Content = ImageViewerInstance;
-                    }
-                    try {
-                        ((ImageViewer)MainWindowCC.Content).LoadImage(filePath);
-                    }
-                    catch (Exception ex) {
-                        Log.Update($"Невозможно загрузить видеофайл {filePath}");
-                        Log.Update(ex.Message);
+                        MainwindowCC_Actions.Content = ImageViewerDataInstance;
                     }
                     break;
                 case SupportedFileTypes.Text:
@@ -57,27 +65,21 @@ namespace ClipsOrganizer.ViewableControls {
                         VideoViewerInstance = new VideoViewer();
                         MainWindowCC.Content = VideoViewerInstance;
                     }
-                    try {
-                        ((VideoViewer)MainWindowCC.Content).LoadVideoFile(filePath);
-                    }
-                    catch (Exception ex) {
-                        Log.Update($"Невозможно загрузить видеофайл {filePath}");
-                        Log.Update(ex.Message);
-                    }
                     break;
             }
-            UpdateWindowName(filePath);
+            OnFileLoaded(filePath);
         }
+        private static void OnFileLoaded(string filePath) {
+            FileLoaded?.Invoke(null, new FileLoadedEventArgs(filePath));
+            App.Current.MainWindow.Title = string.Format("ClipsOrganizer / {0}", System.IO.Path.GetFileName(filePath));
+        }
+
         public static void PassKeyStroke(KeyEventArgs e) {
             if (MainWindowCC.Content is VideoViewer)
                 ((VideoViewer)MainWindowCC.Content).HandleKeyStroke(e);
         }
-        private static void UpdateWindowName(string filepath) {
-            App.Current.MainWindow.Title = string.Format("ClipsOrganizer / {0}", System.IO.Path.GetFileName(filepath));
-        }
 
         public static class FileTypeDetector {
-
             public static SupportedFileTypes DetectFileType(string filePath) {
                 if (!File.Exists(filePath))
                     throw new FileNotFoundException("The file does not exist.");
