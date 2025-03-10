@@ -69,6 +69,9 @@ namespace ClipsOrganizer {
                     case "FileSelection":
                         CC_Export.Content = new ExportCollectionsControl();
                         break;
+                    case "FilesQueue":
+                        CC_Export.Content = new FilesQueue();
+                        break;
                     case "GeneralSettings":
                         CC_Export.Content = new ExportGeneralControl();
                         break;

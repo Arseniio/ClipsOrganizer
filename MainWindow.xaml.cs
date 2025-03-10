@@ -295,17 +295,17 @@ namespace ClipsOrganizer {
                 LoadNewFile();
         }
 
-        private void LoadNewFile(string VideoPath = null) {
+        private void LoadNewFile(Item VideoPath = null) {
             if (VideoPath != null) {
                 ViewableController.LoadNewFile(VideoPath);
                 return;
             }
             if (_lastSelectedTreeView?.SelectedItem == null) return;
             if (_lastSelectedTreeView?.SelectedItem.GetType() == typeof(Item)) {
-                ViewableController.LoadNewFile((_lastSelectedTreeView?.SelectedItem as Item).Path);
+                ViewableController.LoadNewFile(_lastSelectedTreeView?.SelectedItem as Item);
             }
             if (_lastSelectedTreeView?.SelectedItem.GetType() == typeof(FileItem)) {
-                ViewableController.LoadNewFile((_lastSelectedTreeView?.SelectedItem as FileItem).Path);
+                ViewableController.LoadNewFile(_lastSelectedTreeView?.SelectedItem as FileItem);
             }
         }
 
@@ -449,7 +449,7 @@ namespace ClipsOrganizer {
         }
 
         private void Window_Drop(object sender, DragEventArgs e) {
-            LoadNewFile((e.Data.GetData(DataFormats.FileDrop) as string[]).First());
+            LoadNewFile(new Item() { Path = (e.Data.GetData(DataFormats.FileDrop) as string[]).First() });
         }
 
         private void CB_Profile_SelectionChanged(object sender, SelectionChangedEventArgs e) {

@@ -33,11 +33,16 @@ namespace ClipsOrganizer.ViewableControls.ImageControls {
             MetadataItems = new ObservableCollection<MetadataItem>();
             LV_metadata.ItemsSource = MetadataItems;
             ViewableController.FileLoaded += ViewableController_FileLoaded;
+            this.Unloaded += ImageData_Unloaded;
+        }
+
+        private void ImageData_Unloaded(object sender, RoutedEventArgs e) {
+            ViewableController.FileLoaded -= ViewableController_FileLoaded;
         }
 
         private void ViewableController_FileLoaded(object sender, FileLoadedEventArgs e) {
-            if (File.Exists(e.FilePath)) {
-                ExtractMetadata(e.FilePath);
+            if (File.Exists(e.Item.Path)) {
+                ExtractMetadata(e.Item.Path);
             }
         }
         private void ExtractMetadata(string filePath) {

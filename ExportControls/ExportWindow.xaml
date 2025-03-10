@@ -7,7 +7,7 @@
         xmlns:local="clr-namespace:ClipsOrganizer"
         mc:Ignorable="d"
         Closed="Window_Closed"
-        Title="Окно экспорта" Height="395" Width="715">
+        Title="Окно экспорта" Height="460" Width="900">
     <Grid>
         <Grid>
             <Grid.ColumnDefinitions>
@@ -24,7 +24,8 @@
                     <ListBoxItem Tag="EncodeFiles">Перекодирование файлов</ListBoxItem>
                     <ListBoxItem IsEnabled="False" Tag="UploadToCloud">Выгрузка на файлообменник</ListBoxItem>
                     <ListBoxItem IsEnabled="False" Tag="CollectionSettings">Настройки коллекции</ListBoxItem>
-                    <ListBoxItem Tag="FileSelection">Выбор файлов для экспорта</ListBoxItem>
+                    <ListBoxItem Tag="FileSelection">Выбор коллекций для экспорта</ListBoxItem>
+                    <ListBoxItem Tag="FilesQueue">Очередь экспорта</ListBoxItem>
                     <ListBoxItem Tag="GeneralSettings">Общие настройки</ListBoxItem>
                 </ListBox>
                 <Button Grid.Row="1" Name="Btn_Export" Click="Btn_Export_Click" Content="Экспортировать файлы"/>

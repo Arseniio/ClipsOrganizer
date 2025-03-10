@@ -10,6 +10,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using ClipsOrganizer.ViewableControls.ImageControls;
+using ClipsOrganizer.Model;
 
 namespace ClipsOrganizer.ViewableControls {
     public enum SupportedFileTypes {
@@ -19,31 +20,34 @@ namespace ClipsOrganizer.ViewableControls {
         Video
     }
     public class FileLoadedEventArgs : EventArgs {
-        public string FilePath { get; }
+        public Item Item { get; }
 
-        public FileLoadedEventArgs(string filePath) {
-            FilePath = filePath;
+        public FileLoadedEventArgs(Item filePath) {
+            Item = filePath;
         }
     }
 
     public static class ViewableController {
         public static event EventHandler<FileLoadedEventArgs> FileLoaded;
         public static ContentControl MainWindowCC { get; private set; }
-        public static ContentControl MainwindowCC_Actions { get; private set; }
+        public static ContentControl MainwindowCC_FileInfo { get; private set; }
+        public static ContentControl MainwindowCC_FileActions { get; private set; }
         public static VideoViewer VideoViewerInstance;
         public static ImageViewer ImageViewerInstance;
         public static ImageData ImageViewerDataInstance;
+        public static ImageActions ImageViewerInfoInstance;
         static ViewableController() {
             if (App.Current.MainWindow is MainWindow mainWindow) {
                 MainWindowCC = mainWindow.CC_Viewable;
-                MainwindowCC_Actions = mainWindow.CC_Actions;
+                MainwindowCC_FileInfo = mainWindow.CC_FileInfo;
+                MainwindowCC_FileActions = mainWindow.CC_FileActions;
             }
             else {
                 throw new InvalidOperationException("MainWindow не инициализирован");
             }
         }
-        public static void LoadNewFile(string filePath) {
-            SupportedFileTypes FileType = FileTypeDetector.DetectFileType(filePath);
+        public static void LoadNewFile(Item filePath) {
+            SupportedFileTypes FileType = FileTypeDetector.DetectFileType(filePath.Path);
             switch (FileType) {
                 case SupportedFileTypes.Unknown:
                     //TODO: Add support to try and open that file in text editor
@@ -53,8 +57,10 @@ namespace ClipsOrganizer.ViewableControls {
                     if (MainWindowCC.Content is not ImageViewer) {
                         ImageViewerInstance = new ImageViewer();
                         ImageViewerDataInstance = new ImageData();
+                        ImageViewerInfoInstance = new ImageActions();
                         MainWindowCC.Content = ImageViewerInstance;
-                        MainwindowCC_Actions.Content = ImageViewerDataInstance;
+                        MainwindowCC_FileInfo.Content = ImageViewerDataInstance;
+                        MainwindowCC_FileActions.Content = ImageViewerInfoInstance;
                     }
                     break;
                 case SupportedFileTypes.Text:
@@ -69,16 +75,15 @@ namespace ClipsOrganizer.ViewableControls {
             }
             OnFileLoaded(filePath);
         }
-        private static void OnFileLoaded(string filePath) {
+        private static void OnFileLoaded(Item filePath) {
             FileLoaded?.Invoke(null, new FileLoadedEventArgs(filePath));
-            App.Current.MainWindow.Title = string.Format("ClipsOrganizer / {0}", System.IO.Path.GetFileName(filePath));
+            App.Current.MainWindow.Title = string.Format("ClipsOrganizer / {0}", System.IO.Path.GetFileName(filePath.Path));
         }
 
         public static void PassKeyStroke(KeyEventArgs e) {
             if (MainWindowCC.Content is VideoViewer)
                 ((VideoViewer)MainWindowCC.Content).HandleKeyStroke(e);
         }
-
         public static class FileTypeDetector {
             public static SupportedFileTypes DetectFileType(string filePath) {
                 if (!File.Exists(filePath))

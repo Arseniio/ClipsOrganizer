@@ -28,6 +28,27 @@ namespace ClipsOrganizer {
         NE_WebP,
         NE_APNG
     }
+    public enum ImageFormat {
+        Unknown = 0,
+        JPEG,          // .jpg, .jpeg
+        PNG,           // .png
+        BMP,           // .bmp
+        GIF,           // .gif
+        TIFF,          // .tiff, .tif
+        WEBP,          // .webp
+        HEIF,          // .heif, .heic
+        AVIF,          // .avif
+        RAW,           // Общий RAW-формат
+        DNG,           // .dng (Digital Negative)
+        CR2,           // .cr2 (Canon RAW)
+        NEF,           // .nef (Nikon RAW)
+        ARW,           // .arw (Sony RAW)
+        ORF,           // .orf (Olympus RAW)
+        RW2,           // .rw2 (Panasonic RAW)
+        PSD,           // .psd (Photoshop)
+        EXR            // .exr (OpenEXR)
+    }
+
 
     public class FFmpegManager : ExternalProcessManager {
 

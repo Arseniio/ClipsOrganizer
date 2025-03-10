@@ -25,7 +25,7 @@
             <ColumnDefinition Width="355"/>
             <ColumnDefinition/>
         </Grid.ColumnDefinitions>
-        <GridSplitter IsTabStop="False" Grid.Column="0" Width="2" HorizontalAlignment="Right" Panel.ZIndex="10" Background="Gray" Grid.RowSpan="2" Margin="218,0,0,0"/>
+        <GridSplitter IsTabStop="False" Grid.Column="0" Width="2" HorizontalAlignment="Right" Panel.ZIndex="10" Background="Gray" Grid.RowSpan="2"/>
 
         <Menu materialDesign:MenuAssist.TopLevelMenuItemHeight="22"
              Panel.ZIndex="99" Grid.ColumnSpan="2">
@@ -67,7 +67,6 @@
                         <Grid.RowDefinitions>
                             <RowDefinition Height="17*"/>
                             <RowDefinition Height="31*"/>
-                            <RowDefinition Height="26"/>
                         </Grid.RowDefinitions>
                         <GridSplitter IsTabStop="False" VerticalAlignment="Top" Width="auto" Height="1" HorizontalAlignment="Stretch" Panel.ZIndex="10" Background="Gray" Grid.Row="1"/>
 
@@ -108,15 +107,16 @@
                 </Grid>
             </TabItem>
             <TabItem Height="44" Header="Информация">
-                <UserControl Name="CC_Actions"/>
+                <ContentControl Name="CC_FileInfo"/>
             </TabItem>
             <TabItem Height="44" Header="Действия">
+                <ContentControl Name="CC_FileActions"/>
             </TabItem>
         </TabControl>
         <!--#endregion-->
 
         <!--#region Right part-->
-        <ContentControl Grid.Column="1" Name="CC_Viewable" Margin="0,22,0,0" Grid.RowSpan="2"/>
+        <ContentControl Grid.Column="1" Name="CC_Viewable" Grid.RowSpan="2"/>
         <!--#endregion-->
         <Rectangle Grid.ColumnSpan="2" Height="1" Fill="Gray" VerticalAlignment="Top" Grid.RowSpan="2" Margin="0,22,0,0"/>
         <TextBlock Grid.Row="2" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" MouseDown="TB_log_MouseDown" d:Text="LOG DEFAULT TEXT" Margin="10,0,0,0" Name="TB_log" VerticalAlignment="Center" Height="16"/>

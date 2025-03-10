@@ -1,0 +1,105 @@
+﻿<UserControl x:Class="ClipsOrganizer.ExportControls.FilesQueue"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:ClipsOrganizer.ExportControls"
+             mc:Ignorable="d" 
+             d:DesignHeight="440" d:DesignWidth="760">
+    <Grid>
+        <!-- Основная сетка: шапка + контент -->
+        <Grid.RowDefinitions>
+            <!-- Верхняя панель с заголовком и кнопками -->
+            <RowDefinition Height="Auto"/>
+            <!-- Остальная часть окна для списка очереди и вкладок -->
+            <RowDefinition Height="*"/>
+            <!-- Нижняя строка со статусом -->
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <!-- ********** 1. Верхняя панель ********** -->
+        <Border Grid.Row="0" Background="#f0f0f0" Padding="8">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <TextBlock Name="TB_QueueLength" Text="Очередь: 1 ожидающих заданий" 
+                           FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
+
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,0,0,0">
+                    <Button Content="Запустить очередь" Margin="8,0,0,0"/>
+                    <Button Content="Очистить" Margin="8,0,0,0"/>
+                    <!-- При необходимости добавьте другие кнопки -->
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <!-- ********** 2. Основная область: Список + Вкладки ********** -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <!-- Левая часть под список заданий в очереди -->
+                <ColumnDefinition Width="2*"/>
+                <!-- Правая часть с вкладками (Сводка, Статистика, Журнал...) -->
+                <ColumnDefinition Width="3*"/>
+            </Grid.ColumnDefinitions>
+
+            <!-- Левая панель: список очереди (ListBox или DataGrid) -->
+            <Border Margin="8" BorderThickness="1" BorderBrush="#ccc" Grid.Column="0">
+                <DockPanel>
+                    <TextBlock Text="Очередь" FontWeight="Bold" Margin="4" DockPanel.Dock="Top"/>
+                    <ListBox Name="LB_Queue" Margin="4" HorizontalContentAlignment="Stretch" d:ItemsSource="{d:SampleData ItemCount=5}">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock Text="{Binding Name}"/>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+            <!-- Правая панель: вкладки -->
+            <Border Margin="8" BorderThickness="1" BorderBrush="#ccc" Grid.Column="1">
+                <TabControl>
+                    <TabItem Header="Сводка">
+                        <Grid Margin="8">
+                            <Grid.RowDefinitions>
+                                <RowDefinition/>
+                                <RowDefinition Height="Auto"/>
+                            </Grid.RowDefinitions>
+
+                            <!-- Основной блок "Сводки" -->
+                            <StackPanel Grid.Row="0" Orientation="Vertical">
+                                <TextBlock Text="Источник: 7 Days To Die 2024.07.31 - 25.101.120.Dvr.mp4"/>
+                                <TextBlock Text="Папка: D:\Some\Video\7 Days\"/>
+                                <TextBlock Text="Параметры: Fast 1080p30" />
+                                <TextBlock Text="Шаблон: None" />
+                                <TextBlock Text="Изображение: Anamorphic Automatic" />
+                                <TextBlock Text="Видео: CRF 20, x264" />
+                                <TextBlock Text="Аудио: 1 Unknown “System sounds”, 160 kbps AAC (avcodec)" />
+                            </StackPanel>
+
+                            <!-- Панель с кнопками внизу вкладки -->
+                            <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
+                                <Button Content="Изменить" Margin="0,0,8,0"/>
+                                <Button Content="Действия"/>
+                            </StackPanel>
+                        </Grid>
+                    </TabItem>
+
+                    <!-- Вкладка: Статистика -->
+                    <TabItem Header="Статистика">
+                        <StackPanel Margin="8">
+                            <!-- Сюда добавьте нужные элементы, графики, текст -->
+                            <TextBlock Text="Здесь будет отображаться статистика"/>
+                        </StackPanel>
+                    </TabItem>
+                </TabControl>
+            </Border>
+        </Grid>
+
+        <!-- ********** 3. Нижняя строка со статусом очереди ********** -->
+        <Border Grid.Row="2" Background="#f0f0f0" Padding="8">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+                <TextBlock Text="Список закончен: " />
+                <TextBlock Text="Не начат" FontWeight="Bold"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

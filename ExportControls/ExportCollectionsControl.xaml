@@ -12,7 +12,7 @@
             <RowDefinition/>
             <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
-        <ListView Name="LV_Collection" SelectionMode="Single" d:ItemsSource="{d:SampleData ItemCount=5}">
+        <ListView Name="LV_Collection" SelectionMode="Single" d:ItemsSource="{d:SampleData ItemCount=5}" SelectionChanged="LV_Collection_SelectionChanged">
             <ListView.View>
                 <GridView>
                     <GridViewColumn Width="50">

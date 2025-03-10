@@ -35,16 +35,22 @@ namespace ClipsOrganizer.ViewableControls {
             SliderTimer.Tick += VideoDurationUpdate;
             #endregion 
             ViewableController.FileLoaded += ViewableController_FileLoaded;
+            //this.Unloaded += VideoViewer_Unloaded;
+        }
+
+        private void VideoViewer_Unloaded(object sender, RoutedEventArgs e) {
+            ViewableController.FileLoaded -= ViewableController_FileLoaded;
+            SliderTimer.Stop();
         }
 
         private void ViewableController_FileLoaded(object sender, FileLoadedEventArgs e) {
             Owner = Window.GetWindow(this) as MainWindow;
             RemoveSelection();
-            if (e.FilePath != null) {
-                ME_main.Source = new Uri(e.FilePath);
+            if (e.Item.Path != null) {
+                ME_main.Source = new Uri(e.Item.Path);
                 ME_main.Play();
             }
-            if (Application.Current.MainWindow.OwnedWindows.Count != 0) UpdateFilename(new Uri(e.FilePath));
+            if (Application.Current.MainWindow.OwnedWindows.Count != 0) UpdateFilename(new Uri(e.Item.Path));
         }
 
         #region sliders events
@@ -63,6 +69,7 @@ namespace ClipsOrganizer.ViewableControls {
         }
 
         private void VideoDurationUpdate(object sender, EventArgs e) {
+            if (!ME_main.IsLoaded) return;
             if (!is_dragging)
                 SL_duration.Value = ME_main.Position.TotalSeconds;
             if (SL_duration.IsSelectionRangeEnabled && App.Current.MainWindow.OwnedWindows.Count == 0)
