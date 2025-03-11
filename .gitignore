@@ -366,3 +366,4 @@ MigrationBackup/
 FodyWeavers.xsd
 /.TextFile1.txt
 /ffmpeg.exe
+/ffprobe.exe
