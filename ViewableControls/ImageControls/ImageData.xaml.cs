@@ -34,6 +34,11 @@ namespace ClipsOrganizer.ViewableControls.ImageControls {
             LV_metadata.ItemsSource = MetadataItems;
             ViewableController.FileLoaded += ViewableController_FileLoaded;
             this.Unloaded += ImageData_Unloaded;
+            this.Loaded += ImageData_Loaded;
+        }
+
+        private void ImageData_Loaded(object sender, RoutedEventArgs e) {
+            ViewableController.FileLoaded += ViewableController_FileLoaded;
         }
 
         private void ImageData_Unloaded(object sender, RoutedEventArgs e) {

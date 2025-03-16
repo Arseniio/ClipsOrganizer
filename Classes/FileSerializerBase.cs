@@ -33,18 +33,21 @@ namespace ClipsOrganizer.FileUtils {
             bool changed = !Obj.Equals(Oldfile);
             return changed;
         }
+        private static object objLock = new object();
         public static void WriteAndCreateBackupFile<T>(T data, string Filepath) where T : class {
-            FileInfo file = new FileInfo(Filepath);
-            string directory = Path.GetDirectoryName(Filepath);
-            string oldFilename = $"{Path.GetFileNameWithoutExtension(Filepath)}_bkp{Path.GetExtension(Filepath)}";
-            string backupFilePath = Path.Combine(directory, oldFilename);
-            if (File.Exists(backupFilePath)) {
-                File.Delete(backupFilePath);
+            lock (objLock) {
+                FileInfo file = new FileInfo(Filepath);
+                string directory = Path.GetDirectoryName(Filepath);
+                string oldFilename = $"{Path.GetFileNameWithoutExtension(Filepath)}_bkp{Path.GetExtension(Filepath)}";
+                string backupFilePath = Path.Combine(directory, oldFilename);
+                if (File.Exists(backupFilePath)) {
+                    File.Delete(backupFilePath);
+                }
+                if (File.Exists(Filepath)) {
+                    File.Move(Filepath, backupFilePath);
+                }
+                WriteFile(data, Filepath);
             }
-            if (File.Exists(Filepath)) {
-                File.Move(Filepath, backupFilePath);
-            }
-            WriteFile(data, Filepath);
         }
     }
 }

@@ -3,22 +3,90 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:ClipsOrganizer.ViewableControls.ImageControls"
              mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800">
-    <Grid>
+             d:DesignHeight="505" d:DesignWidth="785">
+    <Grid Margin="10">
         <Grid.RowDefinitions>
-            <RowDefinition/>
-            <RowDefinition/>
-            <RowDefinition/>
+            <RowDefinition Height="Auto"/>
+            <!-- Формат -->
+            <RowDefinition Height="Auto"/>
+            <!-- Качество -->
+            <RowDefinition Height="Auto"/>
+            <!-- Метаданные -->
+            <RowDefinition Height="Auto"/>
+            <!-- Доп. настройки -->
+            <RowDefinition Height="*"/>
+            <!-- Кнопки -->
         </Grid.RowDefinitions>
-        <ComboBox Width="300" Grid.Row="0" Name="CB_format" HorizontalAlignment="Left" Margin="10 0 0 0">
-            <ComboBoxItem Tag=".jpg"/>
-            <ComboBoxItem Tag=".png"/>
-        </ComboBox>
-        <StackPanel Orientation="Horizontal" Grid.Row="1" >
-            <Button Name="Btn_AddToQueue" Content="Добавить в очередь" Click="Btn_AddToQueue_Click" />
-            <Button Name="Btn_ExportNow" Content="Экспортировать сейчас" Margin="10 0 0 0"/>
+
+        <!-- Выбор формата экспорта -->
+        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,10">
+            <TextBlock Text="Формат:" VerticalAlignment="Center"/>
+            <ComboBox x:Name="CB_format" Width="100" Margin="5,0,0,0"
+                SelectedValuePath="Tag"
+                SelectedValue="{Binding OutputFormat, Mode=TwoWay}">
+                <ComboBoxItem Tag=".jpg" Content="JPEG"/>
+                <ComboBoxItem Tag=".png" Content="PNG"/>
+            </ComboBox>
+        </StackPanel>
+
+        <!-- Выбор качества (для JPEG) -->
+        <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0,0,0,10">
+            <TextBlock Text="Качество:" VerticalAlignment="Center"/>
+            <Slider x:Name="SL_quality" Minimum="1" Maximum="100" Width="200" Margin="5,0,0,0"
+              Value="{Binding Quality, Mode=TwoWay}"/>
+            <TextBlock x:Name="TB_qualityValue" Width="30" TextAlignment="Center" VerticalAlignment="Center"
+                 Text="{Binding Quality}"/>
+        </StackPanel>
+
+        <!-- Отображение метаданных файла -->
+        <GroupBox Header="Метаданные файла" Grid.Row="2" Margin="0,0,0,10">
+            <ScrollViewer VerticalScrollBarVisibility="Auto" Height="150">
+                <TextBlock Text="{Binding RawMetadataDisplay}" TextWrapping="Wrap"/>
+            </ScrollViewer>
+        </GroupBox>
+
+        <!-- Дополнительные настройки экспорта -->
+        <GroupBox Header="Дополнительные настройки" Grid.Row="3" Margin="0,0,0,10">
+            <StackPanel>
+                <!-- Разрешение -->
+                <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                    <TextBlock Text="Разрешение:" VerticalAlignment="Center"/>
+                    <TextBlock Text="Ширина:" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                    <TextBox x:Name="TB_ExportWidth" Width="60" Margin="5,0,0,0"
+                   Text="{Binding ExportWidth, Mode=TwoWay}"/>
+                    <TextBlock Text="Высота:" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                    <TextBox x:Name="TB_ExportHeight" Width="60" Margin="5,0,0,0"
+                   Text="{Binding ExportHeight, Mode=TwoWay}"/>
+                </StackPanel>
+
+                <!-- Цветовой профиль -->
+                <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                    <TextBlock Text="Цветовой профиль:" VerticalAlignment="Center"/>
+                    <ComboBox x:Name="CB_ColorProfile" Width="150" Margin="5,0,0,0"
+                    SelectedValuePath="Content"
+                    SelectedValue="{Binding ColorProfile, Mode=TwoWay}">
+                        <ComboBoxItem Content="sRGB" />
+                        <ComboBoxItem Content="Adobe RGB" />
+                        <ComboBoxItem Content="ProPhoto RGB" />
+                    </ComboBox>
+                </StackPanel>
+
+                <!-- Уровень сжатия (для PNG) -->
+                <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
+                    <TextBlock Text="Уровень сжатия (PNG):" VerticalAlignment="Center"/>
+                    <Slider x:Name="SL_Compression" Minimum="1" Maximum="100" Width="150" Margin="5,0,0,0"
+                  Value="{Binding CompressionLevel, Mode=TwoWay}"/>
+                    <TextBlock x:Name="TB_CompressionValue" Width="30" TextAlignment="Center" VerticalAlignment="Center"
+                     Text="{Binding CompressionLevel}"/>
+                </StackPanel>
+            </StackPanel>
+        </GroupBox>
+
+        <!-- Кнопки для добавления в очередь и экспорта -->
+        <StackPanel Orientation="Horizontal" Grid.Row="4" HorizontalAlignment="Center">
+            <Button x:Name="Btn_AddToQueue" Content="Добавить в очередь" Click="Btn_AddToQueue_Click" Margin="5"/>
+            <Button x:Name="Btn_ExportNow" Content="Экспортировать сейчас" Click="Btn_ExportNow_Click" Margin="5"/>
         </StackPanel>
     </Grid>
 </UserControl>

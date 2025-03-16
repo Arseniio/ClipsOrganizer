@@ -54,6 +54,10 @@
                     <TextBlock Text="Обрезка до: " VerticalAlignment="Center"/>
                     <TextBox TextChanged="TB_Crop_TextChanged" Cursor="Hand" Width="95" IsReadOnly="True" Focusable="False" IsReadOnlyCaretVisible="False"  PreviewMouseDown="TimestampTextBox_PreviewMouseDown" MouseMove="TimestampTextBox_PreviewMouseMove" VerticalContentAlignment="Center" Name="TB_Crop_To" Margin="1 0 0 0"/>
                 </StackPanel>
+                <StackPanel Orientation="Horizontal" Margin="0 10 0 0">
+                    <TextBlock Text="Конечная длина: " VerticalAlignment="Center"/>
+                    <TextBox Width="95" IsReadOnly="True" Focusable="False" IsReadOnlyCaretVisible="False"  VerticalContentAlignment="Center" Name="TB_Length" Margin="1 0 0 0"/>
+                </StackPanel>
             </StackPanel>
         </GroupBox>
         <Button materialDesign:ButtonProgressAssist.IsIndicatorVisible="True"

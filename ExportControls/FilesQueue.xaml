@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              xmlns:local="clr-namespace:ClipsOrganizer.ExportControls"
+             xmlns:model="clr-namespace:ClipsOrganizer.Model"
              mc:Ignorable="d" 
              d:DesignHeight="440" d:DesignWidth="760">
     <Grid>
@@ -25,7 +26,7 @@
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,0,0,0">
                     <Button Content="Запустить очередь" Margin="8,0,0,0"/>
-                    <Button Content="Очистить" Margin="8,0,0,0"/>
+                    <Button Content="Очистить" Margin="8,0,0,0" Name="btn_Clear_queue" Click="Btn_Clear_queue_Click"/>
                     <!-- При необходимости добавьте другие кнопки -->
                 </StackPanel>
             </StackPanel>
@@ -44,7 +45,7 @@
             <Border Margin="8" BorderThickness="1" BorderBrush="#ccc" Grid.Column="0">
                 <DockPanel>
                     <TextBlock Text="Очередь" FontWeight="Bold" Margin="4" DockPanel.Dock="Top"/>
-                    <ListBox Name="LB_Queue" Margin="4" HorizontalContentAlignment="Stretch" d:ItemsSource="{d:SampleData ItemCount=5}">
+                    <ListBox Name="LB_Queue" Margin="4" HorizontalContentAlignment="Stretch" SelectionChanged="LB_Queue_SelectionChanged" d:ItemsSource="{d:SampleData ItemCount=5}">
                         <ListBox.ItemTemplate>
                             <DataTemplate>
                                 <TextBlock Text="{Binding Name}"/>
@@ -65,15 +66,7 @@
                             </Grid.RowDefinitions>
 
                             <!-- Основной блок "Сводки" -->
-                            <StackPanel Grid.Row="0" Orientation="Vertical">
-                                <TextBlock Text="Источник: 7 Days To Die 2024.07.31 - 25.101.120.Dvr.mp4"/>
-                                <TextBlock Text="Папка: D:\Some\Video\7 Days\"/>
-                                <TextBlock Text="Параметры: Fast 1080p30" />
-                                <TextBlock Text="Шаблон: None" />
-                                <TextBlock Text="Изображение: Anamorphic Automatic" />
-                                <TextBlock Text="Видео: CRF 20, x264" />
-                                <TextBlock Text="Аудио: 1 Unknown “System sounds”, 160 kbps AAC (avcodec)" />
-                            </StackPanel>
+                            <TextBlock Name="TB_Data" Grid.Row="0"/>
 
                             <!-- Панель с кнопками внизу вкладки -->
                             <StackPanel Grid.Row="1" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,10,0,0">
@@ -84,11 +77,8 @@
                     </TabItem>
 
                     <!-- Вкладка: Статистика -->
-                    <TabItem Header="Статистика">
-                        <StackPanel Margin="8">
-                            <!-- Сюда добавьте нужные элементы, графики, текст -->
-                            <TextBlock Text="Здесь будет отображаться статистика"/>
-                        </StackPanel>
+                    <TabItem Header="Действия">
+                        <UserControl Name="UC_Queue_Actions"/>
                     </TabItem>
                 </TabControl>
             </Border>

@@ -7,6 +7,13 @@ using System.Linq;
 using Newtonsoft.Json;
 using System.Text;
 using System.Threading.Tasks;
+using Xabe.FFmpeg;
+using static System.Net.Mime.MediaTypeNames;
+using System.Windows.Controls;
+using MetadataExtractor.Formats.Exif;
+using MetadataExtractor.Formats.Jpeg;
+using MetadataExtractor;
+using System.Windows.Forms;
 
 namespace ClipsOrganizer.Settings {
     public class ExportFileInfo : Item {
@@ -26,17 +33,143 @@ namespace ClipsOrganizer.Settings {
 
     public class ExportFileInfoVideo : ExportFileInfo {
         public VideoCodec Codec { get; set; } = VideoCodec.H264_NVENC;
+        public async Task<IMediaInfo> GetMediaInfoAsync() {
+            return await FFmpeg.GetMediaInfo(this.Path);
+        }
+        public async Task<string> GetVideoParams() {
+            var mediaInfo = await this.GetMediaInfoAsync();
+            var stringBuilder = new StringBuilder();
+
+            stringBuilder.AppendLine($"Источник: {this.Name}");
+            stringBuilder.AppendLine($"Папка: {System.IO.Path.GetDirectoryName(this.Path)}");
+            // Параметры видео (берем первый видеопоток)
+            var videoStream = mediaInfo.VideoStreams.FirstOrDefault();
+            if (videoStream != null) {
+                var resolution = $"{videoStream.Width}x{videoStream.Height}";
+                var frameRate = videoStream.Framerate.ToString("F2");
+                stringBuilder.AppendLine($"Параметры: {resolution}@{frameRate}fps");
+            }
+            stringBuilder.AppendLine($"Шаблон: {this.OutputFormat}");
+            if (videoStream != null) {
+                var aspectRatio = (double)videoStream.Width / videoStream.Height;
+                stringBuilder.AppendLine($"Изображение: {aspectRatio:0.00} ({videoStream.Width}x{videoStream.Height})");
+            }
+            foreach (var stream in mediaInfo.VideoStreams) {
+                stringBuilder.AppendLine($"Видео: {stream.Codec} {stream.Bitrate}kbps");
+            }
+            foreach (var stream in mediaInfo.AudioStreams) {
+                stringBuilder.AppendLine($"Аудио: {stream.Channels}ch {stream.Codec} {stream.Bitrate}kbps");
+            }
+            return stringBuilder.ToString();
+        }
         public ExportFileInfoVideo() : base() { }
         public ExportFileInfoVideo(Item item) : base(item) { }
     }
 
     public class ExportFileInfoImage : ExportFileInfo {
         public ImageFormat Codec { get; set; } = ImageFormat.JPEG;
+        public IReadOnlyList<MetadataExtractor.Directory> GetDirectories() {
+            IReadOnlyList<MetadataExtractor.Directory> directories;
+            try {
+                directories = ImageMetadataReader.ReadMetadata(this.Path);
+            }
+            catch (Exception ex) {
+                throw ex;
+            }
+            return directories;
+        }
+        [JsonIgnore]
+        public string RawMetadataDisplay {
+            get {
+                var directories = GetDirectories();
+                if (directories == null)
+                    return string.Empty;
+                var sb = new StringBuilder();
+                foreach (var directory in directories) {
+                    sb.AppendLine(directory.Name);
+                    foreach (var tag in directory.Tags) {
+                        if (!tag.Name.Contains("Unknown"))
+                            sb.AppendLine($"{tag.Name}: {tag.Description}");
+                    }
+                    sb.AppendLine(); // для разделения блоков
+                }
+                return sb.ToString();
+            }
+        }
+
+        public async Task<string> GetImageParams() {
+            return await Task.Run(() =>
+            {
+                var stringBuilder = new StringBuilder();
+                stringBuilder.AppendLine($"Источник: {this.Name}");
+                stringBuilder.AppendLine($"Папка: {System.IO.Path.GetDirectoryName(this.Path)}");
+                IReadOnlyList<MetadataExtractor.Directory> directories;
+                try {
+                    directories = ImageMetadataReader.ReadMetadata(this.Path);
+                }
+                catch (Exception ex) {
+                    return $"Ошибка при чтении метаданных: {ex.Message}";
+                }
+                var fileTypeDir = directories.FirstOrDefault(d => d.Name.Contains("File Type"));
+                string fileFormat = fileTypeDir?.GetDescription(1) ?? "Unknown";
+                stringBuilder.AppendLine($"Формат файла: {fileFormat}");
+                var jpegDir = directories.OfType<JpegDirectory>().FirstOrDefault();
+                if (jpegDir != null) {
+                    int? width = jpegDir.GetImageWidth();
+                    int? height = jpegDir.GetImageHeight();
+                    if (width.HasValue && height.HasValue)
+                        stringBuilder.AppendLine($"Разрешение: {width}x{height}");
+                }
+                else {
+                    var ifd0 = directories.OfType<ExifIfd0Directory>().FirstOrDefault();
+                    if (ifd0 != null &&
+                        ifd0.TryGetInt32(ExifDirectoryBase.TagImageWidth, out int width) &&
+                        ifd0.TryGetInt32(ExifDirectoryBase.TagImageHeight, out int height)) {
+                        stringBuilder.AppendLine($"Разрешение: {width}x{height}");
+                    }
+                }
+
+                var exifSub = directories.OfType<ExifSubIfdDirectory>().FirstOrDefault();
+                if (exifSub != null) {
+                    if (exifSub.ContainsTag(ExifDirectoryBase.TagIsoEquivalent))
+                        stringBuilder.AppendLine($"ISO: {exifSub.GetDescription(ExifDirectoryBase.TagIsoEquivalent)}");
+                    if (exifSub.ContainsTag(ExifDirectoryBase.TagExposureTime))
+                        stringBuilder.AppendLine($"Выдержка: {exifSub.GetDescription(ExifDirectoryBase.TagExposureTime)}");
+                    if (exifSub.ContainsTag(ExifDirectoryBase.TagFNumber))
+                        stringBuilder.AppendLine($"Диафрагма: {exifSub.GetDescription(ExifDirectoryBase.TagFNumber)}");
+                    if (exifSub.ContainsTag(ExifDirectoryBase.TagFocalLength))
+                        stringBuilder.AppendLine($"Фокусное расстояние: {exifSub.GetDescription(ExifDirectoryBase.TagFocalLength)}");
+                    if (exifSub.ContainsTag(ExifDirectoryBase.TagWhiteBalance))
+                        stringBuilder.AppendLine($"Баланс белого: {exifSub.GetDescription(ExifDirectoryBase.TagWhiteBalance)}");
+                    if (exifSub.ContainsTag(ExifDirectoryBase.TagDateTimeOriginal))
+                        stringBuilder.AppendLine($"Дата съемки: {exifSub.GetDescription(ExifDirectoryBase.TagDateTimeOriginal)}");
+                }
+                var exifIfd0 = directories.OfType<ExifIfd0Directory>().FirstOrDefault();
+                if (exifIfd0 != null) {
+                    if (exifIfd0.ContainsTag(ExifDirectoryBase.TagMake))
+                        stringBuilder.AppendLine($"Производитель камеры: {exifIfd0.GetDescription(ExifDirectoryBase.TagMake)}");
+                    if (exifIfd0.ContainsTag(ExifDirectoryBase.TagModel))
+                        stringBuilder.AppendLine($"Модель камеры: {exifIfd0.GetDescription(ExifDirectoryBase.TagModel)}");
+                }
+                var gpsDir = directories.OfType<GpsDirectory>().FirstOrDefault();
+                if (gpsDir != null) {
+                    var location = gpsDir.GetGeoLocation();
+                    if (location != null)
+                        stringBuilder.AppendLine($"GPS: {location.Latitude:0.000000}, {location.Longitude:0.000000}");
+                }
+                return stringBuilder.ToString();
+            });
+        }
+        public int ExportWidth { get; set; } = 1920;
+        public int ExportHeight { get; set; } = 1080;
+        public bool PreserveMetadata { get; set; } = true;
+        public string ColorProfile { get; set; } = "sRGB"; // Варианты: sRGB, Adobe RGB, ProPhoto RGB
+        public int CompressionLevel { get; set; } = 75; // Для PNG (1-100)
         public ExportFileInfoImage() : base() { }
         public ExportFileInfoImage(Item item) : base(item) { }
     }
-
     public static class ExportQueue {
+
         public static readonly List<ExportFileInfo> _queue = new List<ExportFileInfo>();
         private static readonly object _lock = new object();
 
@@ -58,7 +191,6 @@ namespace ClipsOrganizer.Settings {
             lock (_lock) {
                 if (_queue.Count == 0)
                     throw new InvalidOperationException("Queue is empty");
-
                 var item = _queue[0];
                 _queue.RemoveAt(0);
                 return item;
@@ -77,7 +209,6 @@ namespace ClipsOrganizer.Settings {
             }
         }
     }
-
 
     public class ExportSettings {
         //<ListBoxItem Tag = "ExportLocal" > Экспорт в папку</ListBoxItem>
@@ -153,8 +284,8 @@ namespace ClipsOrganizer.Settings {
                     throw new InvalidOperationException("Не указана выходная папка.");
                 }
 
-                if (!Directory.Exists(TargetFolder)) {
-                    Directory.CreateDirectory(TargetFolder);
+                if (!System.IO.Directory.Exists(TargetFolder)) {
+                    System.IO.Directory.CreateDirectory(TargetFolder);
                 }
 
                 // Лог начала процесса

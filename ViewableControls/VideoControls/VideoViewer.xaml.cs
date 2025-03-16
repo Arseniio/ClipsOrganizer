@@ -93,7 +93,7 @@ namespace ClipsOrganizer.ViewableControls {
                 SL_duration.Maximum = ME_main.NaturalDuration.TimeSpan.TotalSeconds;
                 SliderTimer.Start();
             }
-            if (GlobalSettings.Instance.AutoPlay) {
+            if (GlobalSettings.Instance.AutoPlay && ME_main.NaturalDuration.HasTimeSpan) {
                 if (GlobalSettings.Instance.AutoPlayOffset != TimeSpan.Zero && GlobalSettings.Instance.AutoPlayOffset < ME_main.NaturalDuration.TimeSpan) {
                     ME_main.Position = GlobalSettings.Instance.AutoPlayOffset;
                 }

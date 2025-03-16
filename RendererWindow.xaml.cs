@@ -80,7 +80,7 @@ namespace ClipsOrganizer {
             TB_Crop_From.Text = Start.ToString(@"hh\:mm\:ss\.fff");
             if (End != null) TB_Crop_To.Text = End?.ToString(@"hh\:mm\:ss\.fff");
         }
-        
+
         public void RendererWindow_ChangeSelectedFile(Uri Filename) {
             this.VideoPath = Filename;
             TB_outputPath.Text = getNextFileName(Path.GetDirectoryName(VideoPath.LocalPath));
@@ -120,7 +120,9 @@ namespace ClipsOrganizer {
 
         private void UpdateVideoSize() {
             double.TryParse(TB_Quality.Text, out double bitrate);
-            TB_filesize.Text = "~"+ CalculateVideoSize(bitrate, TimeSpan.Parse(TB_Crop_To.Text) - TimeSpan.Parse(TB_Crop_From.Text)).ToString("F2");
+            var Length = TimeSpan.Parse(TB_Crop_To.Text) - TimeSpan.Parse(TB_Crop_From.Text);
+            TB_filesize.Text = "~" + CalculateVideoSize(bitrate, Length).ToString("F2");
+            TB_Length.Text = Length.ToString(@"hh\:mm\:ss\.fff");
         }
 
         private void UpdateTimestamp(double deltaY) {
@@ -154,25 +156,71 @@ namespace ClipsOrganizer {
             }
         }
 
-        private void Btn_Crop_Click(object sender, RoutedEventArgs e) {
-            if (Settings.GlobalSettings.Instance.ffmpegManager.IsProcessRunning) return;
-            VideoCodec selectedCodec = (VideoCodec)CB_codec.SelectedItem;
-            if (CB_codec.SelectedItem != null && selectedCodec != VideoCodec.Unknown && !string.IsNullOrEmpty(TB_Quality.Text) && int.TryParse(TB_Quality.Text, out int bitrate)) {
-                if (TimeSpan.TryParse(TB_Crop_From.Text, out TimeSpan startTime) && TimeSpan.TryParse(TB_Crop_To.Text, out TimeSpan endTime)) {
-                    if (startTime == TimeSpan.Zero && startTime > endTime) {
-                        Log.Update("Невозможно обрезать клип в обратную сторону.");
+        private async void Btn_Crop_Click(object sender, RoutedEventArgs e) {
+            // Проверка выбранного кодека
+            if (CB_codec.SelectedItem == null || !(CB_codec.SelectedItem is VideoCodec selectedCodec) || selectedCodec == VideoCodec.Unknown) {
+                Log.Update("Пожалуйста, выберите кодек.");
+                return;
+            }
 
-                    }
-                    Settings.GlobalSettings.Instance.ffmpegManager.StartEncodingAsync(VideoPath.LocalPath, TB_outputPath.Text, selectedCodec, bitrate, startTime, endTime);
-                    Settings.GlobalSettings.Instance.ffmpegManager.OnEncodeProgressChanged += UpdateProgressBar;
-                }
-                else {
-                    Settings.GlobalSettings.Instance.ffmpegManager.StartEncodingAsync(VideoPath.LocalPath, TB_outputPath.Text, selectedCodec, bitrate);
-                    Settings.GlobalSettings.Instance.ffmpegManager.OnEncodeProgressChanged += UpdateProgressBar;
+            // Проверка качества (битрейта)
+            if (!int.TryParse(TB_Quality.Text, out int bitrate) || bitrate <= 0) {
+                Log.Update("Пожалуйста, укажите корректное значение качества (битрейта).");
+                return;
+            }
+
+            // Проверка времени обрезки
+            var endtime = TimeSpan.TryParse(TB_Crop_To.Text, out TimeSpan endTime);
+            bool isTrimmed = TimeSpan.TryParse(TB_Crop_From.Text, out TimeSpan startTime) && endtime;
+            if (isTrimmed) {
+                if (startTime >= endTime) {
+                    Log.Update("Невозможно обрезать клип: начальное время должно быть меньше конечного.");
+                    return;
                 }
             }
             else {
-                Log.Update("Пожалуйста, убедитесь, что выбраны параметры кодека и указано значение качества.");
+                // Если время обрезки не указано, сбрасываем startTime и endTime
+                startTime = TimeSpan.Zero;
+                endTime = TimeSpan.Zero;
+            }
+
+            // Подписка на событие прогресса
+            Settings.GlobalSettings.Instance.ffmpegManager.OnEncodeProgressChanged += UpdateProgressBar;
+
+            try {
+                bool result;
+                if (isTrimmed) {
+                    result = await Settings.GlobalSettings.Instance.ffmpegManager.StartEncodingAsync(
+                        inputVideo: VideoPath.LocalPath,
+                        outputVideo: TB_outputPath.Text,
+                        codec: selectedCodec,
+                        bitrate: bitrate,
+                        startTime: startTime,
+                        endTime: endTime);
+                }
+                else {
+                    result = await Settings.GlobalSettings.Instance.ffmpegManager.StartEncodingAsync(
+                        inputVideo: VideoPath.LocalPath,
+                        outputVideo: TB_outputPath.Text,
+                        codec: selectedCodec,
+                        bitrate: bitrate);
+                }
+
+                if (result) {
+                    Log.Update("Кодирование завершено успешно.");
+                }
+                else {
+                    Log.Update("Ошибка при кодировании.");
+                }
+            }
+            catch (Exception ex) {
+                Log.Update($"Ошибка: {ex.Message}");
+            }
+            finally {
+                // Отписка от события прогресса
+                if (CB_OpenFolderAfterEncoding.IsChecked == true)
+                    Process.Start("explorer.exe", $"/select,\"{TB_outputPath.Text}\"");
+                Settings.GlobalSettings.Instance.ffmpegManager.OnEncodeProgressChanged -= UpdateProgressBar;
             }
         }
         private void UpdateProgressBar(int Precent) {
@@ -180,13 +228,7 @@ namespace ClipsOrganizer {
             {
                 ProgressValue = Precent;
             });
-            if (Precent == 100) {
-                Dispatcher.Invoke(() =>
-                {
-                    if (CB_OpenFolderAfterEncoding.IsChecked == true)
-                        Process.Start("explorer.exe", $"/select,\"{TB_outputPath.Text}\"");
-                });
-            }
+
         }
 
         private void TB_Crop_TextChanged(object sender, TextChangedEventArgs e) {

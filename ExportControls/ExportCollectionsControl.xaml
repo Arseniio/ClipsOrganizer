@@ -12,13 +12,13 @@
             <RowDefinition/>
             <RowDefinition Height="40"/>
         </Grid.RowDefinitions>
-        <ListView Name="LV_Collection" SelectionMode="Single" d:ItemsSource="{d:SampleData ItemCount=5}" SelectionChanged="LV_Collection_SelectionChanged">
+        <ListView Name="LV_Collection" SelectionMode="Single" d:ItemsSource="{d:SampleData ItemCount=5}" >
             <ListView.View>
                 <GridView>
                     <GridViewColumn Width="50">
                         <GridViewColumn.CellTemplate>
                             <DataTemplate>
-                                <CheckBox IsChecked="{Binding IsSelected}" />
+                                <CheckBox IsChecked="{Binding IsSelected}" Checked="CheckBox_Checked" Unchecked="CheckBox_Unchecked" />
                             </DataTemplate>
                         </GridViewColumn.CellTemplate>
                     </GridViewColumn>

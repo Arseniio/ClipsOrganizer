@@ -35,7 +35,7 @@ namespace ClipsOrganizer.ViewableControls {
         public static VideoViewer VideoViewerInstance;
         public static ImageViewer ImageViewerInstance;
         public static ImageData ImageViewerDataInstance;
-        public static ImageActions ImageViewerInfoInstance;
+        public static ImageActions ImageViewerActionsInstance;
         static ViewableController() {
             if (App.Current.MainWindow is MainWindow mainWindow) {
                 MainWindowCC = mainWindow.CC_Viewable;
@@ -57,10 +57,10 @@ namespace ClipsOrganizer.ViewableControls {
                     if (MainWindowCC.Content is not ImageViewer) {
                         ImageViewerInstance = new ImageViewer();
                         ImageViewerDataInstance = new ImageData();
-                        ImageViewerInfoInstance = new ImageActions();
+                        ImageViewerActionsInstance = new ImageActions();
                         MainWindowCC.Content = ImageViewerInstance;
                         MainwindowCC_FileInfo.Content = ImageViewerDataInstance;
-                        MainwindowCC_FileActions.Content = ImageViewerInfoInstance;
+                        MainwindowCC_FileActions.Content = ImageViewerActionsInstance;
                     }
                     break;
                 case SupportedFileTypes.Text:

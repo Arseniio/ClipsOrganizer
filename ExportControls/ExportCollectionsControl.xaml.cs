@@ -1,4 +1,5 @@
-﻿using ClipsOrganizer.Settings;
+﻿using ClipsOrganizer.Collections;
+using ClipsOrganizer.Settings;
 using ClipsOrganizer.ViewableControls;
 using MetadataExtractor.Util;
 using System;
@@ -24,45 +25,12 @@ namespace ClipsOrganizer.ExportControls {
         public ExportCollectionsControl() {
             InitializeComponent();
             LV_Collection.ItemsSource = MainWindow.CurrentProfile.Collections;
-            this.Unloaded += ExportCollectionsControl_Unloaded;
         }
 
-        private void ExportCollectionsControl_Unloaded(object sender, RoutedEventArgs e) {
-            var items = LV_Collection.Items.Cast<Collections.Collection>().ToList();
-            var selectedItems = items.Where(item => item.IsSelected).ToList();
-
-            foreach (var Collection in selectedItems) {
-                foreach (var File in Collection.Files) {
-                    var fileType = ViewableController.FileTypeDetector.DetectFileType(File.Path);
-
-                    if (fileType == SupportedFileTypes.Image) {
-                        var exportItem = new ExportFileInfoImage(File)
-                        {
-                            Codec = GlobalSettings.Instance.DefaultImageExport.Codec,
-                            Quality = GlobalSettings.Instance.DefaultImageExport.Quality,
-                            OutputPath = File.Path,
-                            OutputFormat = "jpg"
-                        };
-                        ExportQueue.Enqueue(exportItem);
-                    }
-                    else if (fileType == SupportedFileTypes.Video) {
-                        var exportItem = new ExportFileInfoVideo(File)
-                        {
-                            Codec = GlobalSettings.Instance.DefaultVideoExport.Codec,
-                            Quality = GlobalSettings.Instance.DefaultVideoExport.Quality,
-                            OutputPath = File.Path,
-                            OutputFormat = "mp4"
-                        };
-                        ExportQueue.Enqueue(exportItem);
-                    }
-                }
-            }
-        }
 
 
         private void Btn_Select_all_Click(object sender, RoutedEventArgs e) {
             var items = LV_Collection.Items.Cast<Collections.Collection>().ToList();
-
             bool allSelected = items.All(item => item.IsSelected);
             bool noneSelected = items.All(item => !item.IsSelected);
 
@@ -78,8 +46,40 @@ namespace ClipsOrganizer.ExportControls {
             LV_Collection.Items.Refresh();
         }
 
-        private void LV_Collection_SelectionChanged(object sender, SelectionChangedEventArgs e) {
 
+        private void CheckBox_Checked(object sender, RoutedEventArgs e) {
+            foreach (var File in ((sender as CheckBox).DataContext as Collection)) {
+                if (ExportQueue._queue.Contains(File)) continue;
+                var fileType = ViewableController.FileTypeDetector.DetectFileType(File.Path);
+
+                if (fileType == SupportedFileTypes.Image) {
+                    var exportItem = new ExportFileInfoImage(File)
+                    {
+                        Codec = GlobalSettings.Instance.DefaultImageExport.Codec,
+                        Quality = GlobalSettings.Instance.DefaultImageExport.Quality,
+                        OutputPath = File.Path,
+                        OutputFormat = "jpg"
+                    };
+                    ExportQueue.Enqueue(exportItem);
+                }
+                else if (fileType == SupportedFileTypes.Video) {
+                    var exportItem = new ExportFileInfoVideo(File)
+                    {
+                        Codec = GlobalSettings.Instance.DefaultVideoExport.Codec,
+                        Quality = GlobalSettings.Instance.DefaultVideoExport.Quality,
+                        OutputPath = File.Path,
+                        OutputFormat = "mp4"
+                    };
+                    ExportQueue.Enqueue(exportItem);
+                }
+            }
+        }
+
+        private void CheckBox_Unchecked(object sender, RoutedEventArgs e) {
+            foreach (var File in ((sender as CheckBox).DataContext as Collection)) {
+                if (!ExportQueue._queue.Contains(File)) continue;
+                else ExportQueue._queue.RemoveAll(p => p.Path == File.Path);
+            }
         }
     }
 }
