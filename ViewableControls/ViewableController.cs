@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using ClipsOrganizer.ViewableControls.ImageControls;
 using ClipsOrganizer.Model;
+using ClipsOrganizer.ViewableControls.VideoControls;
 
 namespace ClipsOrganizer.ViewableControls {
     public enum SupportedFileTypes {
@@ -33,6 +34,7 @@ namespace ClipsOrganizer.ViewableControls {
         public static ContentControl MainwindowCC_FileInfo { get; private set; }
         public static ContentControl MainwindowCC_FileActions { get; private set; }
         public static VideoViewer VideoViewerInstance;
+        public static VideoActions VideoActionsInstance;
         public static ImageViewer ImageViewerInstance;
         public static ImageData ImageViewerDataInstance;
         public static ImageActions ImageViewerActionsInstance;
@@ -69,7 +71,9 @@ namespace ClipsOrganizer.ViewableControls {
                 case SupportedFileTypes.Video:
                     if (MainWindowCC.Content is not VideoViewer) {
                         VideoViewerInstance = new VideoViewer();
+                        VideoActionsInstance = new VideoActions();
                         MainWindowCC.Content = VideoViewerInstance;
+                        MainwindowCC_FileActions.Content = VideoActionsInstance;
                     }
                     break;
             }

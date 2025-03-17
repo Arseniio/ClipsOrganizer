@@ -63,14 +63,14 @@ namespace ClipsOrganizer.ExportControls {
                     ExportQueue.Enqueue(exportItem);
                 }
                 else if (fileType == SupportedFileTypes.Video) {
-                    var exportItem = new ExportFileInfoVideo(File)
-                    {
-                        Codec = GlobalSettings.Instance.DefaultVideoExport.Codec,
-                        Quality = GlobalSettings.Instance.DefaultVideoExport.Quality,
-                        OutputPath = File.Path,
-                        OutputFormat = "mp4"
-                    };
-                    ExportQueue.Enqueue(exportItem);
+                    //var exportItem = new ExportFileInfoVideo(File)
+                    //{TODO FIX LATER
+                    //    Codec = GlobalSettings.Instance.DefaultVideoExport.Codec,
+                    //    Quality = GlobalSettings.Instance.DefaultVideoExport.Quality,
+                    //    OutputPath = File.Path,
+                    //    OutputFormat = "mp4"
+                    //};
+                    //ExportQueue.Enqueue(exportItem);
                 }
             }
         }

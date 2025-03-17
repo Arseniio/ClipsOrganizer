@@ -13,7 +13,6 @@ namespace ClipsOrganizer.ViewableControls.ImageControls {
     public partial class ImageActions : UserControl {
         public ExportFileInfoImage ExportInfo { get; set; }
 
-        // Конструктор для первичной загрузки файла (при наличии только пути)
         public ImageActions() {
             InitializeComponent();
             ViewableController.FileLoaded += ViewableController_FileLoaded;
@@ -21,12 +20,10 @@ namespace ClipsOrganizer.ViewableControls.ImageControls {
             this.Loaded += ImageActions_Loaded;
         }
 
-        // Конструктор для изменения настроек экспорта уже добавленного файла
         public ImageActions(ExportFileInfoImage exportInfo) {
             InitializeComponent();
             ExportInfo = exportInfo;
             DataContext = ExportInfo;
-            // Скрываем кнопки, если это окно вызвано для редактирования настроек экспорта
             Btn_AddToQueue.Visibility = Visibility.Hidden;
             Btn_ExportNow.Visibility = Visibility.Hidden;
         }
@@ -41,13 +38,10 @@ namespace ClipsOrganizer.ViewableControls.ImageControls {
 
         public void ViewableController_FileLoaded(object sender, FileLoadedEventArgs e) {
             if (e.Item != null) {
-                // Создаем объект экспорта на основе загруженного Item
                 ExportInfo = new ExportFileInfoImage(e.Item);
                 DataContext = ExportInfo;
             }
         }
-
-        // Обработчик кнопки "Добавить в очередь"
         private void Btn_AddToQueue_Click(object sender, RoutedEventArgs e) {
             if (ExportInfo == null)
                 return;
@@ -55,10 +49,8 @@ namespace ClipsOrganizer.ViewableControls.ImageControls {
             Log.Update($"Файл {ExportInfo.Name} добавлен в очередь");
             ExportQueue.Enqueue(ExportInfo);
         }
-
-        // Обработчик кнопки "Экспортировать сейчас"
         private void Btn_ExportNow_Click(object sender, RoutedEventArgs e) {
-            Log.Update("Экспорт сейчас не реализован в этом примере.");
+            Log.Update("Экспорт сейчас не реализован в данный момент.");
         }
     }
 }

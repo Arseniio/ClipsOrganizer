@@ -32,39 +32,91 @@ namespace ClipsOrganizer.Settings {
     }
 
     public class ExportFileInfoVideo : ExportFileInfo {
-        public VideoCodec Codec { get; set; } = VideoCodec.H264_NVENC;
+        // Video Settings
+        public int VideoBitrate { get; set; } = 0; // 0 = auto
+        public double CRF { get; set; } = 23.0; // For quality-based encoding
+        public ResolutionType Resolution { get; set; } = ResolutionType.Original;
+        public CustomResolution CustomResolution { get; set; }
+        public double? FrameRate { get; set; } // null = source fps
+        public bool TwoPassEncoding { get; set; }
+
+        // Audio Settings
+        public AudioCodec AudioCodec { get; set; } = AudioCodec.AAC;
+        public int AudioBitrate { get; set; } = 128; // kbps
+        public int AudioChannels { get; set; } = 2;
+        public bool NormalizeAudio { get; set; }
+
+        public TimeSpan TrimStart { get; set; }
+        public TimeSpan TrimEnd { get; set; }
+
+        // Hardware Acceleration
+        public HardwareAccelerationType HardwareAcceleration { get; set; }
+        public string GPUDeviceId { get; set; } // For multi-GPU systems
+
+        // Advanced
+        public bool CopyMetadata { get; set; } = true;
+
+        // Добавьте методы для работы с Xabe.FFmpeg
         public async Task<IMediaInfo> GetMediaInfoAsync() {
-            return await FFmpeg.GetMediaInfo(this.Path);
+            return await FFmpeg.GetMediaInfo(Path);
         }
+        public ExportFileInfoVideo() { }
+        public ExportFileInfoVideo(Item item) : base(item) { }
         public async Task<string> GetVideoParams() {
-            var mediaInfo = await this.GetMediaInfoAsync();
+            var mediaInfo = await GetMediaInfoAsync();
             var stringBuilder = new StringBuilder();
 
-            stringBuilder.AppendLine($"Источник: {this.Name}");
-            stringBuilder.AppendLine($"Папка: {System.IO.Path.GetDirectoryName(this.Path)}");
-            // Параметры видео (берем первый видеопоток)
-            var videoStream = mediaInfo.VideoStreams.FirstOrDefault();
-            if (videoStream != null) {
-                var resolution = $"{videoStream.Width}x{videoStream.Height}";
-                var frameRate = videoStream.Framerate.ToString("F2");
-                stringBuilder.AppendLine($"Параметры: {resolution}@{frameRate}fps");
-            }
-            stringBuilder.AppendLine($"Шаблон: {this.OutputFormat}");
-            if (videoStream != null) {
-                var aspectRatio = (double)videoStream.Width / videoStream.Height;
-                stringBuilder.AppendLine($"Изображение: {aspectRatio:0.00} ({videoStream.Width}x{videoStream.Height})");
-            }
+            // Основная информация
+            stringBuilder.AppendLine($"📁 Файл: {System.IO.Path.GetFileName(Path)}");
+            stringBuilder.AppendLine($"📂 Папка: {System.IO.Path.GetDirectoryName(Path)}");
+            stringBuilder.AppendLine($"📅 Дата: {Date:dd.MM.yyyy HH:mm}");
+            stringBuilder.AppendLine("───────────────────────");
+
+            // Видеопотоки
             foreach (var stream in mediaInfo.VideoStreams) {
-                stringBuilder.AppendLine($"Видео: {stream.Codec} {stream.Bitrate}kbps");
+                stringBuilder.AppendLine($"🎥 Видео #{stream.Index}");
+                stringBuilder.AppendLine($"   Кодек: {stream.Codec}");
+                stringBuilder.AppendLine($"   Разрешение: {stream.Width}x{stream.Height}");
+                stringBuilder.AppendLine($"   Частота кадров: {stream.Framerate:F2} fps");
+                stringBuilder.AppendLine($"   Битрейт: {stream.Bitrate / 1000} kbps");
+                stringBuilder.AppendLine($"   Длительность: {stream.Duration:h\\:mm\\:ss}");
+                stringBuilder.AppendLine("───────────────────────");
             }
+
+            // Аудиопотоки
             foreach (var stream in mediaInfo.AudioStreams) {
-                stringBuilder.AppendLine($"Аудио: {stream.Channels}ch {stream.Codec} {stream.Bitrate}kbps");
+                stringBuilder.AppendLine($"🔊 Аудио #{stream.Index}");
+                stringBuilder.AppendLine($"   Кодек: {stream.Codec}");
+                stringBuilder.AppendLine($"   Каналы: {stream.Channels}");
+                stringBuilder.AppendLine($"   Битрейт: {stream.Bitrate / 1000} kbps");
+                stringBuilder.AppendLine($"   Язык: {stream.Language ?? "Не указан"}");
+                stringBuilder.AppendLine("───────────────────────");
             }
+
             return stringBuilder.ToString();
         }
-        public ExportFileInfoVideo() : base() { }
-        public ExportFileInfoVideo(Item item) : base(item) { }
+
     }
+
+    // Вспомогательные типы
+    public enum AudioCodec { AAC, MP3, Opus, FLAC }
+    public enum ResolutionType { Original, _480p, _720p, _1080p, _4K, Custom }
+
+    public class CustomResolution {
+        public int Width { get; set; }
+        public int Height { get; set; }
+        public bool KeepAspectRatio { get; set; } = true;
+    }
+
+    public class CropSettings {
+        public bool AutoCrop { get; set; }
+        public int Left { get; set; }
+        public int Right { get; set; }
+        public int Top { get; set; }
+        public int Bottom { get; set; }
+    }
+
+    public enum HardwareAccelerationType { None, NVENC, QSV, AMF }
 
     public class ExportFileInfoImage : ExportFileInfo {
         public ImageFormat Codec { get; set; } = ImageFormat.JPEG;
@@ -100,65 +152,118 @@ namespace ClipsOrganizer.Settings {
         public async Task<string> GetImageParams() {
             return await Task.Run(() =>
             {
-                var stringBuilder = new StringBuilder();
-                stringBuilder.AppendLine($"Источник: {this.Name}");
-                stringBuilder.AppendLine($"Папка: {System.IO.Path.GetDirectoryName(this.Path)}");
-                IReadOnlyList<MetadataExtractor.Directory> directories;
+                var sb = new StringBuilder();
+                sb.AppendLine($"🖼️ Файл: {System.IO.Path.GetFileName(Path)}");
+                sb.AppendLine($"📂 Папка: {System.IO.Path.GetDirectoryName(Path)}");
+                sb.AppendLine($"📅 Дата: {Date:dd.MM.yyyy HH:mm}");
+                sb.AppendLine("───────────────────────");
+
                 try {
-                    directories = ImageMetadataReader.ReadMetadata(this.Path);
+                    var directories = ImageMetadataReader.ReadMetadata(Path);
+
+                    // Основные характеристики
+                    var fileTypeDir = directories.FirstOrDefault(d => d.Name.Contains("File Type"));
+                    sb.AppendLine($"📝 Формат: {fileTypeDir?.GetDescription(1) ?? "Не определен"}");
+
+                    // Разрешение изображения
+                    var resolution = GetResolution(directories);
+                    if (!string.IsNullOrEmpty(resolution))
+                        sb.AppendLine($"🖥️ Разрешение: {resolution}");
+
+                    // EXIF параметры
+                    var exifData = GetExifData(directories);
+                    if (exifData.Count > 0) {
+                        sb.AppendLine("📷 Параметры съемки:");
+                        foreach (var item in exifData) {
+                            sb.AppendLine($"   • {item.Key}: {item.Value}");
+                        }
+                        sb.AppendLine("───────────────────────");
+                    }
+
+                    // Информация о камере
+                    var cameraInfo = GetCameraInfo(directories);
+                    if (cameraInfo.Count > 0) {
+                        sb.AppendLine("📸 Камера:");
+                        foreach (var item in cameraInfo) {
+                            sb.AppendLine($"   ◈ {item.Key}: {item.Value}");
+                        }
+                        sb.AppendLine("───────────────────────");
+                    }
+
+                    // GPS координаты
+                    var gps = GetGpsInfo(directories);
+                    if (!string.IsNullOrEmpty(gps))
+                        sb.AppendLine($"🌍 Координаты: {gps}");
+
                 }
                 catch (Exception ex) {
-                    return $"Ошибка при чтении метаданных: {ex.Message}";
-                }
-                var fileTypeDir = directories.FirstOrDefault(d => d.Name.Contains("File Type"));
-                string fileFormat = fileTypeDir?.GetDescription(1) ?? "Unknown";
-                stringBuilder.AppendLine($"Формат файла: {fileFormat}");
-                var jpegDir = directories.OfType<JpegDirectory>().FirstOrDefault();
-                if (jpegDir != null) {
-                    int? width = jpegDir.GetImageWidth();
-                    int? height = jpegDir.GetImageHeight();
-                    if (width.HasValue && height.HasValue)
-                        stringBuilder.AppendLine($"Разрешение: {width}x{height}");
-                }
-                else {
-                    var ifd0 = directories.OfType<ExifIfd0Directory>().FirstOrDefault();
-                    if (ifd0 != null &&
-                        ifd0.TryGetInt32(ExifDirectoryBase.TagImageWidth, out int width) &&
-                        ifd0.TryGetInt32(ExifDirectoryBase.TagImageHeight, out int height)) {
-                        stringBuilder.AppendLine($"Разрешение: {width}x{height}");
-                    }
+                    sb.AppendLine($"❌ Ошибка чтения метаданных: {ex.Message}");
                 }
 
-                var exifSub = directories.OfType<ExifSubIfdDirectory>().FirstOrDefault();
-                if (exifSub != null) {
-                    if (exifSub.ContainsTag(ExifDirectoryBase.TagIsoEquivalent))
-                        stringBuilder.AppendLine($"ISO: {exifSub.GetDescription(ExifDirectoryBase.TagIsoEquivalent)}");
-                    if (exifSub.ContainsTag(ExifDirectoryBase.TagExposureTime))
-                        stringBuilder.AppendLine($"Выдержка: {exifSub.GetDescription(ExifDirectoryBase.TagExposureTime)}");
-                    if (exifSub.ContainsTag(ExifDirectoryBase.TagFNumber))
-                        stringBuilder.AppendLine($"Диафрагма: {exifSub.GetDescription(ExifDirectoryBase.TagFNumber)}");
-                    if (exifSub.ContainsTag(ExifDirectoryBase.TagFocalLength))
-                        stringBuilder.AppendLine($"Фокусное расстояние: {exifSub.GetDescription(ExifDirectoryBase.TagFocalLength)}");
-                    if (exifSub.ContainsTag(ExifDirectoryBase.TagWhiteBalance))
-                        stringBuilder.AppendLine($"Баланс белого: {exifSub.GetDescription(ExifDirectoryBase.TagWhiteBalance)}");
-                    if (exifSub.ContainsTag(ExifDirectoryBase.TagDateTimeOriginal))
-                        stringBuilder.AppendLine($"Дата съемки: {exifSub.GetDescription(ExifDirectoryBase.TagDateTimeOriginal)}");
-                }
-                var exifIfd0 = directories.OfType<ExifIfd0Directory>().FirstOrDefault();
-                if (exifIfd0 != null) {
-                    if (exifIfd0.ContainsTag(ExifDirectoryBase.TagMake))
-                        stringBuilder.AppendLine($"Производитель камеры: {exifIfd0.GetDescription(ExifDirectoryBase.TagMake)}");
-                    if (exifIfd0.ContainsTag(ExifDirectoryBase.TagModel))
-                        stringBuilder.AppendLine($"Модель камеры: {exifIfd0.GetDescription(ExifDirectoryBase.TagModel)}");
-                }
-                var gpsDir = directories.OfType<GpsDirectory>().FirstOrDefault();
-                if (gpsDir != null) {
-                    var location = gpsDir.GetGeoLocation();
-                    if (location != null)
-                        stringBuilder.AppendLine($"GPS: {location.Latitude:0.000000}, {location.Longitude:0.000000}");
-                }
-                return stringBuilder.ToString();
+                return sb.ToString();
             });
+        }
+
+        private Dictionary<string, string> GetExifData(IEnumerable<MetadataExtractor.Directory> directories) {
+            var result = new Dictionary<string, string>();
+            var exifSub = directories.OfType<ExifSubIfdDirectory>().FirstOrDefault();
+
+            if (exifSub != null) {
+                AddIfExists(exifSub, ExifDirectoryBase.TagIsoEquivalent, "ISO", result);
+                AddIfExists(exifSub, ExifDirectoryBase.TagExposureTime, "Выдержка", result);
+                AddIfExists(exifSub, ExifDirectoryBase.TagFNumber, "Диафрагма", result);
+                AddIfExists(exifSub, ExifDirectoryBase.TagFocalLength, "Фокусное расстояние", result);
+                AddIfExists(exifSub, ExifDirectoryBase.TagWhiteBalance, "Баланс белого", result);
+                AddIfExists(exifSub, ExifDirectoryBase.TagDateTimeOriginal, "Дата съемки", result);
+            }
+
+            return result;
+        }
+
+        private Dictionary<string, string> GetCameraInfo(IEnumerable<MetadataExtractor.Directory> directories) {
+            var result = new Dictionary<string, string>();
+            var exifIfd0 = directories.OfType<ExifIfd0Directory>().FirstOrDefault();
+
+            if (exifIfd0 != null) {
+                AddIfExists(exifIfd0, ExifDirectoryBase.TagMake, "Производитель", result);
+                AddIfExists(exifIfd0, ExifDirectoryBase.TagModel, "Модель", result);
+            }
+
+            return result;
+        }
+
+        private string GetResolution(IEnumerable<MetadataExtractor.Directory> directories) {
+            var jpegDir = directories.OfType<JpegDirectory>().FirstOrDefault();
+            if (jpegDir != null) {
+                return $"{jpegDir.GetImageWidth()}x{jpegDir.GetImageHeight()}";
+            }
+
+            var ifd0 = directories.OfType<ExifIfd0Directory>().FirstOrDefault();
+            if (ifd0 != null &&
+                ifd0.TryGetInt32(ExifDirectoryBase.TagImageWidth, out int width) &&
+                ifd0.TryGetInt32(ExifDirectoryBase.TagImageHeight, out int height)) {
+                return $"{width}x{height}";
+            }
+
+            return null;
+        }
+
+        private string GetGpsInfo(IEnumerable<MetadataExtractor.Directory> directories) {
+            var gpsDir = directories.OfType<GpsDirectory>().FirstOrDefault();
+            var location = gpsDir?.GetGeoLocation();
+            return location != null ?
+                $"{location.Latitude:0.#####}°, {location.Longitude:0.#####}°" :
+                null;
+        }
+
+        private void AddIfExists<T>(T directory, int tag, string name, Dictionary<string, string> dict)
+            where T : MetadataExtractor.Directory {
+            if (directory?.ContainsTag(tag) == true) {
+                dict[name] = directory.GetDescription(tag)
+                    .Replace(" sec", "с")
+                    .Replace(" mm", "мм")
+                    .Replace(" f/", "f/");
+            }
         }
         public int ExportWidth { get; set; } = 1920;
         public int ExportHeight { get; set; } = 1080;

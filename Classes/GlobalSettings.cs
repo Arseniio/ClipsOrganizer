@@ -40,7 +40,33 @@ namespace ClipsOrganizer.Settings {
         public ExportSettings ExportSettings { get; set; } = new ExportSettings();
 
         public ExportFileInfoImage DefaultImageExport { get; set; } = new ExportFileInfoImage() { Codec = ImageFormat.JPEG, Quality = 5 };
-        public ExportFileInfoVideo DefaultVideoExport { get; set; } = new ExportFileInfoVideo() { Codec = VideoCodec.H264_NVENC, Quality = 5000 };
+        public ExportFileInfoVideo DefaultVideoExport { get; set; } = new ExportFileInfoVideo
+        {
+            // Video Settings
+            VideoBitrate = 5000, // Битрейт видео в kbps
+            CRF = 23.0, // Качество (CRF)
+            Resolution = ResolutionType.Original, // Разрешение
+            CustomResolution = new CustomResolution { Width = 1920, Height = 1080, KeepAspectRatio = true }, // Кастомное разрешение
+            FrameRate = null, // Частота кадров (null = исходная)
+            TwoPassEncoding = false, // Двухпроходное кодирование
+
+            // Audio Settings
+            AudioCodec = AudioCodec.AAC, // Аудиокодек
+            AudioBitrate = 128, // Битрейт аудио в kbps
+            AudioChannels = 2, // Количество каналов
+            NormalizeAudio = false, // Нормализация звука
+
+            // Trim Settings
+            TrimStart = TimeSpan.Zero, // Начало обрезки
+            TrimEnd = TimeSpan.Zero, // Конец обрезки
+
+            // Hardware Acceleration
+            HardwareAcceleration = HardwareAccelerationType.NVENC, // Аппаратное ускорение
+            GPUDeviceId = null, // ID GPU (если используется несколько)
+
+            // Metadata
+            CopyMetadata = true // Копирование метаданных
+        };
 
         [JsonIgnore]
         public FFmpegManager ffmpegManager { get; set; }
