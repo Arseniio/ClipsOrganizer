@@ -48,11 +48,9 @@ namespace ClipsOrganizer {
     }
 
     public class FFmpegManager : IDisposable {
-        private IConversion _currentConversion;
         private bool _disposed = false;
 
         public event Action<int> OnEncodeProgressChanged;
-
         public FFmpegManager(string ffmpegPath) {
             FFmpeg.SetExecutablesPath(System.IO.Path.GetDirectoryName(ffmpegPath));
         }
@@ -64,7 +62,6 @@ namespace ClipsOrganizer {
             int bitrate,
             TimeSpan? startTime = null,
             TimeSpan? endTime = null) {
-            _currentConversion = null;
             try {
                 var mediaInfo = await FFmpeg.GetMediaInfo(inputVideo);
                 var videoStream = mediaInfo.VideoStreams.FirstOrDefault();
@@ -95,7 +92,6 @@ namespace ClipsOrganizer {
                     OnEncodeProgressChanged?.Invoke((int)progress);
                 };
 
-                _currentConversion = conversion;
                 await conversion.Start();
                 return true;
             }
@@ -122,7 +118,7 @@ namespace ClipsOrganizer {
             conversion.AddStream(videoStream
                 .SetCodec(videoCodec)
                 .SetBitrate(bitrate * 1000));
-
+            //TODO: maybe change later
             switch (codec) {
                 case VideoCodec.H264_NVENC:
                 case VideoCodec.HEVC_NVENC:

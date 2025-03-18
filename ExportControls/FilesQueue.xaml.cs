@@ -99,36 +99,26 @@ namespace ClipsOrganizer.ExportControls {
                 return;
             }
 
-            // Получаем или создаем настройки экспорта
-            ExportSettings exportSettings;
-
-            exportSettings = new ExportSettings
-            {
-                TargetFolder = "./Export",
-                EnableLogging = true,
-                EncodeEnabled = true,
-                MaxParallelTasks = 2 // Разумное значение по умолчанию
-            };
+            ExportSettings exportSettings = GlobalSettings.Instance.ExportSettings;
+            
 
             try {
-                // Деактивируем элементы интерфейса на время экспорта
                 IsEnabled = false;
                 LB_Queue.IsEnabled = false;
 
-                // Обновляем текст, показывая что экспорт начался
                 TB_QueueLength.Text = "Выполняется экспорт...";
 
-                // Запускаем экспорт
                 bool success = await exportSettings.DoExport();
 
                 if (success) {
                     TB_QueueLength.Text = "Экспорт успешно завершен!";
                     Log.Update("Экспорт успешно завершен!");
+                    
+                    if (System.IO.Directory.Exists(exportSettings.TargetFolder)) {
+                        if (exportSettings.TargetFolder.StartsWith(".")) System.Diagnostics.Process.Start("explorer.exe", Environment.CurrentDirectory + exportSettings.TargetFolder.Substring(1));
 
-                    // Открываем папку с экспортированными файлами
-                    //if (System.IO.Directory.Exists(exportSettings.TargetFolder)) {
-                    //    System.Diagnostics.Process.Start("explorer.exe", exportSettings.TargetFolder);
-                    //}
+                        else System.Diagnostics.Process.Start("explorer.exe", exportSettings.TargetFolder);
+                    }
                 }
                 else {
                     TB_QueueLength.Text = "Экспорт завершен с ошибками.";
@@ -141,7 +131,6 @@ namespace ClipsOrganizer.ExportControls {
                 MessageBox.Show($"Произошла ошибка при экспорте: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally {
-                // Восстанавливаем интерфейс
                 IsEnabled = true;
                 LB_Queue.IsEnabled = true;
 

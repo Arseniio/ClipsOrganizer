@@ -57,6 +57,7 @@ namespace ClipsOrganizer.Settings {
         }
     }
 
+
     public class ExportSettings {
         //<ListBoxItem Tag = "ExportLocal" > Экспорт в папку</ListBoxItem>
         //<ListBoxItem Tag = "EncodeFiles" > Перекодирование файлов</ListBoxItem>
@@ -65,8 +66,11 @@ namespace ClipsOrganizer.Settings {
         //<ListBoxItem Tag = "FileSelection" > Выбор файлов для экспорта</ListBoxItem>
 
         //Export to cloud
+        // Зарезервировано для будущей реализации выгрузки файлов в облако
         public bool UploadToCloud { get; set; }
+        // Строка, определяющая сервис облачного хранения (например, "Dropbox", "GoogleDrive")
         public string CloudService { get; set; }
+        // Путь к папке в облачном хранилище
         public string CloudFolderPath { get; set; }
 
         //Encode settings
@@ -74,18 +78,17 @@ namespace ClipsOrganizer.Settings {
         public bool OverrideEncode { get; set; }
         public bool EnableParallelExport { get; set; }
         public int MaxParallelTasks { get; set; }
+        // Количество потоков FFmpeg для каждой задачи кодирования (пока не используется)
         public int MaxFFmpegThreads { get; set; }
+        //Общее и стандартное для всех файлов 
         public VideoCodec EncodeFormat { get; set; }
         public int EncodeBitrate { get; set; }
 
         //Collection export settings
-        [JsonIgnore]
-        public List<string> FilesToExport { get; set; }
         public bool DeleteFilesAfterExport { get; set; }
         //General export settings
         public string TargetFolder { get; set; } = "./Temp";
-        public bool EnableLogging { get; set; }
-        public string LogFilePath { get; set; }
+        // Максимальный размер экспортируемого файла в МБ (пока не используется)
         public int MaxFileSizeMB { get; set; }
         [JsonIgnore]
         public string TotalFileSizeAfterExport {
@@ -120,8 +123,11 @@ namespace ClipsOrganizer.Settings {
         }
 
         //Advanced general
+        // Флаг использования регулярных выражений для имён файлов (пока не используется)
         public bool UseRegex { get; set; }
+        // Шаблон имени файла при экспорте (пока не используется)
         public string FileNameTemplate { get; set; }
+        // Шаблон имени экспортируемого файла (пока не используется, опечатка в названии)
         public string ExportFileNameTepmlate { get; set; }
 
         // Новый метод для экспорта одного файла
@@ -140,10 +146,7 @@ namespace ClipsOrganizer.Settings {
                 Directory.CreateDirectory(TargetFolder);
                 Log.Update($"Создана папка экспорта: {TargetFolder}");
             }
-
-            if (EnableLogging) {
-                Log.Update($"Начало экспорта файла: {Path.GetFileName(fileInfo.Path)}");
-            }
+            Log.Update($"Начало экспорта файла: {Path.GetFileName(fileInfo.Path)}");
 
             string destinationPath = fileInfo.OutputPath;
             if (string.IsNullOrEmpty(destinationPath)) {
@@ -156,18 +159,13 @@ namespace ClipsOrganizer.Settings {
             try {
                 // Определение типа файла
                 var fileType = ViewableControls.ViewableController.FileTypeDetector.DetectFileType(fileInfo.Path);
-
                 switch (fileType) {
                     case ViewableControls.SupportedFileTypes.Video:
                         // Обработка видео файла
                         if (fileInfo is ExportFileInfoVideo videoInfo) {
                             return await ExportVideoFile(videoInfo, destinationPath, cancellationToken);
                         }
-                        else {
-                            // Если файл видео, но передан обычный ExportFileInfoBase
-                            return await ExportGenericVideoFile(fileInfo, destinationPath, cancellationToken);
-                        }
-
+                        break;
                     case ViewableControls.SupportedFileTypes.Image:
                         // Обработка файла изображения
                         if (fileInfo is ExportFileInfoImage imageInfo) {
@@ -200,6 +198,7 @@ namespace ClipsOrganizer.Settings {
                     }
                 }
             }
+            return true;
         }
 
         private async Task<bool> ExportVideoFile(ExportFileInfoVideo videoInfo, string destinationPath, CancellationToken cancellationToken) {
@@ -254,36 +253,6 @@ namespace ClipsOrganizer.Settings {
             }
         }
 
-        private async Task<bool> ExportGenericVideoFile(ExportFileInfoBase fileInfo, string destinationPath, CancellationToken cancellationToken) {
-            Log.Update($"Экспорт видео (общий): {Path.GetFileName(fileInfo.Path)}");
-            if (EncodeEnabled) {
-                try {
-                    var ffmpegManager = GlobalSettings.Instance.FFmpegInit();
-                    bool success = await ffmpegManager.StartEncodingAsync(
-                        fileInfo.Path,
-                        destinationPath,
-                        this.EncodeFormat,
-                        this.EncodeBitrate
-                    );
-                    if (success) {
-                        Log.Update($"Видео успешно экспортировано: {Path.GetFileName(destinationPath)}");
-                    }
-                    else {
-                        Log.Update($"Ошибка при экспорте видео: {Path.GetFileName(fileInfo.Path)}");
-                    }
-                    return success;
-                }
-                catch (Exception ex) {
-                    Log.Update($"Ошибка экспорта видео: {ex.Message}");
-                    return false;
-                }
-            }
-            else {
-                File.Copy(fileInfo.Path, destinationPath, OverrideEncode);
-                Log.Update($"Видео скопировано без перекодирования: {Path.GetFileName(destinationPath)}");
-                return true;
-            }
-        }
 
         private async Task<bool> ExportImageFile(ExportFileInfoImage imageInfo, string destinationPath, CancellationToken cancellationToken) {
             Log.Update($"Начало экспорта изображения: {Path.GetFileName(imageInfo.Path)}");
@@ -397,10 +366,7 @@ namespace ClipsOrganizer.Settings {
                     Directory.CreateDirectory(TargetFolder);
                 }
 
-                if (EnableLogging && !string.IsNullOrEmpty(LogFilePath)) {
-                    File.AppendAllText(LogFilePath, $"Export started at {DateTime.Now}\n");
-                    Log.Update($"Начат экспорт в {DateTime.Now}");
-                }
+
 
                 int totalFilesCount = ExportQueue.Count;
                 if (totalFilesCount == 0) {
@@ -445,12 +411,6 @@ namespace ClipsOrganizer.Settings {
                             Log.Update($"Ошибка при экспорте файла {Path.GetFileName(fileToExport.Path)}");
                         }
                     }
-                }
-
-                // Логирование завершения
-                if (EnableLogging && !string.IsNullOrEmpty(LogFilePath)) {
-                    File.AppendAllText(LogFilePath, $"Export completed at {DateTime.Now}\n");
-                    Log.Update($"Экспорт завершен в {DateTime.Now}");
                 }
 
                 return true;
