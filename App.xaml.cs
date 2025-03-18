@@ -44,7 +44,7 @@ namespace ClipsOrganizer {
 
         private static void SaveLogToFile() {
             try {
-                File.AppendAllText(LogFilePath, Log.AllLogInfo.ToString());
+                File.AppendAllText(LogFilePath, Log.Instance.AllLogInfo.ToString());
             }
             catch {
                 // Игнорируем ошибки записи в лог

@@ -1,4 +1,5 @@
-﻿using ClipsOrganizer.Settings;
+﻿using ClipsOrganizer.Model;
+using ClipsOrganizer.Settings;
 using DataValidation;
 using System;
 using System.Collections.Generic;

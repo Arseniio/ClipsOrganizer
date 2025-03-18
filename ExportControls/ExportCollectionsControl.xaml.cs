@@ -1,4 +1,5 @@
 ﻿using ClipsOrganizer.Collections;
+using ClipsOrganizer.Model;
 using ClipsOrganizer.Settings;
 using ClipsOrganizer.ViewableControls;
 using MetadataExtractor.Util;
@@ -63,20 +64,19 @@ namespace ClipsOrganizer.ExportControls {
                     ExportQueue.Enqueue(exportItem);
                 }
                 else if (fileType == SupportedFileTypes.Video) {
-                    //var exportItem = new ExportFileInfoVideo(File)
-                    //{TODO FIX LATER
-                    //    Codec = GlobalSettings.Instance.DefaultVideoExport.Codec,
-                    //    Quality = GlobalSettings.Instance.DefaultVideoExport.Quality,
-                    //    OutputPath = File.Path,
-                    //    OutputFormat = "mp4"
-                    //};
-                    //ExportQueue.Enqueue(exportItem);
+                    var exportItem = new ExportFileInfoVideo(File)
+                    {
+                        Quality = GlobalSettings.Instance.DefaultVideoExport.Quality,
+                        OutputPath = File.Path,
+                        OutputFormat = "mp4"
+                    };
+                    ExportQueue.Enqueue(exportItem);
                 }
             }
         }
 
         private void CheckBox_Unchecked(object sender, RoutedEventArgs e) {
-            foreach (var File in ((sender as CheckBox).DataContext as Collection)) {
+            foreach (var File in (sender as CheckBox).DataContext as Collection) {
                 if (!ExportQueue._queue.Contains(File)) continue;
                 else ExportQueue._queue.RemoveAll(p => p.Path == File.Path);
             }

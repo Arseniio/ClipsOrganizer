@@ -44,9 +44,11 @@ namespace ClipsOrganizer.ViewableControls {
         }
 
         private void ViewableController_FileLoaded(object sender, FileLoadedEventArgs e) {
+            if (ViewableController.FileTypeDetector.DetectFileType(e.Item.Path) != SupportedFileTypes.Video) return;
+
             Owner = Window.GetWindow(this) as MainWindow;
             RemoveSelection();
-            if (e.Item.Path != null) {
+            if (e.Item.Path != null && this.IsLoaded) {
                 ME_main.Source = new Uri(e.Item.Path);
                 ME_main.Play();
             }

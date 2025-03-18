@@ -1,4 +1,5 @@
-﻿using ClipsOrganizer.Settings;
+﻿using ClipsOrganizer.Model;
+using ClipsOrganizer.Settings;
 using ClipsOrganizer.ViewableControls.ImageControls;
 using ClipsOrganizer.ViewableControls.VideoControls;
 using System;

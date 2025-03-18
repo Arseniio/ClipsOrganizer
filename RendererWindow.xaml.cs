@@ -45,7 +45,6 @@ namespace ClipsOrganizer {
             lastFileSaved++;
             return System.IO.Path.Combine(System.IO.Path.GetDirectoryName(VideoPath.LocalPath), string.Format("exported_{0}.mp4", lastFileSaved));
         }
-
         public RendererWindow(Uri VideoPath, TimeSpan? Crop_From = null, TimeSpan? Crop_To = null) {
             InitializeComponent();
             this.VideoPath = VideoPath;
@@ -239,7 +238,6 @@ namespace ClipsOrganizer {
                 ViewableControls.ViewableController.VideoViewerInstance.SL_duration.SelectionEnd = endTime.TotalSeconds;
             }
         }
-
         private void TB_Quality_TextChanged(object sender, TextChangedEventArgs e) {
             UpdateVideoSize();
         }

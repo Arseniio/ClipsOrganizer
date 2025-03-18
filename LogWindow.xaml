@@ -8,10 +8,15 @@
         MinHeight="130" MinWidth="505"
         Title="Окно лога" Height="525" Width="505">
     <Grid>
-        <StackPanel>
-            <TextBox IsReadOnly="True" VerticalContentAlignment="Top" Name="TB_log_window" d:Text="lkha;dghsjkashdkaweiuawgbefuihgabweguhaweoguhsadklfghjasdkjlfhsaeilufhzseklfhaseklfhbaskleufghaskluehfgklasuehfkluasehfuklsaehfkulashefkuashekulfhasefukshaefkluahsefkluasheufklashefklasehukflasehufklaeshuklsefuhkleuahskleuhkslfaesuhlf" Height="380" TextWrapping="Wrap" VerticalAlignment="Top" Margin="10 10 10 0"  />
-            <Button Margin="0 10 0 0" Name="Btn_Exit" Click="Btn_Exit_Click" Content="Выход" Width="122"/>
-            <Button Margin="0 10 0 0" Name="Btn_Save" Click="Btn_Save_Click" Content="Сохранить в файл" Width="165"/>
+        <Grid.RowDefinitions>
+            <RowDefinition/>
+            <RowDefinition Height="45.04"/>
+        </Grid.RowDefinitions>
+        <TextBox IsReadOnly="True" VerticalContentAlignment="Top" Name="TB_log_window" HorizontalScrollBarVisibility="Auto" Text="{Binding AllLogInfo, Mode=OneWay}" d:Text="lkha;dghsjkashdkaweiuawgbefuihgabweguhaweoguhsadklfghjasdkjlfhsaeilufhzseklfhaseklfhbaskleufghaskluehfgklasuehfkluasehfuklsaehfkulashefkuashekulfhasefukshaefkluahsefkluasheufklashefklasehukflasehufklaeshuklsefuhkleuahskleuhkslfaesuhlf" Height="380" TextWrapping="Wrap" VerticalAlignment="Top" Margin="10,10,10,0"  />
+
+        <StackPanel HorizontalAlignment="Center" Orientation="Horizontal" Grid.Row="1" Width="337">
+            <Button Margin="0 0 0 0" Name="Btn_Exit" Click="Btn_Exit_Click" Content="Выход" Width="122"/>
+            <Button Margin="50 0 0 0" Name="Btn_Save" Click="Btn_Save_Click" Content="Сохранить в файл" Width="165"/>
         </StackPanel>
     </Grid>
 </Window>

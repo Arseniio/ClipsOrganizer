@@ -22,7 +22,6 @@ namespace ClipsOrganizer.ViewableControls {
     }
     public class FileLoadedEventArgs : EventArgs {
         public Item Item { get; }
-
         public FileLoadedEventArgs(Item filePath) {
             Item = filePath;
         }

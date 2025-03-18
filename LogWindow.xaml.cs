@@ -19,9 +19,16 @@ namespace ClipsOrganizer {
     /// Логика взаимодействия для LogWindow.xaml
     /// </summary>
     public partial class LogWindow : Window {
-        public LogWindow(string LogData = null) {
+        public LogWindow(string logData = null) {
             InitializeComponent();
-            TB_log_window.Text = LogData??Log.AllLogInfo.ToString();
+            DataContext = Log.Instance;
+
+            if (logData != null) {
+                TB_log_window.Text = logData;
+            }
+            else {
+                TB_log_window.SetBinding(TextBlock.TextProperty, "AllLogInfo");
+            }
         }
 
         private void Btn_Exit_Click(object sender, RoutedEventArgs e) {
