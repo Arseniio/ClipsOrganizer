@@ -48,7 +48,7 @@ namespace ClipsOrganizer.ViewableControls {
 
             Owner = Window.GetWindow(this) as MainWindow;
             RemoveSelection();
-            if (e.Item.Path != null && this.IsLoaded) {
+            if (e.Item.Path != null) {
                 ME_main.Source = new Uri(e.Item.Path);
                 ME_main.Play();
             }
@@ -96,10 +96,10 @@ namespace ClipsOrganizer.ViewableControls {
                 SliderTimer.Start();
             }
             if (GlobalSettings.Instance.AutoPlay && ME_main.NaturalDuration.HasTimeSpan) {
-                if (GlobalSettings.Instance.AutoPlayOffset != TimeSpan.Zero && GlobalSettings.Instance.AutoPlayOffset < ME_main.NaturalDuration.TimeSpan) {
+                if (GlobalSettings.Instance.AutoPlayOffset < ME_main.NaturalDuration.TimeSpan) {
                     ME_main.Position = GlobalSettings.Instance.AutoPlayOffset;
                 }
-                else { Log.Update($"Автоплей выставлен на значение {GlobalSettings.Instance.AutoPlayOffset}, длинна клипа {ME_main.NaturalDuration}, невозможно применить переход, возврат к стандартному значению"); }
+                else if (GlobalSettings.Instance.AutoPlayOffset != TimeSpan.Zero) { Log.Update($"Автоплей выставлен на значение {GlobalSettings.Instance.AutoPlayOffset}, длинна клипа {ME_main.NaturalDuration}, невозможно применить переход, возврат к стандартному значению"); }
                 Log.Update($"{IsPlaying} -> {!IsPlaying}");
             }
             else {
@@ -187,7 +187,7 @@ namespace ClipsOrganizer.ViewableControls {
                 SL_duration.SelectionEnd = ME_main.Position.TotalSeconds;
                 if (App.Current.MainWindow.OwnedWindows.Count == 0) {
                     OpenRendererWindow(StartTime, ME_main.Position);
-                    
+
                 }
                 else {
                     SliderSelectionChanged?.Invoke(StartTime, ME_main.Position);

@@ -7,6 +7,7 @@ using Xabe.FFmpeg;
 namespace ClipsOrganizer.Model {
     public class ExportFileInfoVideo : ExportFileInfoBase {
         // Video Settings
+        public VideoCodec VideoCodec { get; set; } = VideoCodec.Unknown;
         public int VideoBitrate { get; set; } = 0; // 0 = auto
         public double CRF { get; set; } = 23.0; // For quality-based encoding
         public ResolutionType Resolution { get; set; } = ResolutionType.Original;

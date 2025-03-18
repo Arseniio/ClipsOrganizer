@@ -93,5 +93,62 @@ namespace ClipsOrganizer.ExportControls {
             }
         }
 
+        private async void Btn_Start_Export_Click(object sender, RoutedEventArgs e) {
+            if (ExportQueue.Count == 0) {
+                MessageBox.Show("Очередь экспорта пуста.", "Нет файлов для экспорта", MessageBoxButton.OK, MessageBoxImage.Information);
+                return;
+            }
+
+            // Получаем или создаем настройки экспорта
+            ExportSettings exportSettings;
+
+            exportSettings = new ExportSettings
+            {
+                TargetFolder = "./Export",
+                EnableLogging = true,
+                EncodeEnabled = true,
+                MaxParallelTasks = 2 // Разумное значение по умолчанию
+            };
+
+            try {
+                // Деактивируем элементы интерфейса на время экспорта
+                IsEnabled = false;
+                LB_Queue.IsEnabled = false;
+
+                // Обновляем текст, показывая что экспорт начался
+                TB_QueueLength.Text = "Выполняется экспорт...";
+
+                // Запускаем экспорт
+                bool success = await exportSettings.DoExport();
+
+                if (success) {
+                    TB_QueueLength.Text = "Экспорт успешно завершен!";
+                    Log.Update("Экспорт успешно завершен!");
+
+                    // Открываем папку с экспортированными файлами
+                    //if (System.IO.Directory.Exists(exportSettings.TargetFolder)) {
+                    //    System.Diagnostics.Process.Start("explorer.exe", exportSettings.TargetFolder);
+                    //}
+                }
+                else {
+                    TB_QueueLength.Text = "Экспорт завершен с ошибками.";
+                    Log.Update("Экспорт завершен с ошибками.");
+                }
+            }
+            catch (Exception ex) {
+                TB_QueueLength.Text = "Ошибка при экспорте.";
+                Log.Update($"Ошибка при экспорте: {ex.Message}");
+                MessageBox.Show($"Произошла ошибка при экспорте: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally {
+                // Восстанавливаем интерфейс
+                IsEnabled = true;
+                LB_Queue.IsEnabled = true;
+
+                // Обновляем отображение очереди (она должна быть пуста после экспорта)
+                LB_Queue.Items.Refresh();
+                TB_QueueLength.Text = $"Очередь: {ExportQueue.Count} ожидающих заданий";
+            }
+        }
     }
 }

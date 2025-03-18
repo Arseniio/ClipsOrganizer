@@ -45,7 +45,7 @@
 
             <UniformGrid Grid.Row="1" Rows="1">
                 <UniformGrid.Resources>
-                    <Style TargetType="Button">
+                    <Style TargetType="Button" >
                         <Setter Property="Margin" Value="5 2 5 2" />
                         <Setter Property="Width" Value="125"/>
                     </Style>

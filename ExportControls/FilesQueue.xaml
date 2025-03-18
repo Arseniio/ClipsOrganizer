@@ -27,7 +27,7 @@
                            FontSize="14" FontWeight="Bold" VerticalAlignment="Center"/>
 
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="20,0,0,0">
-                    <Button Content="Запустить очередь" Margin="8,0,0,0"/>
+                    <Button Content="Запустить очередь" Name="Btn_Start_Export" Click="Btn_Start_Export_Click" Margin="8,0,0,0"/>
                     <Button Content="Очистить" Margin="8,0,0,0" Name="btn_Clear_queue" Click="Btn_Clear_queue_Click"/>
                     <!-- При необходимости добавьте другие кнопки -->
                 </StackPanel>
