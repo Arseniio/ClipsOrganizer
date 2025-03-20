@@ -21,6 +21,7 @@
                 </Grid.RowDefinitions>
                 <ListBox Name="LB_Menu" SelectionChanged="LB_Menu_SelectionChanged">
                     <ListBoxItem IsEnabled="False" Tag="ExportLocal">Локальный экспорт?</ListBoxItem>
+                    <ListBoxItem Tag="CommonSettings">Общие настройки(чт... название)</ListBoxItem>
                     <ListBoxItem Tag="EncodeFiles">Перекодирование файлов</ListBoxItem>
                     <ListBoxItem IsEnabled="False" Tag="UploadToCloud">Выгрузка на файлообменник</ListBoxItem>
                     <ListBoxItem IsEnabled="False" Tag="CollectionSettings">Настройки коллекции</ListBoxItem>

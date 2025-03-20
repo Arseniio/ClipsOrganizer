@@ -78,6 +78,9 @@ namespace ClipsOrganizer {
                     case "EncodeFiles":
                         CC_Export.Content = new EncodeFilesControl();
                         break;
+                    case "CommonSettings":
+                        CC_Export.Content = new CommonSettings();
+                        break;
                 }
             }
         }

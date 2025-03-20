@@ -26,7 +26,6 @@ namespace ClipsOrganizer.ExportControls {
         public ExportGeneralControl() {
             InitializeComponent();
             DataContext = GlobalSettings.Instance.ExportSettings;
-            SP_LogPath.IsEnabled = GlobalSettings.Instance.ExportSettings.EnableLogging;
             SL_ExportFileNameTepmlate.IsEnabled = SL_FileNameTemplate.IsEnabled = GlobalSettings.Instance.ExportSettings.UseRegex;
         }
 

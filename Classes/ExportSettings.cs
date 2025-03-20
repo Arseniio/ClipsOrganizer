@@ -158,29 +158,14 @@ namespace ClipsOrganizer.Settings {
 
             try {
                 // Определение типа файла
-                var fileType = ViewableControls.ViewableController.FileTypeDetector.DetectFileType(fileInfo.Path);
-                switch (fileType) {
-                    case ViewableControls.SupportedFileTypes.Video:
-                        // Обработка видео файла
-                        if (fileInfo is ExportFileInfoVideo videoInfo) {
-                            return await ExportVideoFile(videoInfo, destinationPath, cancellationToken);
-                        }
-                        break;
-                    case ViewableControls.SupportedFileTypes.Image:
-                        // Обработка файла изображения
-                        if (fileInfo is ExportFileInfoImage imageInfo) {
-                            return await ExportImageFile(imageInfo, destinationPath, cancellationToken);
-                        }
-                        else {
-                            // Если файл изображения, но передан обычный ExportFileInfoBase
-                            return await ExportGenericImageFile(fileInfo, destinationPath, cancellationToken);
-                        }
-
-                    default:
-                        // Обработка других типов файлов - просто копирование
-                        Log.Update($"Копирование файла неизвестного типа: {Path.GetFileName(fileInfo.Path)}");
-                        File.Copy(fileInfo.Path, destinationPath, OverrideEncode);
-                        return true;
+                if (fileInfo is ExportFileInfoVideo videoInfo) {
+                    return await ExportVideoFile(videoInfo, destinationPath, cancellationToken);
+                }
+                else if (fileInfo is ExportFileInfoImage imageInfo) {
+                    return await ExportImageFile(imageInfo, destinationPath, cancellationToken);
+                }
+                else {
+                    ExportGenericFile(fileInfo, destinationPath, cancellationToken);
                 }
             }
             catch (Exception ex) {
@@ -229,13 +214,16 @@ namespace ClipsOrganizer.Settings {
                     endTime = videoInfo.TrimEnd;
                 }
 
+                //bool success = await ffmpegManager.StartEncodingAsync(
+                //    videoInfo.Path,
+                //    destinationPath,
+                //    codec,
+                //    bitrate,
+                //    startTime,
+                //    endTime
+                //);
                 bool success = await ffmpegManager.StartEncodingAsync(
-                    videoInfo.Path,
-                    destinationPath,
-                    codec,
-                    bitrate,
-                    startTime,
-                    endTime
+                    videoInfo,destinationPath,bitrate
                 );
 
                 if (success) {
@@ -341,16 +329,16 @@ namespace ClipsOrganizer.Settings {
             }
         }
 
-        private async Task<bool> ExportGenericImageFile(ExportFileInfoBase fileInfo, string destinationPath, CancellationToken cancellationToken) {
-            Log.Update($"Экспорт изображения (общий): {Path.GetFileName(fileInfo.Path)}");
+        private async Task<bool> ExportGenericFile(ExportFileInfoBase fileInfo, string destinationPath, CancellationToken cancellationToken) {
+            Log.Update($"Экспорт файла (общий без преобразования): {Path.GetFileName(fileInfo.Path)}");
 
             try {
                 File.Copy(fileInfo.Path, destinationPath, OverrideEncode);
-                Log.Update($"Изображение экспортировано: {Path.GetFileName(destinationPath)}");
+                Log.Update($"Файл экспортирован: {Path.GetFileName(destinationPath)}");
                 return true;
             }
             catch (Exception ex) {
-                Log.Update($"Ошибка экспорта изображения: {ex.Message}");
+                Log.Update($"Ошибка экспорта файла: {ex.Message}");
                 return false;
             }
         }

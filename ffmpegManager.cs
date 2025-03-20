@@ -1,8 +1,11 @@
-﻿using ClipsOrganizer.Profiles;
+﻿using ClipsOrganizer.Model;
+using ClipsOrganizer.Profiles;
+using ClipsOrganizer.Settings;
 using System;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xaml;
 using Xabe.FFmpeg;
 using Xabe.FFmpeg.Exceptions;
 
@@ -48,7 +51,6 @@ namespace ClipsOrganizer {
     }
 
     public class FFmpegManager : IDisposable {
-        private bool _disposed = false;
 
         public event Action<int> OnEncodeProgressChanged;
         public FFmpegManager(string ffmpegPath) {
@@ -84,7 +86,7 @@ namespace ClipsOrganizer {
                 ConfigureVideoCodec(conversion, videoStream, codec, bitrate);
 
                 if (audioStream != null)
-                    conversion.AddStream(audioStream.SetCodec(AudioCodec.copy));
+                    conversion.AddStream(audioStream.SetCodec(Xabe.FFmpeg.AudioCodec.copy));
 
                 conversion.OnProgress += (sender, args) =>
                 {
@@ -96,11 +98,58 @@ namespace ClipsOrganizer {
                 return true;
             }
             catch (ConversionException ex) {
-                // Логирование ошибки
+                Log.Update(ex.Message.ToString());
                 return false;
             }
         }
+        public async Task<bool> StartEncodingAsync(ExportFileInfoVideo infoVideo, string outputVideo, int bitrate) {
+            try {
+                var mediaInfo = await FFmpeg.GetMediaInfo(infoVideo.Path);
+                var videoStream = mediaInfo.VideoStreams.FirstOrDefault();
+                var audioStream = mediaInfo.AudioStreams.FirstOrDefault();
+                TimeSpan duration = infoVideo.TrimStart != TimeSpan.Zero && infoVideo.TrimEnd != TimeSpan.Zero
+                    ? infoVideo.TrimEnd - infoVideo.TrimStart
+                    : mediaInfo.Duration;
 
+                IConversion conversion = FFmpeg.Conversions.New()
+                    .SetPreset(ConversionPreset.VeryFast)   
+                    .SetOutput(outputVideo)
+                    .SetOverwriteOutput(true);
+
+                if (infoVideo.TrimStart != TimeSpan.Zero)
+                    conversion.SetSeek(infoVideo.TrimStart);
+
+                if (infoVideo.TrimEnd != TimeSpan.Zero && infoVideo.TrimStart != TimeSpan.Zero)
+                    conversion.AddParameter($"-to {infoVideo.TrimEnd:hh\\:mm\\:ss\\.fff}");
+                if (infoVideo.VideoCodec != VideoCodec.Unknown) {
+                    infoVideo.VideoCodec = GlobalSettings.Instance.ExportSettings.EncodeFormat;
+                }
+                ConfigureVideoCodec(conversion, videoStream, infoVideo.VideoCodec, bitrate);
+
+                if (audioStream != null)
+                    conversion.AddStream(audioStream.SetCodec(infoVideo.AudioCodec switch
+                    {
+                        Model.AudioCodec.AAC => Xabe.FFmpeg.AudioCodec.aac,
+                        Model.AudioCodec.MP3 => Xabe.FFmpeg.AudioCodec.mp3,
+                        Model.AudioCodec.Opus => Xabe.FFmpeg.AudioCodec.opus,
+                        Model.AudioCodec.FLAC => Xabe.FFmpeg.AudioCodec.flac,
+                        _ => Xabe.FFmpeg.AudioCodec.aac
+                    }));
+
+                conversion.OnProgress += (sender, args) =>
+                {
+                    double progress = args.Duration.TotalSeconds / duration.TotalSeconds * 100;
+                    OnEncodeProgressChanged?.Invoke((int)progress);
+                };
+
+                await conversion.Start();
+                return true;
+            }
+            catch (ConversionException ex) {
+                Log.Update(ex.Message.ToString());
+                return false;
+            }
+        }
         private void ConfigureVideoCodec(
             IConversion conversion,
             IVideoStream videoStream,
@@ -133,7 +182,6 @@ namespace ClipsOrganizer {
         }
 
         public void Dispose() {
-            _disposed = true;
             GC.SuppressFinalize(this);
         }
     }

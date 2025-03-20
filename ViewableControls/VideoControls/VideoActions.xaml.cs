@@ -49,14 +49,7 @@ namespace ClipsOrganizer.ViewableControls.VideoControls {
             AudioCodecComboBox.SelectedIndex = 0;
         }
 
-        // Валидация числовых полей
-        private void NumberValidationTextBox(object sender, TextCompositionEventArgs e) {
-            e.Handled = !int.TryParse(e.Text, out _);
-        }
 
-        private void DoubleValidationTextBox(object sender, TextCompositionEventArgs e) {
-            e.Handled = !double.TryParse(e.Text, out _);
-        }
         public VideoActions(ExportFileInfoVideo exportInfo) {
             InitializeComponent();
             ExportInfo = exportInfo;
