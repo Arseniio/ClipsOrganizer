@@ -17,26 +17,12 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+
 namespace ClipsOrganizer.ExportControls {
     /// <summary>
     /// Логика взаимодействия для CommonSettings.xaml
     /// </summary>
 
-    public class ExportAutoConverter : IValueConverter {
-        public object Convert(object value, Type targetType, object parameter, CultureInfo culture) {
-            if (value is int intValue) {
-                return intValue == -1 ? "auto" : intValue.ToString();
-            }
-            return "auto"; // Если значение null или не int
-        }
-
-        public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {
-            if (value is string strValue) {
-                return strValue == "auto" ? -1 : int.TryParse(strValue, out int result) ? result : -1;
-            }
-            return -1;
-        }
-    }
 
     public partial class CommonSettings : UserControl {
         public ExportFileInfoVideo defaultExportVideo = GlobalSettings.Instance.DefaultVideoExport;
@@ -44,26 +30,26 @@ namespace ClipsOrganizer.ExportControls {
         public CommonSettings() {
             InitializeComponent();
             CB_codec.ItemsSource = Enum.GetValues(typeof(VideoCodec)).Cast<VideoCodec>();
-            ResolutionComboBox.ItemsSource = Enum.GetValues(typeof(ResolutionType)).Cast<ResolutionType>();
             ResolutionComboBox.SelectionChanged += (s, e) =>
             {
                 CustomResolutionPanel.Visibility = defaultExportVideo.Resolution == ResolutionType.Custom
                     ? Visibility.Visible
                     : Visibility.Collapsed;
             };
+            ResolutionComboBox.ItemsSource = Enum.GetValues(typeof(ResolutionType)).Cast<ResolutionType>();
             AudioCodecComboBox.ItemsSource = Enum.GetValues(typeof(AudioCodec)).Cast<AudioCodec>();
             AudioCodecComboBox.SelectedIndex = 0;
         }
 
         private void ValidateNumberInput(object sender, RoutedEventArgs e) {
             if (sender is TextBox textBox) {
-                InputValidator.IsNumber(textBox.Text, textBox);
+                InputValidator.SetUnderline((InputValidator.IsNumber(textBox.Text) || textBox.Text == "auto"), textBox);
             }
         }
 
         private void ValidateDoubleInput(object sender, RoutedEventArgs e) {
             if (sender is TextBox textBox) {
-                InputValidator.MatchesPattern(textBox.Text, @"^\d*\.?\d*$", textBox);
+                InputValidator.SetUnderline((InputValidator.IsNumber(textBox.Text) || textBox.Text == "auto"), textBox);
             }
         }
 

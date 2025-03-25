@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xaml;
+using Windows.Media.Core;
 using Xabe.FFmpeg;
 using Xabe.FFmpeg.Exceptions;
 
@@ -112,7 +113,7 @@ namespace ClipsOrganizer {
                     : mediaInfo.Duration;
 
                 IConversion conversion = FFmpeg.Conversions.New()
-                    .SetPreset(ConversionPreset.VeryFast)   
+                    .SetPreset(ConversionPreset.VeryFast)
                     .SetOutput(outputVideo)
                     .SetOverwriteOutput(true);
 
@@ -121,10 +122,11 @@ namespace ClipsOrganizer {
 
                 if (infoVideo.TrimEnd != TimeSpan.Zero && infoVideo.TrimStart != TimeSpan.Zero)
                     conversion.AddParameter($"-to {infoVideo.TrimEnd:hh\\:mm\\:ss\\.fff}");
-                if (infoVideo.VideoCodec != VideoCodec.Unknown) {
-                    infoVideo.VideoCodec = GlobalSettings.Instance.ExportSettings.EncodeFormat;
-                }
+
                 ConfigureVideoCodec(conversion, videoStream, infoVideo.VideoCodec, bitrate);
+                if (infoVideo.FrameRate.HasValue) {
+                    conversion.SetFrameRate(infoVideo.FrameRate.Value);
+                }
 
                 if (audioStream != null)
                     conversion.AddStream(audioStream.SetCodec(infoVideo.AudioCodec switch

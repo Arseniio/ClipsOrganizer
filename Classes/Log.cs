@@ -56,6 +56,9 @@ public class Log : INotifyPropertyChanged {
                     TB_log.BeginAnimation(TextBlock.OpacityProperty, _fadeOutAnimation);
                 };
             }
+            if (AppDomain.CurrentDomain.FriendlyName.Contains("testhost")) {
+                Console.WriteLine(text);
+            }
             Instance.AllLogInfo += text + Environment.NewLine;
             _resetTimer.Start();
         }

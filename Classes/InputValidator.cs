@@ -26,10 +26,10 @@ namespace DataValidation {
             return IsPathExists;
         }
 
-        private static void SetUnderline(bool IsPathExists, object Sender) {
+        public static void SetUnderline(bool CheckResult, object Sender) {
             if (Sender is TextBox textBox) {
                 var palette = new PaletteHelper().GetTheme();
-                var color = IsPathExists ? new SolidColorBrush(MaterialDesignColors.Recommended.GreenSwatch.Green300) : new SolidColorBrush(MaterialDesignColors.Recommended.RedSwatch.Red300);
+                var color = CheckResult ? new SolidColorBrush(MaterialDesignColors.Recommended.GreenSwatch.Green300) : new SolidColorBrush(MaterialDesignColors.Recommended.RedSwatch.Red300);
                 TextFieldAssist.SetUnderlineBrush(textBox, color);
             }
         }

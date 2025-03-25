@@ -155,7 +155,7 @@ namespace ClipsOrganizer.Settings {
                 }
                 destinationPath = Path.Combine(TargetFolder, Path.GetFileName(fileInfo.Path));
             }
-
+            fileInfo.OutputPath = destinationPath;
             try {
                 // Определение типа файла
                 if (fileInfo is ExportFileInfoVideo videoInfo) {
@@ -193,13 +193,9 @@ namespace ClipsOrganizer.Settings {
                 var ffmpegManager = GlobalSettings.Instance.FFmpegInit();
                 VideoCodec codec;
                 // Настройка кодека и битрейта на основе пользовательских настроек
-                if (videoInfo.VideoCodec != VideoCodec.Unknown) {
-                    codec = videoInfo.VideoCodec;
+                if (videoInfo.VideoCodec == VideoCodec.Unknown) {
+                    videoInfo.VideoCodec = this.EncodeFormat;
                 }
-                else {
-                    codec = this.EncodeFormat == VideoCodec.Unknown ? VideoCodec.H265_x265 : this.EncodeFormat;
-                }
-
                 int bitrate = videoInfo.VideoBitrate > 0 ? videoInfo.VideoBitrate : this.EncodeBitrate;
 
                 // Настройка отрезка времени, если установлены TrimStart и TrimEnd
@@ -343,7 +339,6 @@ namespace ClipsOrganizer.Settings {
             }
         }
 
-        // Полностью переписанный метод DoExport для работы с очередью
         public async Task<bool> DoExport() {
             try {
                 if (string.IsNullOrWhiteSpace(TargetFolder)) {
@@ -353,8 +348,6 @@ namespace ClipsOrganizer.Settings {
                 if (!Directory.Exists(TargetFolder)) {
                     Directory.CreateDirectory(TargetFolder);
                 }
-
-
 
                 int totalFilesCount = ExportQueue.Count;
                 if (totalFilesCount == 0) {

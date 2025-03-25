@@ -36,7 +36,7 @@ namespace ClipsOrganizer.Profiles {
     }
     public static class ProfileManager {
         public static string ProfilePath = "./Profiles/";
-        public static List<string> LoadAllProfiles() {
+        public static List<string> LoadAllProfiles(string ProfilePath = "./Profiles/") {
             string[] allFiles = Directory.GetFiles(ProfilePath);
             List<string> profiles = new List<string>();
             foreach (string file in allFiles) {

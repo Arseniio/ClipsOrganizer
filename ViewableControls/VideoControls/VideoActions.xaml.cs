@@ -99,5 +99,6 @@ namespace ClipsOrganizer.ViewableControls.VideoControls {
         private void Btn_ExportNow_Click(object sender, RoutedEventArgs e) {
 
         }
+
     }
 }

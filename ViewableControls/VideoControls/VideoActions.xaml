@@ -6,7 +6,12 @@
              xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
              xmlns:local="clr-namespace:ClipsOrganizer"
              mc:Ignorable="d"
+    xmlns:Converter="clr-namespace:ClipsOrganizer.Converter"
+             
              d:DesignHeight="600" d:DesignWidth="800">
+    <UserControl.Resources>
+        <Converter:ExportAutoConverter x:Key="ExportAutoConverter"/>
+    </UserControl.Resources>
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
@@ -46,7 +51,7 @@
 
                         <StackPanel x:Name="CustomResolutionPanel" Orientation="Horizontal" Margin="0 0 0 10">
                             <TextBox materialDesign:HintAssist.Hint="Ширина" 
-                                   Text="{Binding CustomResolution.Width}"
+                                   Text="{Binding CustomResolution.Width,Converter={StaticResource ExportAutoConverter}}"
                                    Width="120"
                                    Style="{StaticResource MaterialDesignFloatingHintTextBox}"
                                    Margin="0 0 10 0"
@@ -54,7 +59,7 @@
                                    TextChanged="ValidateNumberInput"/>
 
                             <TextBox materialDesign:HintAssist.Hint="Высота"
-                                   Text="{Binding CustomResolution.Height}"
+                                   Text="{Binding CustomResolution.Height,Converter={StaticResource ExportAutoConverter}}"
                                    Width="120"
                                    Style="{StaticResource MaterialDesignFloatingHintTextBox}"
                                    LostFocus="ValidateNumberInput"
@@ -62,7 +67,7 @@
                         </StackPanel>
 
                         <TextBox materialDesign:HintAssist.Hint="Частота кадров"
-                                 Text="{Binding FrameRate}"
+                                 Text="{Binding FrameRate,Converter={StaticResource ExportAutoConverter}}"
                                  Style="{StaticResource MaterialDesignFloatingHintTextBox}"
                                  Margin="0 0 0 10"
                                  LostFocus="ValidateDoubleInput"

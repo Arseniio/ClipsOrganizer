@@ -72,6 +72,7 @@ namespace ClipsOrganizer.ViewableControls {
 
         private void VideoDurationUpdate(object sender, EventArgs e) {
             if (!ME_main.IsLoaded) return;
+            TB_length.Text = $"{ME_main.Position.ToString(@"hh\:mm\:ss")} / {ME_main.NaturalDuration.TimeSpan.ToString(@"hh\:mm\:ss")}";
             if (!is_dragging)
                 SL_duration.Value = ME_main.Position.TotalSeconds;
             if (SL_duration.IsSelectionRangeEnabled && App.Current.MainWindow.OwnedWindows.Count == 0)

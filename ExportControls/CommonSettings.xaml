@@ -7,9 +7,10 @@
              xmlns:local="clr-namespace:ClipsOrganizer.ExportControls"
              xmlns:validator="clr-namespace:DataValidation"
              xmlns:Settings="clr-namespace:ClipsOrganizer.Settings"
+             xmlns:Converter="clr-namespace:ClipsOrganizer.Converter"
              mc:Ignorable="d" Height="615" Width="445">
     <UserControl.Resources>
-        <local:ExportAutoConverter x:Key="ExportAutoConverter"/>
+        <Converter:ExportAutoConverter x:Key="ExportAutoConverter"/>
     </UserControl.Resources>
     <Grid>
         <TabControl SelectionChanged="TabControl_SelectionChanged">

@@ -1,4 +1,5 @@
 ﻿using ClipsOrganizer.Model;
+using ClipsOrganizer.Settings;
 using System;
 using System.Text;
 using System.Threading.Tasks;
@@ -36,7 +37,32 @@ namespace ClipsOrganizer.Model {
             return await FFmpeg.GetMediaInfo(Path);
         }
         public ExportFileInfoVideo() { }
-        public ExportFileInfoVideo(Item item) : base(item) { }
+        public ExportFileInfoVideo(Item item) : base(item) {
+            if (GlobalSettings.Instance?.DefaultVideoExport != null) {
+                var defaultExport = GlobalSettings.Instance.DefaultVideoExport;
+
+                VideoCodec = defaultExport.VideoCodec;
+                VideoBitrate = defaultExport.VideoBitrate;
+                CRF = defaultExport.CRF;
+                Resolution = defaultExport.Resolution;
+                CustomResolution = defaultExport.CustomResolution;
+                FrameRate = defaultExport.FrameRate;
+                TwoPassEncoding = defaultExport.TwoPassEncoding;
+
+                AudioCodec = defaultExport.AudioCodec;
+                AudioBitrate = defaultExport.AudioBitrate;
+                AudioChannels = defaultExport.AudioChannels;
+                NormalizeAudio = defaultExport.NormalizeAudio;
+
+                TrimStart = defaultExport.TrimStart;
+                TrimEnd = defaultExport.TrimEnd;
+
+                HardwareAcceleration = defaultExport.HardwareAcceleration;
+                GPUDeviceId = defaultExport.GPUDeviceId;
+
+                CopyMetadata = defaultExport.CopyMetadata;
+            }
+        }
         public async Task<string> GetVideoParams() {
             var mediaInfo = await GetMediaInfoAsync();
             var stringBuilder = new StringBuilder();
