@@ -11,6 +11,7 @@ using System.Windows.Data;
 using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Media.Animation;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
@@ -23,6 +24,7 @@ namespace ClipsOrganizer.ViewableControls {
     public partial class VideoViewer : UserControl {
         DispatcherTimer SliderTimer;
         TimeSpan StartTime = TimeSpan.Zero;
+        TimeSpan EndTime = TimeSpan.Zero;
         public event Action<TimeSpan, TimeSpan?> SliderSelectionChanged;
         public event Action<Uri> UpdateFilename;
         MainWindow Owner = null;
@@ -77,7 +79,7 @@ namespace ClipsOrganizer.ViewableControls {
             if (!is_dragging)
                 SL_duration.Value = ME_main.Position.TotalSeconds;
 
-            if (SL_duration.IsSelectionRangeEnabled && App.Current.MainWindow.OwnedWindows.Count == 0)
+            if (SL_duration.IsSelectionRangeEnabled && StartTime != TimeSpan.Zero && App.Current.MainWindow.OwnedWindows.Count == 0)
                 SL_duration.SelectionEnd = ME_main.Position.TotalSeconds;
         }
         #endregion
@@ -120,6 +122,7 @@ namespace ClipsOrganizer.ViewableControls {
 
         private void RemoveSelection() {
             StartTime = TimeSpan.Zero;
+            EndTime = TimeSpan.Zero;
             SL_duration.SelectionStart = 0;
             SL_duration.SelectionEnd = 0;
             SL_duration.IsSelectionRangeEnabled = false;
@@ -137,6 +140,7 @@ namespace ClipsOrganizer.ViewableControls {
                 ME_main.Pause();
             }
         }
+
         public void HandleKeyStroke(KeyEventArgs e) {
             if (e.Key == Key.Left && !Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) {
                 var step = TimeSpan.FromSeconds(1);
@@ -171,8 +175,24 @@ namespace ClipsOrganizer.ViewableControls {
                 StartTime = ME_main.Position;
                 Log.Update(string.Format("Обрезка с {0}", StartTime.TotalMilliseconds));
                 SL_duration.IsSelectionRangeEnabled = true;
-                SL_duration.SelectionStart = ME_main.Position.TotalSeconds;
+                SL_duration.SelectionStart = StartTime.TotalSeconds;
                 SliderSelectionChanged?.Invoke(StartTime, null);
+                if (EndTime != TimeSpan.Zero && App.Current.MainWindow.OwnedWindows.Count == 0) {
+                    OpenRendererWindow(StartTime, EndTime);
+                }
+            }
+            if (e.Key == Key.E) {
+                EndTime = ME_main.Position;
+                Log.Update(string.Format("Обрезка до {0}", ME_main.Position.TotalMilliseconds));
+                SL_duration.IsSelectionRangeEnabled = true;
+                SL_duration.SelectionEnd = EndTime.TotalSeconds;
+                if (StartTime != TimeSpan.Zero && App.Current.MainWindow.OwnedWindows.Count == 0) {
+                    OpenRendererWindow(StartTime, EndTime);
+                }
+                else {
+                    SliderSelectionChanged?.Invoke(StartTime, EndTime);
+                }
+
             }
             if (e.Key == Key.C && Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) {
                 Log.Update(string.Format("Обрезка с {0} до конца", StartTime.TotalMilliseconds));
@@ -180,20 +200,6 @@ namespace ClipsOrganizer.ViewableControls {
                     OpenRendererWindow(ME_main.Position, ME_main.NaturalDuration.TimeSpan);
                     SL_duration.SelectionEnd = ME_main.NaturalDuration.TimeSpan.TotalSeconds;
                     Owner.UpdateColors();
-                }
-
-            }
-            if (e.Key == Key.E) {
-                Log.Update(string.Format("Обрезка до {0}", ME_main.Position.TotalMilliseconds));
-                SL_duration.IsSelectionRangeEnabled = true;
-                if (StartTime == TimeSpan.Zero) SL_duration.SelectionStart = 0;
-                SL_duration.SelectionEnd = ME_main.Position.TotalSeconds;
-                if (App.Current.MainWindow.OwnedWindows.Count == 0) {
-                    OpenRendererWindow(StartTime, ME_main.Position);
-
-                }
-                else {
-                    SliderSelectionChanged?.Invoke(StartTime, ME_main.Position);
                 }
 
             }
