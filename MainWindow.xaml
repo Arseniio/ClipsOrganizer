@@ -116,7 +116,9 @@
         <!--#endregion-->
 
         <!--#region Right part-->
-        <ContentControl Grid.Column="1" Name="CC_Viewable" Grid.RowSpan="2"/>
+        <ContentControl Grid.Column="1" Name="CC_Viewable" Grid.RowSpan="2">
+            <TextBlock Text="Перетащите или выберите файл" HorizontalAlignment="Center" VerticalAlignment="Center" Name="TB_loading_info"/>
+        </ContentControl>
         <!--#endregion-->
         <Rectangle Grid.ColumnSpan="2" Height="1" Fill="Gray" VerticalAlignment="Top" Grid.RowSpan="2" Margin="0,22,0,0"/>
         <TextBlock Grid.Row="2" TextWrapping="NoWrap" TextTrimming="CharacterEllipsis" MouseDown="TB_log_MouseDown" d:Text="LOG DEFAULT TEXT" Margin="10,0,0,0" Name="TB_log" VerticalAlignment="Center" Height="16"/>

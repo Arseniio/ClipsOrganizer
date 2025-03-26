@@ -12,7 +12,7 @@ namespace ClipsOrganizer.Converter {
             if (value is int intValue) {
                 return intValue == -1 ? "auto" : intValue.ToString();
             }
-            return "auto"; // Если значение null или не int
+            return "auto"; 
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) {

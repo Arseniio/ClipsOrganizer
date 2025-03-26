@@ -79,7 +79,7 @@ namespace ClipsOrganizer.ViewableControls.VideoControls {
         }
         private void ValidateNumberInput(object sender, RoutedEventArgs e) {
             if (sender is TextBox textBox) {
-                InputValidator.IsNumber(textBox.Text, textBox);
+                InputValidator.SetUnderline((InputValidator.IsNumber(textBox.Text) || textBox.Text == "auto"), textBox);
             }
         }
 

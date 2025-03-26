@@ -64,6 +64,8 @@ namespace ClipsOrganizer.ViewableControls {
         bool is_dragging = false;
         private void SL_duration_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
             if (!is_dragging) ME_main.Position = TimeSpan.FromSeconds((double)SL_duration.Value);
+            if (ME_main.NaturalDuration.HasTimeSpan)
+                TB_length.Text = $"{TimeSpan.FromSeconds((double)SL_duration.Value).ToString(@"hh\:mm\:ss")} / {ME_main.NaturalDuration.TimeSpan.ToString(@"hh\:mm\:ss")}";
         }
 
         private void SL_duration_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e) {
@@ -72,9 +74,9 @@ namespace ClipsOrganizer.ViewableControls {
 
         private void VideoDurationUpdate(object sender, EventArgs e) {
             if (!ME_main.IsLoaded) return;
-            TB_length.Text = $"{ME_main.Position.ToString(@"hh\:mm\:ss")} / {ME_main.NaturalDuration.TimeSpan.ToString(@"hh\:mm\:ss")}";
             if (!is_dragging)
                 SL_duration.Value = ME_main.Position.TotalSeconds;
+
             if (SL_duration.IsSelectionRangeEnabled && App.Current.MainWindow.OwnedWindows.Count == 0)
                 SL_duration.SelectionEnd = ME_main.Position.TotalSeconds;
         }
@@ -212,5 +214,22 @@ namespace ClipsOrganizer.ViewableControls {
             #endregion
         }
 
+        private void Btn_keyshortcuts_Click(object sender, RoutedEventArgs e) {
+            string hotkeysInfo =
+                "Горячие клавиши панели управления:\n\n" +
+                "Стрелка влево – перемотка назад на 1 секунду\n" +
+                "Стрелка вправо – перемотка вперед на 1 секунду\n" +
+                "Ctrl + Стрелка вверх – увеличение громкости\n" +
+                "Ctrl + Стрелка вниз – уменьшение громкости\n" +
+                "S – очистка выделения\n" +
+                "D – открытие окна перекодирования для всего файла\n" +
+                "C – установка точки начала обрезки\n" +
+                "E – установка точки завершения обрезки\n" +
+                "Shift + C – обрезка от текущего момента до конца видео\n" +
+                "Пробел – переключение воспроизведения (пауза/проигрывание)";
+
+            MessageBox.Show(hotkeysInfo, "Горячие клавиши", MessageBoxButton.OK, MessageBoxImage.Information);
+
+        }
     }
 }

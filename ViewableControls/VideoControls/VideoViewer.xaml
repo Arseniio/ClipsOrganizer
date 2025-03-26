@@ -12,7 +12,6 @@
             <RowDefinition Height="5*"/>
             <RowDefinition Height="auto"/>
         </Grid.RowDefinitions>
-        <TextBlock Text="Перетащите или выберите файл" HorizontalAlignment="Center" VerticalAlignment="Center" Name="TB_loading_info"/>
         <MediaElement Name="ME_main" LoadedBehavior="Manual" MediaOpened="ME_main_MediaOpened" />
         <StackPanel Margin="0 10 0 0" Grid.Row="1" Orientation="Vertical">
             <Grid>
@@ -29,16 +28,23 @@
                 <TextBlock Name="TB_length" HorizontalAlignment="Center" Grid.Column="2" d:Text="00:00:00 / 00:20:00" />
 
             </Grid>
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Bottom" Margin="10" >
-                <Button Focusable="False" Width="100" Height="30" Margin="5 0 5 0" Name="Btn_Play" Click="Btn_Play_Click">
-                    <materialDesign:PackIcon Kind="Play" />
+            <DockPanel VerticalAlignment="Bottom" Margin="10">
+                <StackPanel Orientation="Horizontal" DockPanel.Dock="Left">
+                    <Button Focusable="False" Width="100" Height="30" Margin="5 0 5 0" Name="Btn_Play" Click="Btn_Play_Click">
+                        <materialDesign:PackIcon Kind="Play" />
+                    </Button>
+                    <Button Focusable="False" Width="100" Height="30" Margin="5 0 5 0" Name="Btn_Stop" Click="Btn_Stop_Click">
+                        <materialDesign:PackIcon Kind="Pause" />
+                    </Button>
+                    <Slider TabIndex="3" Width="120" VerticalAlignment="Center" Minimum="0" Value="1" Name="SL_volume" ValueChanged="SL_volume_ValueChanged" Maximum="1"/>
+                </StackPanel>
+
+                <Button Name="Btn_keyshortcuts" DockPanel.Dock="Right" HorizontalAlignment="Right" Style="{DynamicResource MaterialDesignFlatButton}" Click="Btn_keyshortcuts_Click">
+                    <materialDesign:PackIcon Kind="Keyboard"/>
                 </Button>
-                <Button Focusable="False" Width="100" Height="30" Margin="5 0 5 0" Name="Btn_Stop" Click="Btn_Stop_Click">
-                    <materialDesign:PackIcon Kind="Pause" />
-                </Button>
-                <!-- <Button Width="100" Height="30" Margin="5 0 5 0" Name="Btn_Mark" Content="Mark" Click="Btn_Mark_Click"/>-->
-                <Slider TabIndex="3" Width="120" VerticalAlignment="Center" Minimum="0" Value="1" Name="SL_volume" ValueChanged="SL_volume_ValueChanged" Maximum="1"/>
-            </StackPanel>
+            </DockPanel>
+
+
         </StackPanel>
     </Grid>
 </UserControl>
