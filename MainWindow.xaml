@@ -96,7 +96,7 @@
                                 </HierarchicalDataTemplate>
 
                                 <DataTemplate DataType="{x:Type Model:Item}">
-                                    <Border Background="{Binding Path=Color}" Padding="1">
+                                    <Border Background="{Binding Path=Color, TargetNullValue=#FFCCCCCC}" Padding="1">
                                         <TextBlock Text="{Binding Path=Name}" ToolTip="{Binding Path=Path}" />
                                     </Border>
                                 </DataTemplate>

@@ -36,12 +36,12 @@ namespace ClipsOrganizer {
         private object _lastSelectedItem;
         private Collection _lastSelectedCollection;
         public MainWindow() {
-            //if (File.Exists("./settings.json")) {
-            //    File.Delete("./settings.json");
-            //}
-            //if (Directory.Exists("./Profiles")) {
-            //    Directory.Delete("./Profiles", true);
-            //}
+            if (File.Exists("./settings.json")) {
+                File.Delete("./settings.json");
+            }
+            if (Directory.Exists("./Profiles")) {
+                Directory.Delete("./Profiles", true);
+            }
             string clipsPath;
             string ffmpegPath;
             string Profilename;
@@ -49,7 +49,7 @@ namespace ClipsOrganizer {
                 WelcomeWindow window = new WelcomeWindow();
                 if (window.ShowDialog() == true) {
                     clipsPath = window.ClipsPath;
-                    ffmpegPath = window.ffmpegPath;
+                    ffmpegPath = window.FfmpegPath;
                     Profilename = window.ProfileName;
                     Directory.CreateDirectory("./Profiles");
                     CurrentProfile = new Profile() { ClipsFolder = clipsPath, ProfileName = Profilename };
@@ -57,6 +57,10 @@ namespace ClipsOrganizer {
                     GlobalSettings.Initialize(ffmpegPath);
                     GlobalSettings.Instance.LastSelectedProfile = CurrentProfile.ProfileName;
                     FileSerializer.WriteAndCreateBackupFile(GlobalSettings.Instance, SettingsPath);
+                }
+                else {
+                    this.Close();
+                    return;
                 }
             }
             GlobalSettings.Instance = FileSerializer.ReadFile<GlobalSettings>(SettingsPath);

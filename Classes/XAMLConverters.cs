@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows;
 using System.Windows.Data;
 
 namespace ClipsOrganizer.Converter {
@@ -20,6 +21,15 @@ namespace ClipsOrganizer.Converter {
                 return strValue == "auto" ? -1 : int.TryParse(strValue, out int result) ? result : -1;
             }
             return -1;
+        }
+    }
+    public class BoolToVisibilityConverter : IValueConverter {
+        public object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
+            return (value is bool && (bool)value) ? Visibility.Visible : Visibility.Collapsed;
+        }
+
+        public object ConvertBack(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture) {
+            throw new NotImplementedException();
         }
     }
 }

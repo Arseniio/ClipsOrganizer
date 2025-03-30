@@ -3,30 +3,63 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:local="clr-namespace:ClipsOrganizer"
+        xmlns:conv="clr-namespace:ClipsOrganizer.Converter"
         mc:Ignorable="d"
-        Title="ClipsOrganizer" Height="300" Width="480" WindowStyle="ToolWindow">
-    <Grid>
+        Title="Первоначальная настройка" Height="400" Width="600" WindowStyle="ToolWindow">
+    <Window.Resources>
+        <conv:BoolToVisibilityConverter x:Key="BoolToVisibility"/>
+    </Window.Resources>
+    <Grid Margin="10">
         <Grid.RowDefinitions>
-            <RowDefinition Height="219*"/>
-            <RowDefinition Height="65*"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
-        <StackPanel VerticalAlignment="Center" >
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 20 0 0">
-                <TextBlock Text="Название первого профиля:" VerticalAlignment="Center" FontSize="18" Margin="0 0 10 0"/>
-                <TextBox Name="TB_Profile" Width="120" VerticalContentAlignment="Center" Height="32px" Text="Игры"/>
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 20 0 0">
-                <TextBlock Text="Путь до папки с видеофайлами:" VerticalAlignment="Center" FontSize="18" Margin="0 0 10 0" />
-                <TextBox Name="TB_Path" Width="120" VerticalContentAlignment="Center" Height="32px" Text="H:\тест" />
-            </StackPanel>
-            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0 20 0 0">
-                <TextBlock Text="Путь до exe файла ffmpeg:" VerticalAlignment="Center" FontSize="18" Margin="0 0 10 0"/>
-                <TextBox Name="TB_ffmpeg" Width="165" Height="32px" VerticalContentAlignment="Center" Text="H:\code\cs\ClipsOrganizer\ffmpeg.exe"/>
-            </StackPanel>
+
+        <StackPanel Grid.Row="0" Orientation="Horizontal" Margin="0,10">
+            <TextBlock Text="Статус FFmpeg:" FontWeight="Bold" Width="120"/>
+            <TextBlock x:Name="FfmpegStatus" Text="Проверка..." Foreground="Gray" Margin="5,0"/>
+            <TextBlock x:Name="FfmpegIcon" Text="⏳" Margin="5,0"/>
         </StackPanel>
-        <Button Grid.Row="1" Content="Продолжить" Name="Btn_Continue" Click="Btn_Continue_Click" VerticalAlignment="Center" HorizontalAlignment="Center" Width="120" Height="30" />
 
+        <StackPanel Grid.Row="1" Orientation="Horizontal" Margin="0,10">
+            <TextBlock Text="Статус FFprobe:" FontWeight="Bold" Width="120"/>
+            <TextBlock x:Name="FfprobeStatus" Text="Проверка..." Foreground="Gray" Margin="5,0"/>
+            <TextBlock x:Name="FfprobeIcon" Text="⏳" Margin="5,0"/>
+        </StackPanel>
 
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,10" 
+                    Visibility="{Binding ShowManualPath, Converter={StaticResource BoolToVisibility}}">
+            <TextBox x:Name="TbFfmpegPath" Width="300" Margin="5,0"
+                     
+                     TextChanged="TbFfmpegPath_TextChanged"/>
+            <Button Content="Обзор..." Click="BrowseButton_Click" Margin="5,0" Width="95"/>
+            <Button Content="Скачать FFmpeg" Name="Btn_Download"
+                materialDesign:ButtonProgressAssist.Value="{Binding progress}"
+                materialDesign:ButtonProgressAssist.IsIndicatorVisible="True"
+                materialDesign:ButtonProgressAssist.Minimum="0"
+                materialDesign:ButtonProgressAssist.Maximum="100"
+                    Click="DownloadButton_Click" Margin="5,0" Width="150"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Margin="0,20">
+            <TextBlock Text="Имя профиля:" Width="120" VerticalAlignment="Center"/>
+            <TextBox x:Name="TbProfile" Width="200" Text="Мой профиль"/>
+        </StackPanel>
+
+        <StackPanel Grid.Row="4" Orientation="Horizontal" Margin="0,10">
+            <TextBlock Text="Рабочая директория:" Width="120" VerticalAlignment="Center"/>
+            <TextBox x:Name="TbPath" Width="300" Height="28"/>
+            <Button Content="Выбрать..." Click="SelectFolder_Click" Margin="5,0" Width="100"/>
+        </StackPanel>
+
+        <Button Grid.Row="5" Content="Продолжить" x:Name="BtnContinue" 
+                Click="BtnContinue_Click" Width="120" Height="30" 
+                HorizontalAlignment="Right" Margin="0,10"/>
     </Grid>
 </Window>

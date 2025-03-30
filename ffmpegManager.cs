@@ -55,7 +55,7 @@ namespace ClipsOrganizer {
 
         public event Action<int> OnEncodeProgressChanged;
         public FFmpegManager(string ffmpegPath) {
-            FFmpeg.SetExecutablesPath(System.IO.Path.GetDirectoryName(ffmpegPath));
+            FFmpeg.SetExecutablesPath(ffmpegPath);
         }
 
         public async Task<bool> StartEncodingAsync(
