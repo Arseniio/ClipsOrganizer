@@ -36,12 +36,12 @@ namespace ClipsOrganizer {
         private object _lastSelectedItem;
         private Collection _lastSelectedCollection;
         public MainWindow() {
-            if (File.Exists("./settings.json")) {
-                File.Delete("./settings.json");
-            }
-            if (Directory.Exists("./Profiles")) {
-                Directory.Delete("./Profiles", true);
-            }
+            //if (File.Exists("./settings.json")) {
+            //    File.Delete("./settings.json");
+            //}
+            //if (Directory.Exists("./Profiles")) {
+            //    Directory.Delete("./Profiles", true);
+            //}
             string clipsPath;
             string ffmpegPath;
             string Profilename;
@@ -453,8 +453,17 @@ namespace ClipsOrganizer {
         }
 
         private void Window_Drop(object sender, DragEventArgs e) {
-            LoadNewFile(new Item() { Path = (e.Data.GetData(DataFormats.FileDrop) as string[]).First() });
+            string filePath = (e.Data.GetData(DataFormats.FileDrop) as string[])?.FirstOrDefault();
+            if (filePath != null) {
+                LoadNewFile(new Item()
+                {
+                    Name = System.IO.Path.GetFileName(filePath),
+                    Path = filePath,
+                    Date = File.GetLastWriteTime(filePath)
+                });
+            }
         }
+
 
         private void CB_Profile_SelectionChanged(object sender, SelectionChangedEventArgs e) {
             if (!this.IsLoaded) return;

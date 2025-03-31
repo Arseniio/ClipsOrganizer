@@ -11,6 +11,7 @@ using Xabe.FFmpeg;
 using System.Threading;
 using System.Windows;
 using ImageMagick;
+using SharpCompress.Common;
 
 namespace ClipsOrganizer.Settings {
 
@@ -275,10 +276,12 @@ namespace ClipsOrganizer.Settings {
                         switch (imageInfo.Codec) {
                             case ImageFormat.JPEG:
                                 outputFormat = MagickFormat.Jpeg;
+                                imageInfo.OutputFormat = "jpeg";
                                 image.Quality = (uint)imageInfo.Quality;
                                 break;
                             case ImageFormat.PNG:
                                 outputFormat = MagickFormat.Png;
+                                imageInfo.OutputFormat = "png";
                                 image.Quality = (uint)imageInfo.CompressionLevel;
                                 break;
                             case ImageFormat.GIF:
@@ -313,7 +316,7 @@ namespace ClipsOrganizer.Settings {
                             image.Strip();
                         }
 
-                        image.Write(destinationPath, outputFormat);
+                        image.Write($"{Path.GetDirectoryName(destinationPath)}/{Path.GetFileNameWithoutExtension(destinationPath)}.{outputFormat}", outputFormat);
                     }
                 }, cancellationToken);
 

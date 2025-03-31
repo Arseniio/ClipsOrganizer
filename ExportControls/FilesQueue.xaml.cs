@@ -117,7 +117,7 @@ namespace ClipsOrganizer.ExportControls {
                     if (System.IO.Directory.Exists(exportSettings.TargetFolder)) {
                         if (exportSettings.TargetFolder.StartsWith(".")) System.Diagnostics.Process.Start("explorer.exe", Environment.CurrentDirectory + exportSettings.TargetFolder.Substring(1));
 
-                        else System.Diagnostics.Process.Start("explorer.exe", exportSettings.TargetFolder);
+                        else System.Diagnostics.Process.Start("explorer.exe", exportSettings.TargetFolder.Replace("/", "\\"));
                     }
                 }
                 else {

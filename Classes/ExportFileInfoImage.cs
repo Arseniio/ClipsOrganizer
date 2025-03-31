@@ -139,6 +139,22 @@ namespace ClipsOrganizer.Model {
 
             return null;
         }
+        private (int, int) GetResolutionInt() {
+            if (Path == null) return (0,0);
+            var directories = ImageMetadataReader.ReadMetadata(Path);
+            var jpegDir = directories.OfType<JpegDirectory>().FirstOrDefault();
+            if (jpegDir != null) {
+                return (jpegDir.GetImageWidth(), jpegDir.GetImageHeight());
+            }
+
+            var ifd0 = directories.OfType<ExifIfd0Directory>().FirstOrDefault();
+            if (ifd0 != null &&
+                ifd0.TryGetInt32(ExifDirectoryBase.TagImageWidth, out int width) &&
+                ifd0.TryGetInt32(ExifDirectoryBase.TagImageHeight, out int height)) {
+                return (width, height);
+            }
+            return (0, 0);
+        }
 
         private string GetGpsInfo(IEnumerable<MetadataExtractor.Directory> directories) {
             var gpsDir = directories.OfType<GpsDirectory>().FirstOrDefault();
@@ -157,12 +173,19 @@ namespace ClipsOrganizer.Model {
                     .Replace(" f/", "f/");
             }
         }
-        public int ExportWidth { get; set; } = 1920;
+
+        public int ExportWidth { get; set; } = 1760;
         public int ExportHeight { get; set; } = 1080;
         public bool PreserveMetadata { get; set; } = true;
         public string ColorProfile { get; set; } = "sRGB"; // Варианты: sRGB, Adobe RGB, ProPhoto RGB
         public int CompressionLevel { get; set; } = 75; // Для PNG (1-100)
-        public ExportFileInfoImage() : base() { }
-        public ExportFileInfoImage(Item item) : base(item) { }
+        public ExportFileInfoImage() : base() {
+            ExportWidth = GetResolutionInt().Item1;
+            ExportHeight = GetResolutionInt().Item2;
+        }
+        public ExportFileInfoImage(Item item) : base(item) {
+            ExportWidth = GetResolutionInt().Item1;
+            ExportHeight = GetResolutionInt().Item2;
+        }
     }
 }

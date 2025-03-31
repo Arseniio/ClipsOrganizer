@@ -67,7 +67,6 @@ namespace ClipsOrganizer.ExportControls {
                     var exportItem = new ExportFileInfoVideo(File)
                     {
                         Quality = GlobalSettings.Instance.DefaultVideoExport.Quality,
-                        OutputPath = File.Path,
                         OutputFormat = "mp4"
                     };
                     ExportQueue.Enqueue(exportItem);

@@ -70,6 +70,7 @@ namespace ClipsOrganizer.Model {
             // Основная информация
             stringBuilder.AppendLine($"📁 Файл: {System.IO.Path.GetFileName(Path)}");
             stringBuilder.AppendLine($"📂 Папка: {System.IO.Path.GetDirectoryName(Path)}");
+            stringBuilder.AppendLine($"📂 Выходной файл: {GlobalSettings.Instance.ExportSettings.TargetFolder}/{System.IO.Path.GetFileName(Path)}");
             stringBuilder.AppendLine($"📅 Дата: {Date:dd.MM.yyyy HH:mm}");
             stringBuilder.AppendLine("───────────────────────");
 

@@ -16,38 +16,39 @@
         <TabControl SelectionChanged="TabControl_SelectionChanged">
             <TabItem Name="TI_Video" IsSelected="True" Header="Видео">
                 <ScrollViewer VerticalScrollBarVisibility="Visible" Margin="10">
-                    <StackPanel>
-                        <!-- Video Settings -->
-                        <GroupBox Header="Настройки видео" materialDesign:GroupBoxAssist.HeaderPadding="8" Margin="0 0 0 10">
-                            <StackPanel>
-                                <ComboBox Name="CB_codec" 
+                    <Grid>
+                        <StackPanel>
+                            <!-- Video Settings -->
+                            <GroupBox Header="Настройки видео" materialDesign:GroupBoxAssist.HeaderPadding="8" Margin="0 0 0 10">
+                                <StackPanel>
+                                    <ComboBox Name="CB_codec" 
                            materialDesign:HintAssist.Hint="Видеокодек"
                            SelectedItem="{Binding VideoCodec}"
                            Style="{StaticResource MaterialDesignFloatingHintComboBox}"
                            Margin="0 0 0 10"/>
 
-                                <TextBox  materialDesign:HintAssist.Hint="Битрейт видео (kbps)"
+                                    <TextBox  materialDesign:HintAssist.Hint="Битрейт видео (kbps)"
                           Text="{Binding VideoBitrate,Converter={StaticResource ExportAutoConverter}}"
                           Style="{StaticResource MaterialDesignFloatingHintTextBox}"
                           Margin="0 0 0 10"
                           LostFocus="ValidateNumberInput"
                           TextChanged="ValidateNumberInput"/>
 
-                                <TextBox materialDesign:HintAssist.Hint="CRF (0-51)"
+                                    <TextBox materialDesign:HintAssist.Hint="CRF (0-51)"
                           Text="{Binding CRF}"
                           Style="{StaticResource MaterialDesignFloatingHintTextBox}"
                           Margin="0 0 0 10"
                           LostFocus="ValidateNumberInput"
                           TextChanged="ValidateNumberInput"/>
 
-                                <ComboBox Name="ResolutionComboBox"
+                                    <ComboBox Name="ResolutionComboBox"
                            materialDesign:HintAssist.Hint="Разрешение"
                            SelectedItem="{Binding Resolution}"
                            Style="{StaticResource MaterialDesignFloatingHintComboBox}"
                            Margin="0 0 0 10"/>
 
-                                <StackPanel x:Name="CustomResolutionPanel" Orientation="Horizontal" Margin="0 0 0 10">
-                                    <TextBox materialDesign:HintAssist.Hint="Ширина" 
+                                    <StackPanel x:Name="CustomResolutionPanel" Orientation="Horizontal" Margin="0 0 0 10">
+                                        <TextBox materialDesign:HintAssist.Hint="Ширина" 
                             Text="{Binding CustomResolution.Width,Converter={StaticResource ExportAutoConverter}}"
                             Width="120"
                             Style="{StaticResource MaterialDesignFloatingHintTextBox}"
@@ -55,49 +56,50 @@
                             LostFocus="ValidateNumberInput"
                             TextChanged="ValidateNumberInput"/>
 
-                                    <TextBox materialDesign:HintAssist.Hint="Высота"
+                                        <TextBox materialDesign:HintAssist.Hint="Высота"
                             Text="{Binding CustomResolution.Height,Converter={StaticResource ExportAutoConverter}}"
                             Width="120"
                             Style="{StaticResource MaterialDesignFloatingHintTextBox}"
                             LostFocus="ValidateNumberInput"
                             TextChanged="ValidateNumberInput"/>
-                                </StackPanel>
+                                    </StackPanel>
 
-                                <TextBox materialDesign:HintAssist.Hint="Частота кадров"
+                                    <TextBox materialDesign:HintAssist.Hint="Частота кадров"
                           Text="{Binding FrameRate,Converter={StaticResource ExportAutoConverter}}"
                           Style="{StaticResource MaterialDesignFloatingHintTextBox}"
                           Margin="0 0 0 10"
                           LostFocus="ValidateDoubleInput"
                           TextChanged="ValidateDoubleInput"/>
 
-                                <CheckBox Content="Двухпроходное кодирование"
+                                    <CheckBox Content="Двухпроходное кодирование"
                          IsChecked="{Binding TwoPassEncoding}"
                          Margin="0 0 0 10"/>
-                            </StackPanel>
-                        </GroupBox>
+                                </StackPanel>
+                            </GroupBox>
 
-                        <!-- Audio Settings -->
-                        <GroupBox Header="Настройки аудио" materialDesign:GroupBoxAssist.HeaderPadding="8" Margin="0 0 0 10">
-                            <StackPanel>
-                                <ComboBox Name="AudioCodecComboBox"
+                            <!-- Audio Settings -->
+                            <GroupBox Header="Настройки аудио" materialDesign:GroupBoxAssist.HeaderPadding="8" Margin="0 0 0 10">
+                                <StackPanel>
+                                    <ComboBox Name="AudioCodecComboBox"
                          materialDesign:HintAssist.Hint="Аудиокодек"
                          SelectedIndex="0"
                          Style="{StaticResource MaterialDesignFloatingHintComboBox}"
                          Margin="0 0 0 10"/>
 
-                                <TextBox materialDesign:HintAssist.Hint="Битрейт аудио (kbps)"
+                                    <TextBox materialDesign:HintAssist.Hint="Битрейт аудио (kbps)"
                         Text="{Binding AudioBitrate,Converter={StaticResource ExportAutoConverter}}"
                         Style="{StaticResource MaterialDesignFloatingHintTextBox}"
                         Margin="0 0 0 10"
                         LostFocus="ValidateNumberInput"
                         TextChanged="ValidateNumberInput"/>
 
-                                <CheckBox Content="Нормализация звука"
+                                    <CheckBox Content="Нормализация звука"
                          IsChecked="{Binding NormalizeAudio}"
                          Margin="0 0 0 10"/>
-                            </StackPanel>
-                        </GroupBox>
-                    </StackPanel>
+                                </StackPanel>
+                            </GroupBox>
+                        </StackPanel>
+                    </Grid>
                 </ScrollViewer>
             </TabItem>
             <TabItem Name="TI_Image" Header="Фото">
