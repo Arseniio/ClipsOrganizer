@@ -34,7 +34,7 @@ namespace ClipsOrganizer.Collections {
             //placeholders
             Color = "#000000";
             CollectionTag = "test1";
-
+            directoryItem = null;
             Files = new List<Item>();
             foreach (var item in directoryItem.Items) {
                 Files.Add(new Item

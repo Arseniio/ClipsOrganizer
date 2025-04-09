@@ -5,6 +5,8 @@ VisualStudioVersion = 17.5.33516.290
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClipsOrganizer", "ClipsOrganizer.csproj", "{0EBAD832-5A28-4E2B-BA51-A55D6CBD034B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClipsTests", "..\ClipsTests\ClipsTests.csproj", "{1682C8ED-3ED0-41FF-BB0F-5ACDD26DA001}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +17,10 @@ Global
 		{0EBAD832-5A28-4E2B-BA51-A55D6CBD034B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0EBAD832-5A28-4E2B-BA51-A55D6CBD034B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0EBAD832-5A28-4E2B-BA51-A55D6CBD034B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1682C8ED-3ED0-41FF-BB0F-5ACDD26DA001}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1682C8ED-3ED0-41FF-BB0F-5ACDD26DA001}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1682C8ED-3ED0-41FF-BB0F-5ACDD26DA001}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1682C8ED-3ED0-41FF-BB0F-5ACDD26DA001}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

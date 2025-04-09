@@ -84,10 +84,6 @@ namespace ClipsOrganizer {
                 }
             }
         }
-        
-        private void Btn_Export_Click(object sender, RoutedEventArgs e) {
-            GlobalSettings.Instance.ExportSettings.DoExport();
-        }
 
         private void Window_Closed(object sender, EventArgs e) {
             (Owner as MainWindow).TV_clips.IsEnabled = true;

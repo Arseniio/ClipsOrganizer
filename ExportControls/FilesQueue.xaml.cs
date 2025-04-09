@@ -17,6 +17,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using Windows.ApplicationModel.VoiceCommands;
 
 namespace ClipsOrganizer.ExportControls {
     /// <summary>
@@ -92,7 +93,7 @@ namespace ClipsOrganizer.ExportControls {
                 UC_Queue_Actions.Content = new ImageActions(selectedImage);
             }
         }
-
+        private CancellationTokenSource cancellationToken = new CancellationTokenSource();
         private async void Btn_Start_Export_Click(object sender, RoutedEventArgs e) {
             if (ExportQueue.Count == 0) {
                 MessageBox.Show("Очередь экспорта пуста.", "Нет файлов для экспорта", MessageBoxButton.OK, MessageBoxImage.Information);
@@ -100,20 +101,36 @@ namespace ClipsOrganizer.ExportControls {
             }
 
             ExportSettings exportSettings = GlobalSettings.Instance.ExportSettings;
-            
 
             try {
-                IsEnabled = false;
-                LB_Queue.IsEnabled = false;
-
-                TB_QueueLength.Text = "Выполняется экспорт...";
-
-                bool success = await exportSettings.DoExport();
-
+                /*IsEnabled = false;*/
+                /*LB_Queue.IsEnabled = false;*/
+                Btn_Start_Export.Content = "Отмена";
+                if (exportSettings.IsExporting) {
+                    cancellationToken.Cancel();
+                    Log.Update("Запрос отмены экспорта");
+                    return;
+                }
+                cancellationToken = new CancellationTokenSource();
+                bool success = false;
+                try {
+                    exportSettings.OnNextFileExport += ExportSettings_OnNextFileExport;
+                    ExportSettings_OnNextFileExport(null, new ExportEventArgs { ExportedId = 0, TotalExportNum = ExportQueue.Count });
+                    success = await exportSettings.DoExport(cancellationToken.Token);
+                }
+                catch (OperationCanceledException) {
+                    Log.Update("Экспорт отменён пользователем");
+                    TB_QueueLength.Text = "В процессе отмены экспорта";
+                }
+                finally {
+                    cancellationToken.Dispose();
+                    cancellationToken = null;
+                    exportSettings.IsExporting = false;
+                }
                 if (success) {
                     TB_QueueLength.Text = "Экспорт успешно завершен!";
                     Log.Update("Экспорт успешно завершен!");
-                    
+
                     if (System.IO.Directory.Exists(exportSettings.TargetFolder)) {
                         if (exportSettings.TargetFolder.StartsWith(".")) System.Diagnostics.Process.Start("explorer.exe", Environment.CurrentDirectory + exportSettings.TargetFolder.Substring(1));
 
@@ -131,12 +148,40 @@ namespace ClipsOrganizer.ExportControls {
                 MessageBox.Show($"Произошла ошибка при экспорте: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
             }
             finally {
-                IsEnabled = true;
-                LB_Queue.IsEnabled = true;
+                if (!exportSettings.IsExporting) {
+                    IsEnabled = true;
+                    LB_Queue.IsEnabled = true;
+                    LB_Queue.Items.Refresh();
+                    Btn_Start_Export.Content = "Запустить очередь";
+                    TB_QueueLength.Text = $"Очередь: {ExportQueue.Count} ожидающих заданий";
+                    exportSettings.OnNextFileExport -= ExportSettings_OnNextFileExport;
+                    TB_ExportNumText.Text = "Закончен";
+                    PB_export.Value = 0;
+                }
 
-                // Обновляем отображение очереди (она должна быть пуста после экспорта)
+            }
+        }
+
+        private void ExportSettings_OnNextFileExport(object sender, ExportEventArgs e) {
+            PB_export.Maximum = e.TotalExportNum;
+            PB_export.Value = e.ExportedId;
+            TB_ExportNumText.Text = $"{e.ExportedId} / {e.TotalExportNum}";
+            LB_Queue.Items.Refresh();
+            TB_QueueLength.Text = $"Очередь: {ExportQueue.Count} ожидающих заданий";
+        }
+
+        private void Btn_Delete_Click(object sender, RoutedEventArgs e) {
+            if (LB_Queue.SelectedItem is ExportFileInfoBase selectedFile && !GlobalSettings.Instance.ExportSettings.IsExporting) {
+                int deletedIndex = LB_Queue.SelectedIndex;
+                ExportQueue.Dequeue(selectedFile);
+            TB_QueueLength.Text = $"Очередь: {ExportQueue.Count} ожидающих заданий";
                 LB_Queue.Items.Refresh();
-                TB_QueueLength.Text = $"Очередь: {ExportQueue.Count} ожидающих заданий";
+                if (LB_Queue.Items.Count == 0) {
+                    LB_Queue.SelectedIndex = -1;
+                    return;
+                }
+                int newIndex = Math.Min(deletedIndex, LB_Queue.Items.Count - 1);
+                LB_Queue.SelectedIndex = newIndex;
             }
         }
     }
