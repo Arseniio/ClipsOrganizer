@@ -146,7 +146,7 @@ namespace ClipsOrganizer.Settings {
         [JsonIgnore]
         public bool IsExporting { get; set; } = false;
         // Новый метод для экспорта одного файла
-        public async Task<bool> ExportFile(ExportFileInfoBase fileInfo, CancellationToken cancellationToken = default) {
+        public async Task<bool> ExportFile(ExportFileInfoBase fileInfo, CancellationToken cancellationToken) {
             if (fileInfo == null) {
                 Log.Update("Ошибка: Файл для экспорта не задан");
                 return false;
@@ -235,7 +235,7 @@ namespace ClipsOrganizer.Settings {
                 //    endTime
                 //);
                 bool success = await ffmpegManager.StartEncodingAsync(
-                    videoInfo, destinationPath, bitrate
+                    videoInfo, destinationPath, bitrate, cancellationToken 
                 );
 
                 if (success) {
@@ -406,7 +406,7 @@ namespace ClipsOrganizer.Settings {
                         var fileToExport = ExportQueue.Dequeue();
                         Log.Update($"Экспорт файла {currentFile} из {totalFilesCount}: {Path.GetFileName(fileToExport.Path)}");
 
-                        bool success = await ExportFile(fileToExport);
+                        bool success = await ExportFile(fileToExport,cancellationToken);
                         OnNextFileExport?.Invoke(null, new ExportEventArgs { ExportedId = currentFile, TotalExportNum = TotalBeforeExport });
                         cancellationToken.ThrowIfCancellationRequested();
                         if (!success) {

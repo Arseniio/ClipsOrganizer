@@ -1,4 +1,5 @@
-﻿using System;
+﻿using ClipsOrganizer.Model;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -7,6 +8,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -154,56 +156,53 @@ namespace ClipsOrganizer {
                 Settings.GlobalSettings.Instance.OpenFolderAfterEncoding = CB_OpenFolderAfterEncoding.IsChecked.Value;
             }
         }
-
+        private CancellationTokenSource cropCts = new CancellationTokenSource();
+        private bool isCropping = false;
         private async void Btn_Crop_Click(object sender, RoutedEventArgs e) {
-            // Проверка выбранного кодека
+            if (isCropping) {
+                cropCts?.Cancel();
+                Log.Update("Отмена кодирования...");
+                return;
+            }
+
             if (CB_codec.SelectedItem == null || !(CB_codec.SelectedItem is VideoCodec selectedCodec) || selectedCodec == VideoCodec.Unknown) {
                 Log.Update("Пожалуйста, выберите кодек.");
                 return;
             }
 
-            // Проверка качества (битрейта)
             if (!int.TryParse(TB_Quality.Text, out int bitrate) || bitrate <= 0) {
                 Log.Update("Пожалуйста, укажите корректное значение качества (битрейта).");
                 return;
             }
 
-            // Проверка времени обрезки
-            var endtime = TimeSpan.TryParse(TB_Crop_To.Text, out TimeSpan endTime);
-            bool isTrimmed = TimeSpan.TryParse(TB_Crop_From.Text, out TimeSpan startTime) && endtime;
-            if (isTrimmed) {
-                if (startTime >= endTime) {
-                    Log.Update("Невозможно обрезать клип: начальное время должно быть меньше конечного.");
-                    return;
-                }
-            }
-            else {
-                // Если время обрезки не указано, сбрасываем startTime и endTime
-                startTime = TimeSpan.Zero;
-                endTime = TimeSpan.Zero;
+            TimeSpan endTime = TimeSpan.Zero;
+            bool isTrimmed = TimeSpan.TryParse(TB_Crop_From.Text, out TimeSpan startTime)
+                             && TimeSpan.TryParse(TB_Crop_To.Text, out endTime);
+
+            if (isTrimmed && startTime >= endTime) {
+                Log.Update("Невозможно обрезать клип: начальное время должно быть меньше конечного.");
+                return;
             }
 
-            // Подписка на событие прогресса
+            ExportFileInfoVideo exportInfo = new ExportFileInfoVideo
+            {
+                Path = VideoPath.LocalPath,
+                OutputPath = TB_outputPath.Text,
+                VideoCodec = selectedCodec,
+                VideoBitrate = bitrate,
+                TrimStart = isTrimmed ? startTime : TimeSpan.Zero,
+                TrimEnd = isTrimmed ? endTime : TimeSpan.Zero
+            };
+
             Settings.GlobalSettings.Instance.ffmpegManager.OnEncodeProgressChanged += UpdateProgressBar;
 
+            cropCts = new CancellationTokenSource();
+            isCropping = true;
+            Btn_Crop.Content = "Отмена";
+
             try {
-                bool result;
-                if (isTrimmed) {
-                    result = await Settings.GlobalSettings.Instance.ffmpegManager.StartEncodingAsync(
-                        inputVideo: VideoPath.LocalPath,
-                        outputVideo: TB_outputPath.Text,
-                        codec: selectedCodec,
-                        bitrate: bitrate,
-                        startTime: startTime,
-                        endTime: endTime);
-                }
-                else {
-                    result = await Settings.GlobalSettings.Instance.ffmpegManager.StartEncodingAsync(
-                        inputVideo: VideoPath.LocalPath,
-                        outputVideo: TB_outputPath.Text,
-                        codec: selectedCodec,
-                        bitrate: bitrate);
-                }
+                bool result = await Settings.GlobalSettings.Instance.ffmpegManager
+                    .StartEncodingAsync(exportInfo, TB_outputPath.Text,bitrate, cropCts.Token);
 
                 if (result) {
                     Log.Update("Кодирование завершено успешно.");
@@ -212,16 +211,28 @@ namespace ClipsOrganizer {
                     Log.Update("Ошибка при кодировании.");
                 }
             }
+            catch (OperationCanceledException) {
+                Log.Update("Кодирование отменено.");
+            }
             catch (Exception ex) {
                 Log.Update($"Ошибка: {ex.Message}");
             }
             finally {
-                // Отписка от события прогресса
-                if (CB_OpenFolderAfterEncoding.IsChecked == true)
-                    Process.Start("explorer.exe", $"/select,\"{TB_outputPath.Text}\"");
                 Settings.GlobalSettings.Instance.ffmpegManager.OnEncodeProgressChanged -= UpdateProgressBar;
+
+                if (CB_OpenFolderAfterEncoding.IsChecked == true && File.Exists(exportInfo.OutputPath)) {
+                    Process.Start("explorer.exe", $"/select,\"{exportInfo.OutputPath}\"");
+                }
+
+                cropCts.Dispose();
+                cropCts = null;
+                progressValue = 0;
+                isCropping = false;
+                Btn_Crop.Content = "Обрезать";
             }
         }
+
+
         private void UpdateProgressBar(int Precent) {
             Dispatcher.Invoke(() =>
             {

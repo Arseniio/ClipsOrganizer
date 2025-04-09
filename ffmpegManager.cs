@@ -4,6 +4,7 @@ using ClipsOrganizer.Settings;
 using System;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Xaml;
 using Windows.Media.Core;
@@ -103,7 +104,7 @@ namespace ClipsOrganizer {
                 return false;
             }
         }
-        public async Task<bool> StartEncodingAsync(ExportFileInfoVideo infoVideo, string outputVideo, int bitrate) {
+        public async Task<bool> StartEncodingAsync(ExportFileInfoVideo infoVideo, string outputVideo, int bitrate, CancellationToken cancellationToken) {
             try {
                 var mediaInfo = await FFmpeg.GetMediaInfo(infoVideo.Path);
                 var videoStream = mediaInfo.VideoStreams.FirstOrDefault();
@@ -111,7 +112,6 @@ namespace ClipsOrganizer {
                 TimeSpan duration = infoVideo.TrimStart != TimeSpan.Zero && infoVideo.TrimEnd != TimeSpan.Zero
                     ? infoVideo.TrimEnd - infoVideo.TrimStart
                     : mediaInfo.Duration;
-
                 IConversion conversion = FFmpeg.Conversions.New()
                     .SetPreset(ConversionPreset.VeryFast)
                     .SetOutput(outputVideo)
@@ -144,7 +144,7 @@ namespace ClipsOrganizer {
                     OnEncodeProgressChanged?.Invoke((int)progress);
                 };
 
-                await conversion.Start();
+                await conversion.Start(cancellationToken: cancellationToken);
                 return true;
             }
             catch (ConversionException ex) {
