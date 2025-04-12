@@ -40,7 +40,7 @@ namespace ClipsOrganizer.ViewableControls {
         static ViewableController() {
             if (App.Current.MainWindow is MainWindow mainWindow) {
                 MainWindowCC = mainWindow.CC_Viewable;
-                MainwindowCC_FileInfo = mainWindow.CC_FileInfo;
+                // MainwindowCC_FileInfo = mainWindow.CC_FileInfo;
                 MainwindowCC_FileActions = mainWindow.CC_FileActions;
             }
             else {

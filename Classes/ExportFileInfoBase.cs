@@ -8,7 +8,6 @@ namespace ClipsOrganizer.Model{
     public class ExportFileInfoBase : Item {
         public string OutputPath { get; set; }
         public string OutputFormat { get; set; }
-        public int Quality { get; set; } = 5;
         public ExportFileInfoBase() { }
         public ExportFileInfoBase(Item item) {
             if (item == null)

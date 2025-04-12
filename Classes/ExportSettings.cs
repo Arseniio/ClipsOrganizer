@@ -144,7 +144,6 @@ namespace ClipsOrganizer.Settings {
         public string ExportFileNameTepmlate { get; set; }
         [JsonIgnore]
         public bool IsExporting { get; set; } = false;
-        // Новый метод для экспорта одного файла
         public async Task<bool> ExportFile(ExportFileInfoBase fileInfo, CancellationToken cancellationToken) {
             if (fileInfo == null) {
                 Log.Update("Ошибка: Файл для экспорта не задан");
@@ -162,7 +161,7 @@ namespace ClipsOrganizer.Settings {
             }
             Log.Update($"Начало экспорта файла: {Path.GetFileName(fileInfo.Path)}");
 
-            string destinationPath = fileInfo.OutputPath;
+            string destinationPath = this.TargetFolder;
             if (string.IsNullOrEmpty(destinationPath)) {
                 if (TargetFolder.StartsWith(".")) {
                     TargetFolder = Environment.CurrentDirectory + TargetFolder.Substring(1);
@@ -212,29 +211,9 @@ namespace ClipsOrganizer.Settings {
                 }
                 int bitrate = videoInfo.VideoBitrate > 0 ? videoInfo.VideoBitrate : this.EncodeBitrate;
 
-                TimeSpan? startTime = null;
-                TimeSpan? endTime = null;
-
-                if (videoInfo.TrimStart.TotalSeconds > 0) {
-                    startTime = videoInfo.TrimStart;
-                }
-
-                if (videoInfo.TrimEnd.TotalSeconds > 0) {
-                    endTime = videoInfo.TrimEnd;
-                }
-
-                //bool success = await ffmpegManager.StartEncodingAsync(
-                //    videoInfo.Path,
-                //    destinationPath,
-                //    codec,
-                //    bitrate,
-                //    startTime,
-                //    endTime
-                //);
                 bool success = await ffmpegManager.StartEncodingAsync(
                     videoInfo, destinationPath, bitrate, cancellationToken
                 );
-
                 if (success) {
                     Log.Update($"Видео успешно экспортировано: {Path.GetFileName(destinationPath)}");
                 }
@@ -256,9 +235,7 @@ namespace ClipsOrganizer.Settings {
             try {
                 await Task.Run(() =>
                 {
-                    // Создаём объект для работы с изображением
                     using (var image = new MagickImage(imageInfo.Path)) {
-                        // Устанавливаем цветовой профиль, если он задан
                         if (!string.IsNullOrEmpty(imageInfo.ColorProfile)) {
                             switch (imageInfo.ColorProfile) {
                                 case "sRGB":
@@ -266,13 +243,6 @@ namespace ClipsOrganizer.Settings {
                                     break;
                                 case "Adobe RGB":
                                     image.SetProfile(ColorProfile.AdobeRGB1998);
-                                    break;
-                                case "ProPhoto RGB":
-                                    // Для ProPhoto RGB может потребоваться отдельный файл профиля
-                                    // Можно добавить его как ресурс или загрузить из файла
-                                    if (File.Exists("./Profiles/ProPhotoRGB.icc")) {
-                                        image.SetProfile(new ColorProfile("./Profiles/ProPhotoRGB.icc"));
-                                    }
                                     break;
                             }
                         }
@@ -288,7 +258,7 @@ namespace ClipsOrganizer.Settings {
                             case ImageFormat.JPEG:
                                 outputFormat = MagickFormat.Jpeg;
                                 imageInfo.OutputFormat = "jpeg";
-                                image.Quality = (uint)imageInfo.Quality;
+                                image.Quality = (uint)imageInfo.CompressionLevel;
                                 break;
                             case ImageFormat.PNG:
                                 outputFormat = MagickFormat.Png;
@@ -327,7 +297,7 @@ namespace ClipsOrganizer.Settings {
                             image.Strip();
                         }
 
-                        image.Write($"{Path.GetDirectoryName(destinationPath)}/{Path.GetFileNameWithoutExtension(destinationPath)}.{outputFormat}", outputFormat);
+                        image.Write($"{destinationPath}/{Path.GetFileNameWithoutExtension(imageInfo.Name)}.{outputFormat}", outputFormat);
                     }
                 }, cancellationToken);
 

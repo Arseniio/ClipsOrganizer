@@ -57,7 +57,6 @@ namespace ClipsOrganizer.ExportControls {
                     var exportItem = new ExportFileInfoImage(File)
                     {
                         Codec = GlobalSettings.Instance.DefaultImageExport.Codec,
-                        Quality = GlobalSettings.Instance.DefaultImageExport.Quality,
                         OutputPath = File.Path,
                         OutputFormat = "jpg"
                     };
@@ -66,7 +65,6 @@ namespace ClipsOrganizer.ExportControls {
                 else if (fileType == SupportedFileTypes.Video) {
                     var exportItem = new ExportFileInfoVideo(File)
                     {
-                        Quality = GlobalSettings.Instance.DefaultVideoExport.Quality,
                         OutputFormat = "mp4"
                     };
                     ExportQueue.Enqueue(exportItem);

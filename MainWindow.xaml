@@ -106,9 +106,9 @@
                     </Grid>
                 </Grid>
             </TabItem>
-            <TabItem Height="44" Header="Информация">
+           <!-- <TabItem Height="44" Header="Информация">
                 <ContentControl Name="CC_FileInfo"/>
-            </TabItem>
+            </TabItem> -->
             <TabItem Height="44" Header="Действия">
                 <ContentControl Name="CC_FileActions"/>
             </TabItem>
