@@ -104,7 +104,7 @@ namespace ClipsOrganizer {
                 return false;
             }
         }
-        public async Task<bool> StartEncodingAsync(ExportFileInfoVideo infoVideo, string outputVideo, int bitrate, CancellationToken cancellationToken) {
+        public async Task<bool> StartEncodingAsync(ExportFileInfoVideo infoVideo, string outputVideo, int bitrate, CancellationToken cancellationToken, int MultiThread = 0) {
             try {
                 var mediaInfo = await FFmpeg.GetMediaInfo(infoVideo.Path);
                 var videoStream = mediaInfo.VideoStreams.FirstOrDefault();
@@ -116,6 +116,15 @@ namespace ClipsOrganizer {
                     .SetPreset(ConversionPreset.VeryFast)
                     .SetOutput(outputVideo)
                     .SetOverwriteOutput(true);
+                if (MultiThread == 0) {
+                    MultiThread = GlobalSettings.Instance.ExportSettings.MaxFFmpegThreads;
+                }
+                if (GlobalSettings.Instance.ExportSettings.UseAllThreads) {
+                    conversion.UseMultiThread(true);
+                }
+                else if (MultiThread > 0) {
+                    conversion.UseMultiThread(MultiThread);
+                }
 
                 if (infoVideo.TrimStart != TimeSpan.Zero)
                     conversion.SetSeek(infoVideo.TrimStart);

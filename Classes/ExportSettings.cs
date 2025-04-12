@@ -86,9 +86,8 @@ namespace ClipsOrganizer.Settings {
         public string CloudFolderPath { get; set; }
 
         //Encode settings
-        public bool EncodeEnabled { get; set; }
-        public bool OverrideEncode { get; set; }
         public bool EnableParallelExport { get; set; }
+        public bool UseAllThreads { get; set; }
         public int MaxParallelTasks { get; set; }
         // Количество потоков FFmpeg для каждой задачи кодирования (пока не используется)
         public int MaxFFmpegThreads { get; set; }
@@ -208,13 +207,11 @@ namespace ClipsOrganizer.Settings {
             try {
                 var ffmpegManager = GlobalSettings.Instance.FFmpegInit();
                 VideoCodec codec;
-                // Настройка кодека и битрейта на основе пользовательских настроек
                 if (videoInfo.VideoCodec == VideoCodec.Unknown) {
                     videoInfo.VideoCodec = this.EncodeFormat;
                 }
                 int bitrate = videoInfo.VideoBitrate > 0 ? videoInfo.VideoBitrate : this.EncodeBitrate;
 
-                // Настройка отрезка времени, если установлены TrimStart и TrimEnd
                 TimeSpan? startTime = null;
                 TimeSpan? endTime = null;
 
@@ -235,7 +232,7 @@ namespace ClipsOrganizer.Settings {
                 //    endTime
                 //);
                 bool success = await ffmpegManager.StartEncodingAsync(
-                    videoInfo, destinationPath, bitrate, cancellationToken 
+                    videoInfo, destinationPath, bitrate, cancellationToken
                 );
 
                 if (success) {
@@ -346,7 +343,7 @@ namespace ClipsOrganizer.Settings {
             Log.Update($"Экспорт файла (общий без преобразования): {Path.GetFileName(fileInfo.Path)}");
 
             try {
-                File.Copy(fileInfo.Path, destinationPath, OverrideEncode);
+                File.Copy(fileInfo.Path, destinationPath, true);
                 Log.Update($"Файл экспортирован: {Path.GetFileName(destinationPath)}");
                 return true;
             }
@@ -374,43 +371,68 @@ namespace ClipsOrganizer.Settings {
                 }
 
                 Log.Update($"В очереди на экспорт: {totalFilesCount} файлов");
-                if (EnableParallelExport) { //untested
+                if (EnableParallelExport) {
                     var tasks = new List<Task<bool>>();
-                    var cts = new CancellationTokenSource();
+                    int totalBeforeExport = ExportQueue.Count;
+                    int currentExported = 0;
 
                     while (ExportQueue.Count > 0) {
+                        cancellationToken.ThrowIfCancellationRequested();
+
                         if (tasks.Count >= MaxParallelTasks) {
                             var completedTask = await Task.WhenAny(tasks);
                             tasks.Remove(completedTask);
 
-                            if (!await completedTask) {
-                                Log.Update("Произошла ошибка при экспорте");
+                            bool completedResult = await completedTask;
+                            currentExported++;
+
+                            OnNextFileExport?.Invoke(null, new ExportEventArgs
+                            {
+                                ExportedId = currentExported,
+                                TotalExportNum = totalBeforeExport
+                            });
+
+                            if (!completedResult) {
+                                Log.Update($"Ошибка при экспорте (задача {currentExported} из {totalBeforeExport})");
                             }
                         }
+
                         var fileToExport = ExportQueue.Dequeue();
-                        tasks.Add(ExportFile(fileToExport, cts.Token));
+                        tasks.Add(ExportFile(fileToExport, cancellationToken));
                     }
 
+                    // Дождаться завершения оставшихся задач
                     var results = await Task.WhenAll(tasks);
-                    bool allSucceeded = results.All(r => r);
+                    for (int i = 0; i < results.Length; i++) {
+                        currentExported++;
+                        OnNextFileExport?.Invoke(null, new ExportEventArgs
+                        {
+                            ExportedId = currentExported,
+                            TotalExportNum = totalBeforeExport
+                        });
 
-                    if (!allSucceeded) {
-                        Log.Update("Некоторые файлы не были успешно экспортированы");
+                        if (!results[i]) {
+                            Log.Update($"Ошибка при экспорте (задача {currentExported} из {totalBeforeExport})");
+                        }
                     }
-                }
-                else {
-                    int currentFile = 0;
-                    int TotalBeforeExport = ExportQueue.Count;
-                    while (ExportQueue.Count > 0) {
-                        currentFile++;
-                        var fileToExport = ExportQueue.Dequeue();
-                        Log.Update($"Экспорт файла {currentFile} из {totalFilesCount}: {Path.GetFileName(fileToExport.Path)}");
 
-                        bool success = await ExportFile(fileToExport,cancellationToken);
-                        OnNextFileExport?.Invoke(null, new ExportEventArgs { ExportedId = currentFile, TotalExportNum = TotalBeforeExport });
-                        cancellationToken.ThrowIfCancellationRequested();
-                        if (!success) {
-                            Log.Update($"Ошибка при экспорте файла {Path.GetFileName(fileToExport.Path)}");
+                    if (results.All(r => r)) {
+                        Log.Update("Параллельный экспорт завершён успешно.");
+                    }
+                    else {
+                        int currentFile = 0;
+                        int TotalBeforeExport = ExportQueue.Count;
+                        while (ExportQueue.Count > 0) {
+                            currentFile++;
+                            var fileToExport = ExportQueue.Dequeue();
+                            Log.Update($"Экспорт файла {currentFile} из {totalFilesCount}: {Path.GetFileName(fileToExport.Path)}");
+
+                            bool success = await ExportFile(fileToExport, cancellationToken);
+                            OnNextFileExport?.Invoke(null, new ExportEventArgs { ExportedId = currentFile, TotalExportNum = TotalBeforeExport });
+                            cancellationToken.ThrowIfCancellationRequested();
+                            if (!success) {
+                                Log.Update($"Ошибка при экспорте файла {Path.GetFileName(fileToExport.Path)}");
+                            }
                         }
                     }
                 }

@@ -15,39 +15,28 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
-namespace ClipsOrganizer.ExportControls
-{
+namespace ClipsOrganizer.ExportControls {
     /// <summary>
     /// Логика взаимодействия для EncodeFilesControl.xaml
     /// </summary>
-    public partial class EncodeFilesControl : UserControl
-    {
-        public EncodeFilesControl()
-        {
+    public partial class EncodeFilesControl : UserControl {
+        public EncodeFilesControl() {
             InitializeComponent();
-            CB_Codec.ItemsSource = Enum.GetValues(typeof(VideoCodec)).Cast<VideoCodec>();
             DataContext = GlobalSettings.Instance.ExportSettings;
-            SP_EncodeEnable.IsEnabled = GlobalSettings.Instance.ExportSettings.EncodeEnabled;
             SL_MaxParallelTasks.IsEnabled = GlobalSettings.Instance.ExportSettings.EnableParallelExport;
+            SL_MaxFFmpegThreads.IsEnabled = GlobalSettings.Instance.ExportSettings.EnableParallelExport;
         }
 
         private void TB_IsNumber_check(object sender, TextCompositionEventArgs e) {
-            e.Handled = !InputValidator.IsNumber(e.Text,sender);
-        }
-
-        private void CB_EncodeEnabled_Checked_Changed(object sender, RoutedEventArgs e) {
-            SP_EncodeEnable.IsEnabled = (sender as CheckBox).IsChecked == true;
+            e.Handled = !InputValidator.IsNumber(e.Text, sender);
         }
 
         private void CB_EnableParallelExport_Checked_Changed(object sender, RoutedEventArgs e) {
             SL_MaxParallelTasks.IsEnabled = (sender as CheckBox).IsChecked == true;
         }
 
-        private void TextBox_TextChanged(object sender, TextChangedEventArgs e) {
-            if (this.IsLoaded) {
-                GlobalSettings.Instance.ExportSettings.EncodeBitrate = int.Parse((sender as TextBox).Text);
-                TB_TotalAfterEncoding.Text = GlobalSettings.Instance.ExportSettings.TotalFileSizeAfterExportWithEncoding;
-            }
-            }
+        private void CB_UseAllThreads_Checked_changed(object sender, RoutedEventArgs e) {
+            SL_MaxFFmpegThreads.IsEnabled = (sender as CheckBox).IsChecked == false;
         }
+    }
 }

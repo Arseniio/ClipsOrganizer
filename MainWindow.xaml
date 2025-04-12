@@ -29,11 +29,11 @@
 
         <Menu materialDesign:MenuAssist.TopLevelMenuItemHeight="22"
              Panel.ZIndex="99" Grid.ColumnSpan="2">
-            <MenuItem Header="Профиль">
-                <ComboBox Name="CB_Profile" Width="130" Margin="0,0,10,0" SelectionChanged="CB_Profile_SelectionChanged"
+                <ComboBox Grid.Row="2" Grid.Column="1" d:Text="123123" FontSize="13" VerticalContentAlignment="Center" HorizontalAlignment="Right" Name="CB_Profile" Width="130" SelectionChanged="CB_Profile_SelectionChanged"
+
                   Style="{StaticResource MaterialDesignComboBox}">
+                    <d:ComboBoxItem d:IsSelected="True" Content="Новый профиль"/>
                 </ComboBox>
-            </MenuItem>
             <MenuItem Header="Действия">
                 <MenuItem Header="Экспорт" Click="Btn_export_Click">
                     <MenuItem.Icon>
