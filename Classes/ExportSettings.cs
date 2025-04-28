@@ -101,6 +101,13 @@ namespace ClipsOrganizer.Settings {
         public string TargetFolder { get; set; } = "./Temp";
         // Максимальный размер экспортируемого файла в МБ (пока не используется)
         public int MaxFileSizeMB { get; set; }
+        //Advanced general
+        // Флаг использования регулярных выражений для имён файлов (пока не используется)
+        public bool UseRegex { get; set; }
+        // Шаблон имени файла при экспорте (пока не используется)
+        public string FileNameTemplate { get; set; }
+        // Шаблон имени экспортируемого файла (пока не используется, опечатка в названии)
+        public string ExportFileNameTepmlate { get; set; }
         [JsonIgnore]
         public string TotalFileSizeAfterExport {
             get {
@@ -135,13 +142,6 @@ namespace ClipsOrganizer.Settings {
         }
 
         public event EventHandler<ExportEventArgs> OnNextFileExport;
-        //Advanced general
-        // Флаг использования регулярных выражений для имён файлов (пока не используется)
-        public bool UseRegex { get; set; }
-        // Шаблон имени файла при экспорте (пока не используется)
-        public string FileNameTemplate { get; set; }
-        // Шаблон имени экспортируемого файла (пока не используется, опечатка в названии)
-        public string ExportFileNameTepmlate { get; set; }
         [JsonIgnore]
         public bool IsExporting { get; set; } = false;
         public async Task<bool> ExportFile(ExportFileInfoBase fileInfo, CancellationToken cancellationToken) {
@@ -205,14 +205,13 @@ namespace ClipsOrganizer.Settings {
 
             try {
                 var ffmpegManager = GlobalSettings.Instance.FFmpegInit();
-                VideoCodec codec;
                 if (videoInfo.VideoCodec == VideoCodec.Unknown) {
                     videoInfo.VideoCodec = this.EncodeFormat;
                 }
                 int bitrate = videoInfo.VideoBitrate > 0 ? videoInfo.VideoBitrate : this.EncodeBitrate;
 
                 bool success = await ffmpegManager.StartEncodingAsync(
-                    videoInfo, destinationPath, bitrate, cancellationToken
+                    videoInfo, destinationPath + "/" + videoInfo.Name, bitrate, cancellationToken
                 );
                 if (success) {
                     Log.Update($"Видео успешно экспортировано: {Path.GetFileName(destinationPath)}");
@@ -231,7 +230,10 @@ namespace ClipsOrganizer.Settings {
 
         private async Task<bool> ExportImageFile(ExportFileInfoImage imageInfo, string destinationPath, CancellationToken cancellationToken) {
             Log.Update($"Начало экспорта изображения: {Path.GetFileName(imageInfo.Path)}");
+            if (!imageInfo.ProcessExport) {
+                File.Copy(imageInfo.Path, destinationPath);
 
+            }
             try {
                 await Task.Run(() =>
                 {
@@ -296,7 +298,6 @@ namespace ClipsOrganizer.Settings {
                         if (!imageInfo.PreserveMetadata) {
                             image.Strip();
                         }
-
                         image.Write($"{destinationPath}/{Path.GetFileNameWithoutExtension(imageInfo.Name)}.{outputFormat}", outputFormat);
                     }
                 }, cancellationToken);
@@ -368,8 +369,6 @@ namespace ClipsOrganizer.Settings {
                         var fileToExport = ExportQueue.Dequeue();
                         tasks.Add(ExportFile(fileToExport, cancellationToken));
                     }
-
-                    // Дождаться завершения оставшихся задач
                     var results = await Task.WhenAll(tasks);
                     for (int i = 0; i < results.Length; i++) {
                         currentExported++;

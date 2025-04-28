@@ -59,8 +59,8 @@ namespace ClipsOrganizer.ViewableControls {
                         ImageViewerInstance = new ImageViewer();
                         ImageViewerDataInstance = new ImageData();
                         ImageViewerActionsInstance = new ImageActions();
+                        
                         MainWindowCC.Content = ImageViewerInstance;
-                        MainwindowCC_FileInfo.Content = ImageViewerDataInstance;
                         MainwindowCC_FileActions.Content = ImageViewerActionsInstance;
                     }
                     break;

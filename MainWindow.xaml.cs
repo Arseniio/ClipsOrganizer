@@ -74,11 +74,11 @@ namespace ClipsOrganizer {
 
             GlobalSettings.Instance.FFmpegInit(); //maybe change it to init when cut was being made
 
-            Items = itemProvider.GetItemsFromFolder(CurrentProfile.ClipsFolder, collections: CurrentProfile.Collections);
 
             InitializeComponent();
 
             Log.TB_log = TB_log;
+            Items = itemProvider.GetItemsFromFolder(CurrentProfile.ClipsFolder, collections: CurrentProfile.Collections);
 
             LoadGlobalKeyboardHook();
 

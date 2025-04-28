@@ -57,6 +57,15 @@ namespace ClipsOrganizer.ViewableControls.VideoControls {
             CB_codec.ItemsSource = Enum.GetValues(typeof(VideoCodec)).Cast<VideoCodec>();
             CB_codec.SelectedIndex = 0; //TODO: change later
             Btn_AddToQueue.Visibility = Visibility.Hidden;
+            ResolutionComboBox.ItemsSource = Enum.GetValues(typeof(ResolutionType)).Cast<ResolutionType>();
+            AudioCodecComboBox.ItemsSource = Enum.GetValues(typeof(AudioCodec)).Cast<AudioCodec>();
+            AudioCodecComboBox.SelectedIndex = 0;
+            ResolutionComboBox.SelectionChanged += (s, e) =>
+            {
+                CustomResolutionPanel.Visibility = ExportInfo.Resolution == ResolutionType.Custom
+                    ? Visibility.Visible
+                    : Visibility.Collapsed;
+            };
             Btn_ExportNow.Visibility = Visibility.Hidden;
         }
 

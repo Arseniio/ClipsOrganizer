@@ -11,6 +11,7 @@ using MetadataExtractor;
 
 namespace ClipsOrganizer.Model {
     public class ExportFileInfoImage : ExportFileInfoBase {
+        public bool ProcessExport { get; set; } = false;
         public ImageFormat Codec { get; set; } = ImageFormat.JPEG;
         public IReadOnlyList<MetadataExtractor.Directory> GetDirectories() {
             IReadOnlyList<MetadataExtractor.Directory> directories;

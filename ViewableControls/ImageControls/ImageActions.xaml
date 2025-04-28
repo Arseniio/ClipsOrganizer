@@ -9,6 +9,7 @@
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
             <!-- Формат -->
             <RowDefinition Height="Auto"/>
             <!-- Качество -->
@@ -20,8 +21,12 @@
             <!-- Кнопки -->
         </Grid.RowDefinitions>
 
-        <!-- Выбор формата экспорта -->
         <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,10">
+            <TextBlock Text="Применять перекодирование файла: " VerticalAlignment="Center"/>
+            <CheckBox Name="CB_ProcessFile" IsChecked="{Binding ProcessExport}" Width="100" Margin="5,0,0,0"/>
+        </StackPanel>
+        <!-- Выбор формата экспорта -->
+        <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0,0,0,10">
             <TextBlock Text="Формат:" VerticalAlignment="Center"/>
             <ComboBox x:Name="CB_format" Width="100" Margin="5,0,0,0"
                 SelectedValuePath="Tag"
@@ -32,7 +37,7 @@
         </StackPanel>
 
         <!-- Выбор качества (для JPEG) -->
-        <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0,0,0,10">
+        <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="0,0,0,10">
             <TextBlock Text="Качество:" VerticalAlignment="Center"/>
             <Slider x:Name="SL_quality" Minimum="1" Maximum="100" Width="200" Margin="5,0,0,0"
               Value="{Binding Quality, Mode=TwoWay}"/>
@@ -41,14 +46,14 @@
         </StackPanel>
 
         <!-- Отображение метаданных файла -->
-        <GroupBox Header="Метаданные файла" Grid.Row="2" Margin="0,0,0,10">
+        <GroupBox Header="Метаданные файла" Grid.Row="3" Margin="0,0,0,10">
             <ScrollViewer VerticalScrollBarVisibility="Auto" Height="150">
                 <TextBlock Text="{Binding RawMetadataDisplay}" TextWrapping="Wrap"/>
             </ScrollViewer>
         </GroupBox>
 
         <!-- Дополнительные настройки экспорта -->
-        <GroupBox Header="Дополнительные настройки" Grid.Row="3" Margin="0,0,0,10">
+        <GroupBox Header="Дополнительные настройки" Grid.Row="4" Margin="0,0,0,10">
             <StackPanel>
                 <!-- Разрешение -->
                 <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
@@ -85,7 +90,7 @@
         </GroupBox>
 
         <!-- Кнопки для добавления в очередь и экспорта -->
-        <StackPanel Orientation="Horizontal" Grid.Row="4" HorizontalAlignment="Center">
+        <StackPanel Orientation="Horizontal" Grid.Row="5" HorizontalAlignment="Center">
             <Button x:Name="Btn_AddToQueue" Content="Добавить в очередь" Click="Btn_AddToQueue_Click" Margin="5"/>
             <Button x:Name="Btn_ExportNow" Content="Экспортировать сейчас" Click="Btn_ExportNow_Click" Margin="5"/>
         </StackPanel>

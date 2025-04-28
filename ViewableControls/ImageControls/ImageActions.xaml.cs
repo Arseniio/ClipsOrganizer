@@ -18,6 +18,7 @@ namespace ClipsOrganizer.ViewableControls.ImageControls {
             ViewableController.FileLoaded += ViewableController_FileLoaded;
             this.Unloaded += ImageActions_Unloaded;
             this.Loaded += ImageActions_Loaded;
+            this.DataContext = GlobalSettings.Instance.DefaultImageExport;
         }
 
         public ImageActions(ExportFileInfoImage exportInfo) {

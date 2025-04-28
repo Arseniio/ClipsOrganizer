@@ -61,7 +61,7 @@ namespace ClipsOrganizer.Model {
             var items = new List<Item>();
             var dirInfo = new DirectoryInfo(path);
             if (!dirInfo.Exists) {
-                Log.Update($"Не найдено рабочеей папки ${path}");
+                Log.Update($"Не найдено рабочеей папки {path}");
                 return null;
             }
             foreach (var directory in dirInfo.GetDirectories()) {

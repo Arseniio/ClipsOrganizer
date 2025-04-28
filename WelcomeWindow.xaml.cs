@@ -133,7 +133,6 @@ namespace ClipsOrganizer {
                         await Task.Run(() => entry.WriteToFile(destinationPath, new ExtractionOptions { Overwrite = true }));
                         extractedFiles++;
 
-                        // Обновляем прогресс
                         progress.Report((double)extractedFiles / totalFiles * 100);
                     }
                 }

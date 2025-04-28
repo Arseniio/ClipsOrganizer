@@ -60,7 +60,8 @@ namespace ClipsOrganizer.ExportControls {
                         this.DataContext = defaultExportVideo;
                         break;
                     case "TI_Image":
-                        this.DataContext = defaultExportImage;
+                        //TODO: something broke with ImageExportSaving, fix
+                        this.DataContext = GlobalSettings.Instance.DefaultImageExport;
                         break;
                 }
             }

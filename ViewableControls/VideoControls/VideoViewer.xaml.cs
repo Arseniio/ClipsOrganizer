@@ -99,6 +99,7 @@ namespace ClipsOrganizer.ViewableControls {
             if (ME_main.NaturalDuration.HasTimeSpan) {
                 SL_duration.Maximum = ME_main.NaturalDuration.TimeSpan.TotalSeconds;
                 SliderTimer.Start();
+                TB_length.Text = $"{TimeSpan.FromSeconds((double)SL_duration.Value).ToString(@"hh\:mm\:ss")} / {ME_main.NaturalDuration.TimeSpan.ToString(@"hh\:mm\:ss")}";
             }
             if (GlobalSettings.Instance.AutoPlay && ME_main.NaturalDuration.HasTimeSpan) {
                 if (GlobalSettings.Instance.AutoPlayOffset < ME_main.NaturalDuration.TimeSpan) {
@@ -233,7 +234,6 @@ namespace ClipsOrganizer.ViewableControls {
                 "E – установка точки завершения обрезки\n" +
                 "Shift + C – обрезка от текущего момента до конца видео\n" +
                 "Пробел – переключение воспроизведения (пауза/проигрывание)";
-
             MessageBox.Show(hotkeysInfo, "Горячие клавиши", MessageBoxButton.OK, MessageBoxImage.Information);
 
         }
