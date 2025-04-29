@@ -116,16 +116,16 @@
                             <RowDefinition Height="*"/>
                         </Grid.RowDefinitions>
 
-        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,10">
-            <TextBlock Text="Применять перекодирование файла: " VerticalAlignment="Center"/>
-            <CheckBox Name="CB_ProcessFile" IsChecked="{Binding ProcessExport}" Width="100" Margin="5,0,0,0"/>
-        </StackPanel>
+                        <StackPanel Orientation="Horizontal" Grid.Row="0" Margin="0,0,0,10">
+                            <TextBlock Text="Применять перекодирование файла: " VerticalAlignment="Center"/>
+                            <CheckBox Name="CB_ProcessFile" IsChecked="{Binding ProcessExport}" Width="100" Margin="5,0,0,0"/>
+                        </StackPanel>
                         <!-- Выбор формата экспорта -->
                         <StackPanel Orientation="Horizontal" Grid.Row="1" Margin="0,0,0,10">
                             <TextBlock Text="Формат:" VerticalAlignment="Center"/>
                             <ComboBox x:Name="CB_format" Width="100" Margin="5,0,0,0"
-                SelectedValuePath="Tag"
-                SelectedValue="{Binding OutputFormat, Mode=TwoWay}">
+                            SelectedValuePath="Tag"
+                            SelectedValue="{Binding OutputFormat, Mode=TwoWay}">
                                 <ComboBoxItem Tag=".jpg" Content="JPEG"/>
                                 <ComboBoxItem Tag=".png" Content="PNG"/>
                             </ComboBox>
@@ -134,9 +134,9 @@
                         <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="0,0,0,10">
                             <TextBlock Text="Качество:" VerticalAlignment="Center"/>
                             <Slider x:Name="SL_quality" Minimum="1" Maximum="100" Width="200" Margin="5,0,0,0"
-              Value="{Binding Quality, Mode=TwoWay}"/>
+              Value="{Binding CompressionLevel, Mode=TwoWay}"/>
                             <TextBlock x:Name="TB_qualityValue" Width="30" TextAlignment="Center" VerticalAlignment="Center"
-                 Text="{Binding Quality}"/>
+                 Text="{Binding CompressionLevel}"/>
                         </StackPanel>
                         <!-- Дополнительные настройки экспорта -->
                         <GroupBox Header="Дополнительные настройки" Grid.Row="3" Margin="0,0,0,10">
@@ -162,14 +162,6 @@
                                         <ComboBoxItem Content="Adobe RGB" />
                                         <ComboBoxItem Content="ProPhoto RGB" />
                                     </ComboBox>
-                                </StackPanel>
-
-                                <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                                    <TextBlock Text="Уровень сжатия (PNG):" VerticalAlignment="Center"/>
-                                    <Slider x:Name="SL_Compression" Minimum="1" Maximum="100" Width="150" Margin="5,0,0,0"
-                  Value="{Binding CompressionLevel, Mode=TwoWay}"/>
-                                    <TextBlock x:Name="TB_CompressionValue" Width="30" TextAlignment="Center" VerticalAlignment="Center"
-                     Text="{Binding CompressionLevel}"/>
                                 </StackPanel>
                             </StackPanel>
                         </GroupBox>

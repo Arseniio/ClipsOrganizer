@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using MetadataExtractor.Formats.Exif;
 using MetadataExtractor.Formats.Jpeg;
 using MetadataExtractor;
+using ClipsOrganizer.Settings;
 
 namespace ClipsOrganizer.Model {
     public class ExportFileInfoImage : ExportFileInfoBase {
@@ -92,7 +93,6 @@ namespace ClipsOrganizer.Model {
                 catch (Exception ex) {
                     sb.AppendLine($"❌ Ошибка чтения метаданных: {ex.Message}");
                 }
-
                 return sb.ToString();
             });
         }
@@ -109,7 +109,6 @@ namespace ClipsOrganizer.Model {
                 AddIfExists(exifSub, ExifDirectoryBase.TagWhiteBalance, "Баланс белого", result);
                 AddIfExists(exifSub, ExifDirectoryBase.TagDateTimeOriginal, "Дата съемки", result);
             }
-
             return result;
         }
 
@@ -141,7 +140,7 @@ namespace ClipsOrganizer.Model {
             return null;
         }
         private (int, int) GetResolutionInt() {
-            if (Path == null) return (0,0);
+            if (Path == null) return (0, 0);
             var directories = ImageMetadataReader.ReadMetadata(Path);
             var jpegDir = directories.OfType<JpegDirectory>().FirstOrDefault();
             if (jpegDir != null) {
@@ -156,7 +155,6 @@ namespace ClipsOrganizer.Model {
             }
             return (0, 0);
         }
-
         private string GetGpsInfo(IEnumerable<MetadataExtractor.Directory> directories) {
             var gpsDir = directories.OfType<GpsDirectory>().FirstOrDefault();
             var location = gpsDir?.GetGeoLocation();
@@ -164,7 +162,6 @@ namespace ClipsOrganizer.Model {
                 $"{location.Latitude:0.#####}°, {location.Longitude:0.#####}°" :
                 null;
         }
-
         private void AddIfExists<T>(T directory, int tag, string name, Dictionary<string, string> dict)
             where T : MetadataExtractor.Directory {
             if (directory?.ContainsTag(tag) == true) {
@@ -174,7 +171,6 @@ namespace ClipsOrganizer.Model {
                     .Replace(" f/", "f/");
             }
         }
-
         public int ExportWidth { get; set; } = 1760;
         public int ExportHeight { get; set; } = 1080;
         public bool PreserveMetadata { get; set; } = true;
@@ -187,6 +183,11 @@ namespace ClipsOrganizer.Model {
         public ExportFileInfoImage(Item item) : base(item) {
             ExportWidth = GetResolutionInt().Item1;
             ExportHeight = GetResolutionInt().Item2;
+            CompressionLevel = GlobalSettings.Instance.DefaultImageExport.CompressionLevel;
+            ColorProfile = GlobalSettings.Instance.DefaultImageExport.ColorProfile;
+            OutputFormat = GlobalSettings.Instance.DefaultImageExport.OutputFormat;
+            ProcessExport = GlobalSettings.Instance.DefaultImageExport.ProcessExport;
+
         }
     }
 }

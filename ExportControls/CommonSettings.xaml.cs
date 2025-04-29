@@ -54,17 +54,20 @@ namespace ClipsOrganizer.ExportControls {
         }
 
         private void TabControl_SelectionChanged(object sender, SelectionChangedEventArgs e) {
-            if (sender is TabControl tabControl && (tabControl.SelectedItem is TabItem tabItem)) {
-                switch (tabItem.Name) {
-                    case "TI_Video":
-                        this.DataContext = defaultExportVideo;
-                        break;
-                    case "TI_Image":
-                        //TODO: something broke with ImageExportSaving, fix
-                        this.DataContext = GlobalSettings.Instance.DefaultImageExport;
-                        break;
+            if (sender is TabControl tc && tc.SelectedItem is TabItem ti && ti.Content is FrameworkElement fe) {
+                fe.DataContext = ti.Name switch
+                {
+                    "TI_Video" => defaultExportVideo,
+                    "TI_Image" => defaultExportImage,
+                    _ => fe.DataContext
+                };
+                if (ti.Name == "TI_Image") {
+                    CB_format.SelectedItem = defaultExportImage.OutputFormat;
+                    CB_format.SelectedItem = defaultExportImage.OutputFormat;
+                    SL_quality.Value = defaultExportImage.CompressionLevel;
                 }
             }
         }
+
     }
 }

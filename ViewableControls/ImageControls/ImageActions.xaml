@@ -40,9 +40,9 @@
         <StackPanel Orientation="Horizontal" Grid.Row="2" Margin="0,0,0,10">
             <TextBlock Text="Качество:" VerticalAlignment="Center"/>
             <Slider x:Name="SL_quality" Minimum="1" Maximum="100" Width="200" Margin="5,0,0,0"
-              Value="{Binding Quality, Mode=TwoWay}"/>
+              Value="{Binding CompressionLevel, Mode=TwoWay}"/>
             <TextBlock x:Name="TB_qualityValue" Width="30" TextAlignment="Center" VerticalAlignment="Center"
-                 Text="{Binding Quality}"/>
+                 Text="{Binding CompressionLevel}"/>
         </StackPanel>
 
         <!-- Отображение метаданных файла -->
@@ -76,15 +76,6 @@
                         <ComboBoxItem Content="Adobe RGB" />
                         <ComboBoxItem Content="ProPhoto RGB" />
                     </ComboBox>
-                </StackPanel>
-
-                <!-- Уровень сжатия (для PNG) -->
-                <StackPanel Orientation="Horizontal" Margin="0,5,0,0">
-                    <TextBlock Text="Уровень сжатия (PNG):" VerticalAlignment="Center"/>
-                    <Slider x:Name="SL_Compression" Minimum="1" Maximum="100" Width="150" Margin="5,0,0,0"
-                  Value="{Binding CompressionLevel, Mode=TwoWay}"/>
-                    <TextBlock x:Name="TB_CompressionValue" Width="30" TextAlignment="Center" VerticalAlignment="Center"
-                     Text="{Binding CompressionLevel}"/>
                 </StackPanel>
             </StackPanel>
         </GroupBox>

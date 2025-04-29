@@ -39,7 +39,11 @@ namespace ClipsOrganizer.Settings {
 
         public ExportSettings ExportSettings { get; set; } = new ExportSettings();
 
-        public ExportFileInfoImage DefaultImageExport { get; set; } = new ExportFileInfoImage() { Codec = ImageFormat.JPEG, CompressionLevel = 50};
+        public ExportFileInfoImage DefaultImageExport { get; set; } = new ExportFileInfoImage()
+        {
+            Codec = ImageFormat.JPEG,
+            CompressionLevel = 50,
+        };
         public ExportFileInfoVideo DefaultVideoExport { get; set; } = new ExportFileInfoVideo
         {
             // Video Settings

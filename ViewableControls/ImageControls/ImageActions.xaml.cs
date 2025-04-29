@@ -19,6 +19,7 @@ namespace ClipsOrganizer.ViewableControls.ImageControls {
             this.Unloaded += ImageActions_Unloaded;
             this.Loaded += ImageActions_Loaded;
             this.DataContext = GlobalSettings.Instance.DefaultImageExport;
+            SL_quality.Value = GlobalSettings.Instance.DefaultImageExport.CompressionLevel;
         }
 
         public ImageActions(ExportFileInfoImage exportInfo) {
@@ -27,6 +28,7 @@ namespace ClipsOrganizer.ViewableControls.ImageControls {
             DataContext = ExportInfo;
             Btn_AddToQueue.Visibility = Visibility.Hidden;
             Btn_ExportNow.Visibility = Visibility.Hidden;
+            MessageBox.Show(GlobalSettings.Instance.DefaultImageExport.CompressionLevel.ToString());
         }
 
         private void ImageActions_Loaded(object sender, RoutedEventArgs e) {
