@@ -146,7 +146,7 @@
                                     <TextBlock Text="Разрешение:" VerticalAlignment="Center"/>
                                     <TextBlock Text="Ширина:" Margin="10,0,0,0" VerticalAlignment="Center"/>
                                     <TextBox x:Name="TB_ExportWidth" materialDesign:HintAssist.Hint="auto" Width="60" Margin="5,0,0,0"
-                   Text="{Binding ExportWidth, Mode=TwoWay}"/>
+                   Text="{Binding ExportWidth, Mode=TwoWay, Converter={StaticResource ExportAutoConverter}}"/>
                                     <TextBlock Text="Высота:"  Margin="10,0,0,0" VerticalAlignment="Center"/>
                                     <TextBox x:Name="TB_ExportHeight" materialDesign:HintAssist.Hint="auto" Width="60" Margin="5,0,0,0"
                    Text="{Binding ExportHeight, Mode=TwoWay, Converter={StaticResource ExportAutoConverter}}"/>

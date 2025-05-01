@@ -48,5 +48,9 @@
             <TextBlock VerticalAlignment="Center" Text="Оффсет начала воспроизведения: "/>
             <TextBox Width="76" Text="{Binding AutoPlayOffset}" Name="TB_AutoPlayOffset" PreviewTextInput="TB_AutoPlayOffset_PreviewTextInput" VerticalAlignment="Center" Margin="5,0"/>
         </StackPanel>
+        <StackPanel Grid.Row="5" VerticalAlignment="Center" Orientation="Horizontal">
+            <TextBlock VerticalAlignment="Center" Text="Папка с FFmpeg и FFprobe: "/>
+            <TextBox Width="374" Text="{Binding FFmpegpath}" Name="TB_ffmpegPath"  VerticalAlignment="Center" Margin="5,0"/>
+        </StackPanel>
     </Grid>
 </UserControl>

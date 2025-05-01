@@ -2,10 +2,13 @@
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:Converter="clr-namespace:ClipsOrganizer.Converter"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
              mc:Ignorable="d" 
              d:DesignHeight="505" d:DesignWidth="375">
-
+    <UserControl.Resources>
+        <Converter:ExportAutoConverter x:Key="ExportAutoConverter"/>
+    </UserControl.Resources>
     <Grid Margin="10">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto"/>
@@ -46,10 +49,10 @@
                     <TextBlock Text="Разрешение:" VerticalAlignment="Center"/>
                     <TextBlock Text="Ширина:" Margin="10,0,0,0" VerticalAlignment="Center"/>
                     <TextBox x:Name="TB_ExportWidth" Width="60" Margin="5,0,0,0"
-                   Text="{Binding ExportWidth, Mode=TwoWay}"/>
+                   Text="{Binding ExportWidth, Mode=TwoWay, Converter={StaticResource ExportAutoConverter}}"/>
                     <TextBlock Text="Высота:" Margin="10,0,0,0" VerticalAlignment="Center"/>
                     <TextBox x:Name="TB_ExportHeight" Width="60" Margin="5,0,0,0"
-                   Text="{Binding ExportHeight, Mode=TwoWay}"/>
+                   Text="{Binding ExportHeight, Mode=TwoWay , Converter={StaticResource ExportAutoConverter}}"/>
                 </StackPanel>
 
                 <StackPanel Orientation="Horizontal" Margin="0,5,0,0">

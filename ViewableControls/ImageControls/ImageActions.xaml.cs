@@ -1,7 +1,9 @@
 ﻿using ClipsOrganizer.ExportControls;
 using ClipsOrganizer.Model;
 using ClipsOrganizer.Settings;
+
 using MetadataExtractor;
+
 using System;
 using System.Windows;
 using System.Windows.Controls;
@@ -53,7 +55,7 @@ namespace ClipsOrganizer.ViewableControls.ImageControls {
             ExportQueue.Enqueue(ExportInfo);
         }
         private void Btn_ExportNow_Click(object sender, RoutedEventArgs e) {
-            Log.Update("Экспорт сейчас не реализован в данный момент.");
+            GlobalSettings.Instance.ExportSettings.ExportFile(ExportInfo, default);
         }
     }
 }

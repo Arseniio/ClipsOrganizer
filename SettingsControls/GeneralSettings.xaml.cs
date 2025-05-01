@@ -36,7 +36,11 @@ namespace ClipsOrganizer.SettingsControls {
                     break;
                 }
             }
+            Unloaded += GeneralSettings_Unloaded;
+        }
 
+        private void GeneralSettings_Unloaded(object sender, RoutedEventArgs e) {
+            GlobalSettings.Instance.FFmpegpath = TB_ffmpegPath.Text;
         }
 
         private void Btn_OpenColorDialog_Click(object sender, RoutedEventArgs e) {

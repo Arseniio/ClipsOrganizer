@@ -162,11 +162,11 @@ namespace ClipsOrganizer.Settings {
             Log.Update($"Начало экспорта файла: {Path.GetFileName(fileInfo.Path)}");
 
             string destinationPath = this.TargetFolder;
-            if (string.IsNullOrEmpty(destinationPath)) {
+            if (!string.IsNullOrEmpty(destinationPath)) {
                 if (TargetFolder.StartsWith(".")) {
                     TargetFolder = Environment.CurrentDirectory + TargetFolder.Substring(1);
                 }
-                destinationPath = Path.Combine(TargetFolder, Path.GetFileName(fileInfo.Path));
+                destinationPath = TargetFolder;
             }
             fileInfo.OutputPath = destinationPath;
             try {
@@ -301,6 +301,7 @@ namespace ClipsOrganizer.Settings {
                         image.Write($"{destinationPath}/{Path.GetFileNameWithoutExtension(imageInfo.Name)}.{outputFormat}", outputFormat);
                     }
                 }, cancellationToken);
+                Log.Update($"Изображение успешно экспортировано: {imageInfo.Name}");
 
                 return true;
             }

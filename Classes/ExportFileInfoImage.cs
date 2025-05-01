@@ -141,20 +141,35 @@ namespace ClipsOrganizer.Model {
         }
         private (int, int) GetResolutionInt() {
             if (Path == null) return (0, 0);
+
             var directories = ImageMetadataReader.ReadMetadata(Path);
+
+            // JPEG
             var jpegDir = directories.OfType<JpegDirectory>().FirstOrDefault();
             if (jpegDir != null) {
                 return (jpegDir.GetImageWidth(), jpegDir.GetImageHeight());
             }
 
+            // EXIF (возможно, TIFF или другие форматы)
             var ifd0 = directories.OfType<ExifIfd0Directory>().FirstOrDefault();
             if (ifd0 != null &&
                 ifd0.TryGetInt32(ExifDirectoryBase.TagImageWidth, out int width) &&
                 ifd0.TryGetInt32(ExifDirectoryBase.TagImageHeight, out int height)) {
                 return (width, height);
             }
+
+            // PNG
+            var pngHeader = directories
+                .FirstOrDefault(d => d.Name == "PNG-IHDR");
+            if (pngHeader != null &&
+                pngHeader.TryGetInt32(1, out int pngWidth) &&
+                pngHeader.TryGetInt32(2, out int pngHeight)) {
+                return (pngWidth, pngHeight);
+            }
+
             return (0, 0);
         }
+
         private string GetGpsInfo(IEnumerable<MetadataExtractor.Directory> directories) {
             var gpsDir = directories.OfType<GpsDirectory>().FirstOrDefault();
             var location = gpsDir?.GetGeoLocation();
@@ -181,8 +196,14 @@ namespace ClipsOrganizer.Model {
             ExportHeight = GetResolutionInt().Item2;
         }
         public ExportFileInfoImage(Item item) : base(item) {
-            ExportWidth = GetResolutionInt().Item1;
-            ExportHeight = GetResolutionInt().Item2;
+            if (GlobalSettings.Instance.DefaultImageExport.ExportWidth == 0 || GlobalSettings.Instance.DefaultImageExport.ExportWidth == -1)
+                ExportWidth = GetResolutionInt().Item1;
+            else
+                ExportWidth = GlobalSettings.Instance.DefaultImageExport.ExportWidth;
+            if (GlobalSettings.Instance.DefaultImageExport.ExportHeight == 0 || GlobalSettings.Instance.DefaultImageExport.ExportHeight == -1)
+                ExportHeight = GetResolutionInt().Item2;
+            else
+                ExportWidth = GlobalSettings.Instance.DefaultImageExport.ExportWidth;
             CompressionLevel = GlobalSettings.Instance.DefaultImageExport.CompressionLevel;
             ColorProfile = GlobalSettings.Instance.DefaultImageExport.ColorProfile;
             OutputFormat = GlobalSettings.Instance.DefaultImageExport.OutputFormat;
