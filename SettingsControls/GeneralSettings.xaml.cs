@@ -1,6 +1,8 @@
 ﻿using ClipsOrganizer.Model;
 using ClipsOrganizer.Settings;
+
 using DataValidation;
+
 using System;
 using System.Collections.Generic;
 using System.Drawing;
@@ -54,7 +56,7 @@ namespace ClipsOrganizer.SettingsControls {
         }
 
         private void TB_AutoPlayOffset_PreviewTextInput(object sender, TextCompositionEventArgs e) {
-                if(InputValidator.MatchesExpectedBool(TimeSpan.TryParse(e.Text,out TimeSpan result), true, sender)){
+            if (InputValidator.MatchesExpectedBool(TimeSpan.TryParse(e.Text, out TimeSpan result), true, sender)) {
                 e.Handled = false;
             }
         }
@@ -66,6 +68,6 @@ namespace ClipsOrganizer.SettingsControls {
                 "Ascending_date" => Sorts.Ascending_date,
                 _ => Sorts.Default
             };
-        }       
+        }
     }
 }

@@ -1,4 +1,5 @@
 ﻿using ClipsOrganizer.Model;
+
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -70,12 +71,6 @@ namespace ClipsOrganizer {
             UpdateVideoSize();
         }
 
-        private double CalculateVideoSize(double? bitrate, TimeSpan Duration) {
-            if (bitrate == null) return 0;
-            double fileSizeBytes = (bitrate.Value * 1000 * Duration.TotalSeconds) / 8;
-            double filesize = fileSizeBytes / (1024 * 1024);
-            return filesize < 0 ? 0 : filesize;
-        }
 
         public void RendererWindow_SliderSelectionChanged(TimeSpan Start, TimeSpan? End) {
             TB_Crop_From.Text = Start.ToString(@"hh\:mm\:ss\.fff");
@@ -118,11 +113,11 @@ namespace ClipsOrganizer {
         private void TimestampTextBox_PreviewMouseUp(object sender, MouseButtonEventArgs e) {
             _isDragging = false;
         }
-
-        private void UpdateVideoSize() {
+        private async void UpdateVideoSize() {
             double.TryParse(TB_Quality.Text, out double bitrate);
             var Length = TimeSpan.Parse(TB_Crop_To.Text) - TimeSpan.Parse(TB_Crop_From.Text);
-            TB_filesize.Text = "~" + CalculateVideoSize(bitrate, Length).ToString("F2");
+            var size = await FFmpegManager.CalculateVideoSizeAsync(VideoPath.OriginalString, overrideDuration: Length, overrideVideoBitrate: bitrate);
+            TB_filesize.Text = "~" + size.ToString("F2");
             TB_Length.Text = Length.ToString(@"hh\:mm\:ss\.fff");
         }
 
@@ -202,7 +197,7 @@ namespace ClipsOrganizer {
 
             try {
                 bool result = await Settings.GlobalSettings.Instance.ffmpegManager
-                    .StartEncodingAsync(exportInfo, TB_outputPath.Text,bitrate, cropCts.Token);
+                    .StartEncodingAsync(exportInfo, TB_outputPath.Text, bitrate, cropCts.Token);
 
                 if (result) {
                     Log.Update("Кодирование завершено успешно.");

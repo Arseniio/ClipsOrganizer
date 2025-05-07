@@ -43,7 +43,7 @@ namespace ClipsOrganizer {
             }
         }
         private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e) {
-            (App.Current.MainWindow as MainWindow).UpdateItems();
+            ((MainWindow)App.Current.MainWindow).UpdateItems();
         }
     }
 }

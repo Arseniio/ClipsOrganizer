@@ -1,18 +1,21 @@
 ﻿using ClipsOrganizer.Model;
 using ClipsOrganizer.Profiles;
 using ClipsOrganizer.Settings;
+
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xaml;
+
 using Windows.Media.Core;
+
 using Xabe.FFmpeg;
 using Xabe.FFmpeg.Exceptions;
 
 namespace ClipsOrganizer {
-
     public enum VideoCodec {
         Unknown = 0,
         H264_NVENC,
@@ -58,14 +61,52 @@ namespace ClipsOrganizer {
         public FFmpegManager(string ffmpegPath) {
             FFmpeg.SetExecutablesPath(ffmpegPath);
         }
+        private static readonly Dictionary<string, IMediaInfo> _mediaInfoCache = new();
+
+        public static async Task<IMediaInfo> GetMediaInfoCachedAsync(string path) {
+            if (_mediaInfoCache.TryGetValue(path, out var cached))
+                return cached;
+
+            var info = await FFmpeg.GetMediaInfo(path);
+            _mediaInfoCache[path] = info;
+            return info;
+        }
+
+        public static async Task<double> CalculateVideoSizeAsync(
+            string path,
+            double? overrideVideoBitrate = null,
+            TimeSpan? overrideDuration = null,
+            double? overrideAudioBitrate = null) {
+            var mediaInfo = await GetMediaInfoCachedAsync(path);
+
+            var videoStream = mediaInfo.VideoStreams.FirstOrDefault();
+            var audioStream = mediaInfo.AudioStreams.FirstOrDefault();
+
+            double videoBitrate = overrideVideoBitrate ?? videoStream?.Bitrate ?? 0;
+            double audioBitrate = (overrideAudioBitrate ?? audioStream?.Bitrate / 1000.0) ?? 0;
+            double durationSec = overrideDuration?.TotalSeconds ?? mediaInfo.Duration.TotalSeconds;
+
+            double totalBitrate = videoBitrate + audioBitrate;
+
+            double fileSizeBytes = (totalBitrate * 1000 * durationSec) / 8;
+            return fileSizeBytes / (1024 * 1024);
+        }
+
+        public static void ClearCache(string? path = null) {
+            if (path == null)
+                _mediaInfoCache.Clear();
+            else
+                _mediaInfoCache.Remove(path);
+        }
+
 
         public async Task<bool> StartEncodingAsync(
-            string inputVideo,
-            string outputVideo,
-            VideoCodec codec,
-            int bitrate,
-            TimeSpan? startTime = null,
-            TimeSpan? endTime = null) {
+                string inputVideo,
+                string outputVideo,
+                VideoCodec codec,
+                int bitrate,
+                TimeSpan? startTime = null,
+                TimeSpan? endTime = null) {
             try {
                 var mediaInfo = await FFmpeg.GetMediaInfo(inputVideo);
                 var videoStream = mediaInfo.VideoStreams.FirstOrDefault();
