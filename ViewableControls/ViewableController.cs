@@ -12,13 +12,15 @@ using System.Windows.Input;
 using ClipsOrganizer.ViewableControls.ImageControls;
 using ClipsOrganizer.Model;
 using ClipsOrganizer.ViewableControls.VideoControls;
+using ClipsOrganizer.ViewableControls.AudioControls;
 
 namespace ClipsOrganizer.ViewableControls {
     public enum SupportedFileTypes {
         Unknown = 0,
         Text,
         Image,
-        Video
+        Video,
+        Audio
     }
     public class FileLoadedEventArgs : EventArgs {
         public Item Item { get; }
@@ -34,6 +36,7 @@ namespace ClipsOrganizer.ViewableControls {
         public static ContentControl MainwindowCC_FileActions { get; private set; }
         public static VideoViewer VideoViewerInstance;
         public static VideoActions VideoActionsInstance;
+        public static AudioViewer AudioViewerInstance;
         public static ImageViewer ImageViewerInstance;
         public static ImageData ImageViewerDataInstance;
         public static ImageActions ImageViewerActionsInstance;
@@ -54,12 +57,18 @@ namespace ClipsOrganizer.ViewableControls {
                     //TODO: Add support to try and open that file in text editor
                     Log.Update("Неизвестный тип файла");
                     break;
+                case SupportedFileTypes.Audio:
+                    if (MainWindowCC.Content is not AudioViewer) {
+                        AudioViewerInstance = new AudioViewer(filePath);
+                        MainWindowCC.Content = AudioViewerInstance;
+                    }
+                    break;
                 case SupportedFileTypes.Image:
                     if (MainWindowCC.Content is not ImageViewer) {
                         ImageViewerInstance = new ImageViewer();
                         ImageViewerDataInstance = new ImageData();
                         ImageViewerActionsInstance = new ImageActions();
-                        
+
                         MainWindowCC.Content = ImageViewerInstance;
                         MainwindowCC_FileActions.Content = ImageViewerActionsInstance;
                     }
@@ -92,7 +101,8 @@ namespace ClipsOrganizer.ViewableControls {
                 if (!File.Exists(filePath))
                     throw new FileNotFoundException("The file does not exist.");
                 string MimeType = MimeTypes.GetMimeType(filePath);
-
+                if (MimeType.StartsWith("audio/"))
+                    return SupportedFileTypes.Audio;
                 if (MimeType.StartsWith("video/"))
                     return SupportedFileTypes.Video;
                 if (MimeType.StartsWith("image/") || Path.GetExtension(filePath).Contains("CR2"))

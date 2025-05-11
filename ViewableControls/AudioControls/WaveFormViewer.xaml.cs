@@ -1,0 +1,362 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
+using System.Linq;
+using System.Printing;
+using System.Runtime.CompilerServices;
+using System.Threading.Tasks;
+using System.Windows;
+using System.Windows.Controls;
+
+using System.Windows.Input;
+using System.Windows.Media;
+
+using NAudio.Wave;
+
+namespace ClipsOrganizer.ViewableControls.AudioControls {
+    /// <summary>
+    /// Логика взаимодействия для WaveFormViewer.xaml
+    /// </summary>
+    /// 
+
+    public abstract class BaseVisualHost : FrameworkElement {
+        private DrawingVisual _visual;
+        protected readonly VisualCollection _children;
+        public ScaleTransform ScaleTransform { get; set; }
+        public TranslateTransform translateTransform { get; set; }
+        protected BaseVisualHost() {
+            _children = new VisualCollection(this);
+            TransformGroup group = new TransformGroup();
+            ScaleTransform = new ScaleTransform();
+            group.Children.Add(ScaleTransform);
+            translateTransform = new TranslateTransform();
+            group.Children.Add(translateTransform);
+            this.RenderTransform = group;
+            this.RenderTransformOrigin = new Point(0, Application.Current.MainWindow.ActualHeight / 2);
+            _visual = new DrawingVisual();
+            _children.Add(_visual);
+        }
+        protected override int VisualChildrenCount => _children.Count;
+        protected override Visual GetVisualChild(int index) => _children[index];
+        public virtual void ClearVisuals() {
+            _children.Clear();
+        }
+
+
+
+    }
+
+    public class WaveformVisualHost : BaseVisualHost {
+        private readonly List<DrawingVisual> visuals = new();
+        public int ChildrenCount => visuals.Count;
+        public TimeSpan TimePerOnePoint;
+        public int points = 0;
+        public WaveformVisualHost() : base() {
+
+        }
+        public void AddVisual(DrawingVisual visual) {
+            visuals.Add(visual);
+            _children.Add(visual);
+        }
+        public override void ClearVisuals() {
+            foreach (var visual in visuals) {
+                RemoveVisualChild(visual);
+                RemoveLogicalChild(visual);
+            }
+            visuals.Clear();
+            //base.ClearVisuals();
+        }
+        public void ClampPan() {
+            var tg = (TransformGroup)RenderTransform;
+            var st = (ScaleTransform)tg.Children.OfType<ScaleTransform>().First();
+            var tt = (TranslateTransform)tg.Children.OfType<TranslateTransform>().First();
+            double scaledWidth = points * st.ScaleX;
+            double viewport = ActualWidth;
+            double minX = viewport - scaledWidth;
+            if (minX > 0) minX = 0;
+            tt.X = Math.Min(0, Math.Max(tt.X, minX));
+        }
+        public void DrawWaveform(List<float> waveform, double height, TimeSpan TimePerOnePoint, int blockSize = 5) {
+            var visual = new DrawingVisual();
+            this.TimePerOnePoint = TimePerOnePoint;
+            int localPoints = 0;
+            using (DrawingContext dc = visual.RenderOpen()) {
+                Pen pen = new Pen(Brushes.Blue, 3);
+                for (localPoints = 0; localPoints < waveform.Count; localPoints += blockSize) {
+                    var block = waveform.Skip(localPoints).Take(blockSize).ToArray();
+                    if (block.Length == 0) continue;
+                    float blockMax = block.Max();
+                    float blockMin = block.Min();
+                    double maxHeight = blockMax * height;
+                    double minHeight = blockMin * height;
+                    double x = localPoints;
+                    dc.DrawLine(pen,
+                        new Point(x, height / 2 - maxHeight / 2),
+                        new Point(x, height / 2 + minHeight / 2));
+                }
+            }
+            points = localPoints;
+            AddVisual(visual);
+        }
+    }
+
+    public class TimelineVisualHost : BaseVisualHost {
+        private DrawingVisual timeLineVisual = null;
+        public TimeSpan TimePerOnePoint;
+        public int Points = 0;
+        public TimelineVisualHost() : base() { }
+        public void DrawTimeLine(int points, TimeSpan timePerOnePoint, double zoom = 1, double Height = 100) {
+            this.Points = points;
+            this.TimePerOnePoint = timePerOnePoint;
+            var visual = new DrawingVisual();
+            RemoveTimeLine();
+            using (DrawingContext dc = visual.RenderOpen()) {
+                Pen pen = new Pen(Brushes.DarkRed, 1);
+                TimeSpan time = TimeSpan.Zero;
+                TimeSpan labelStep;
+                if (zoom >= 1.4)
+                    labelStep = TimeSpan.FromMilliseconds(500);
+                else if (zoom >= 1.2)
+                    labelStep = TimeSpan.FromSeconds(1);
+                else if (zoom >= 0.7)
+                    labelStep = TimeSpan.FromSeconds(5);
+                else labelStep = TimeSpan.FromSeconds(10);
+                int labelInterval = (int)(labelStep.Ticks / timePerOnePoint.Ticks);
+                var typeface = new Typeface("Segoe UI");
+                for (int i = 0; i < points; i++) {
+                    time += timePerOnePoint;
+                    if (i % labelInterval == 0) {
+                        var formattedText = new FormattedText(
+                            time.ToString(@"hh\:mm\:ss\.ffff"),
+                            CultureInfo.InvariantCulture,
+                            FlowDirection.LeftToRight,
+                            typeface,
+                            16,
+                            Brushes.Black,
+                            VisualTreeHelper.GetDpi(this).PixelsPerDip
+                        );
+                        double x = i - (formattedText.Width / 2);
+                        double y = 0;
+                        dc.DrawText(formattedText, new Point(x, y));
+                        dc.DrawLine(pen,
+                            new Point(i, 20),
+                            new Point(i, Height));
+                    }
+                }
+            }
+            timeLineVisual = visual;
+            _children.Add(timeLineVisual);
+        }
+        public void RemoveTimeLine() {
+            if (timeLineVisual != null) {
+                _children.Remove(timeLineVisual);
+                timeLineVisual = null;
+            }
+        }
+    }
+
+    public partial class WaveFormViewer : UserControl {
+        public string FilePath { get; set; }
+        public int Resolution { get; set; }
+        WaveformVisualHost host = null;
+        TimelineVisualHost tlHost = null;
+        public int SamplesPerChunk = 5000;
+
+
+        List<float> waveform = new List<float>();
+        private void PreloadComponent(FrameworkElement elem) {
+            elem.MouseLeftButtonDown += Host_MouseLeftButtonDown;
+            elem.MouseLeftButtonUp += Host_MouseLeftButtonUp;
+            elem.MouseDown += Host_MouseDown;
+            elem.MouseWheel += Host_MouseWheel;
+            Grid.SetRow(elem, 0);
+            Grid.SetColumn(elem, 0);
+            elem.HorizontalAlignment = HorizontalAlignment.Stretch;
+            elem.VerticalAlignment = VerticalAlignment.Stretch;
+            elem.Margin = new Thickness(0);
+            //elem.ClipToBounds = true;
+            //elem.HorizontalAlignment = HorizontalAlignment.Center;
+            //elem.VerticalAlignment = VerticalAlignment.Center;
+            MainGrid.Children.Add(elem);
+        }
+        public WaveFormViewer() {
+            host = new WaveformVisualHost();
+            tlHost = new TimelineVisualHost();
+            InitializeComponent();
+            PreloadComponent(host);
+            PreloadComponent(tlHost);
+        }
+        public void loadWaveForm() {
+            waveform.Clear();
+            host.ClearVisuals();
+            //WaveForm_canvas.Children.Clear();
+            using (var reader = new AudioFileReader(FilePath)) {
+                int totalSeconds = (int)reader.TotalTime.TotalSeconds;
+                int totalSamples = reader.WaveFormat.SampleRate * totalSeconds;
+                float[] buffer = new float[totalSamples];
+
+                int samplesRead;
+
+                while ((samplesRead = reader.Read(buffer, 0, buffer.Length)) > 0) {
+                    for (int i = 0; i < samplesRead; i += samplesPerChunk) {
+                        int chunkSize = Math.Min(samplesPerChunk, samplesRead - i);
+                        float max = buffer.Skip(i).Take(chunkSize).Max(x => Math.Abs(x));
+                        waveform.Add(max);
+                    }
+                }
+                host.DrawWaveform(waveform, this.ActualHeight, TimeSpan.FromMilliseconds(reader.TotalTime.TotalMilliseconds / waveform.Count));
+                tlHost.DrawTimeLine(waveform.Count, TimeSpan.FromMilliseconds(reader.TotalTime.TotalMilliseconds / waveform.Count), GetScaleTransform(host).ScaleX, this.ActualHeight);
+            }
+
+            SL_XPos.Maximum = host.points;
+        }
+        public double zoom;
+        public ScaleTransform st = null;
+        private int samplesPerChunk = 500;
+
+        private void Host_MouseWheel(object sender, MouseWheelEventArgs e) {
+            var child = host;
+            if (child != null) {
+                st = GetScaleTransform(child);
+                var tt = GetTranslateTransform(child);
+
+                zoom = e.Delta > 0 ? .2 : -.2;
+                if (!(e.Delta > 0) && (st.ScaleX < .4))
+                    return;
+
+                Point relative = e.GetPosition(child);
+                double absoluteX;
+                double absoluteY;
+
+                absoluteX = relative.X * st.ScaleX + tt.X;
+                //absoluteY = relative.Y * st.ScaleY + tt.Y;
+
+                st.ScaleX += zoom;
+                //st.ScaleY += zoom;
+
+
+                tt.X = absoluteX - relative.X * st.ScaleX;
+                SL_XZoom.Value = st.ScaleX;
+                //tt.Y = absoluteY - relative.Y * st.ScaleY;
+            }
+        }
+        private TranslateTransform GetTranslateTransform(UIElement element) {
+            return (TranslateTransform)((TransformGroup)element.RenderTransform)
+              .Children.First(tr => tr is TranslateTransform);
+        }
+
+        private ScaleTransform GetScaleTransform(UIElement element) {
+            return (ScaleTransform)((TransformGroup)element.RenderTransform)
+              .Children.First(tr => tr is ScaleTransform);
+        }
+        private Point origin;
+        private Point start;
+        private void Host_MouseDown(object sender, MouseButtonEventArgs e) {
+            var child = host;
+            if (e.RightButton == MouseButtonState.Pressed) {
+                if (child != null) {
+                    var st = GetScaleTransform(child);
+                    st.ScaleX = 1.0;
+                    st.ScaleY = 1.0;
+                    var tt = GetTranslateTransform(child);
+                    tt.X = 0.0;
+                    tt.Y = 0.0;
+                }
+            }
+
+            if (e.MiddleButton == MouseButtonState.Pressed) {
+                var tt = GetTranslateTransform(child);
+                Vector v = start - e.GetPosition(this);
+                tt.X = origin.X - v.X;
+                //tt.Y = origin.Y - v.Y;
+            }
+        }
+
+        private void Host_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
+            var child = host;
+            var tt = GetTranslateTransform(child);
+            start = e.GetPosition(this);
+            origin = new Point(tt.X, tt.Y);
+            Cursor = Cursors.Hand;
+            child.CaptureMouse();
+        }
+
+        private void Host_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
+            var child = host;
+            if (child != null) {
+                child.ReleaseMouseCapture();
+                Cursor = Cursors.Arrow;
+            }
+        }
+
+
+        private void SL_YZoom_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
+            if (!this.IsLoaded) return;
+            var child = host;
+            var st = GetScaleTransform(host);
+            st.ScaleY = e.NewValue;
+
+        }
+
+        private void SL_XPos_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
+            if (!this.IsLoaded) return;
+            var child = host;
+            var tt = GetTranslateTransform(host);
+            var st = GetScaleTransform(host);
+            ChangeScrollX(-e.NewValue);
+            host.ClampPan();
+        }
+
+        private void SL_XZoom_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
+            if (!this.IsLoaded) return;
+            ChangeScaleX(e.NewValue);
+            tlHost.DrawTimeLine(host.points, host.TimePerOnePoint, e.NewValue, this.ActualHeight);
+        }
+        private void ChangeScrollX(double newScroll) {
+            host.translateTransform.X = newScroll;
+            tlHost.translateTransform.X = newScroll;
+            host.ClampPan();
+        }
+
+        //private void ChangeScaleX(double newScale) {
+        //    var tg = (TransformGroup)host.RenderTransform;
+        //    var st = (ScaleTransform)tg.Children.OfType<ScaleTransform>().First();
+        //    var tt = (TranslateTransform)tg.Children.OfType<TranslateTransform>().First();
+
+        //    double oldScale = st.ScaleX;
+        //    double center = host.ActualWidth / 2;
+
+        //    // Определяем позицию, на которую указывает центр экрана (в координатах данных)
+        //    double centerDataPos = (center - tt.X) / oldScale;
+
+        //    // Применяем новый масштаб
+        //    st.ScaleX = newScale;
+
+        //    // Обновляем трансляцию так, чтобы центр остался на том же месте данных
+        //    tt.X = center - centerDataPos * newScale;
+
+        //    SL_XPos.Maximum = host.points * newScale;
+        //    host.ClampPan();
+        //}
+        private void ChangeScaleX(double newScale) {
+            var st = host.ScaleTransform;
+            var tt = host.translateTransform;
+            double oldScale = st.ScaleX;
+            double center = host.ActualWidth / 2;
+            double centerDataPos = (center - tt.X) / oldScale;
+            st.ScaleX = newScale;
+            tlHost.ScaleTransform.ScaleX = newScale;
+            tt.X = center - centerDataPos * newScale;
+            tlHost.translateTransform.X = center - centerDataPos * newScale;
+            SL_XPos.Maximum = host.points * newScale;
+            host.ClampPan();
+        }
+        //private void ChangeScaleX(double newScale) {
+        //    this.st = host.ScaleTransform;
+        //    tlHost.ScaleTransform.ScaleX = newScale;
+        //    host.ScaleTransform.ScaleX = newScale;
+        //    SL_XPos.Maximum = host.points * st.ScaleX;
+        //    host.ClampPan();
+        //}
+    }
+}
