@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Printing;
@@ -204,37 +205,113 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
         public double height { get; set; }
         public string filename { get; set; }
         public TimeSpan TotalTime { get; set; }
+        public double ZoomFactor { get; set; } = 1.0;
+
+        public int pointCount => waveformPoints.Count;
 
         private List<float> waveformPoints = new();
 
+        double selectedPoint = 0;
         private TimeSpan TimePerOnePoint => TotalTime / waveformPoints.Count;
 
         public RefWfV(List<float> waveformPoints, TimeSpan TotalTime) {
             this.waveformPoints = waveformPoints;
             this.TotalTime = TotalTime;
+            this.MouseLeftButtonDown += RefWfV_MouseLeftButtonDown;
         }
 
-        public void DrawWaveform(int blockSize = 5) {
+        public void RefWfV_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
+            var clickPoint = e.GetPosition(this);
+
+            var waveformVisual = visuals["waveform"];
+            var tt = waveformVisual.Transform as TranslateTransform ?? new TranslateTransform();
+
+            double logicalX = (clickPoint.X - tt.X) / ZoomFactor;
+            Log.Update($"Click on: , {TimePerOnePoint * (int)logicalX}");
+            DrawSelector(logicalX);
+        }
+
+
+
+        public void DrawSelector(double logicalX) {
+            //if (visuals.TryGetValue("selector", out var old)) {
+            //    RemoveVisualChild(old);
+            //    visuals.Remove("selector");
+            //}
+            var visual = new DrawingVisual();
+            var waveformVisual = visuals["waveform"];
+            visual.Transform = waveformVisual.Transform;
+            using (var dc = visual.RenderOpen()) {
+                var pen = new Pen(Brushes.DarkKhaki, 3);
+                double screenX = logicalX * ZoomFactor;
+                dc.DrawLine(pen,
+                    new Point(screenX, 0),
+                    new Point(screenX, this.height));
+            }
+            RedrawElement(visual, "selector");
+
+            //visuals["selector"] = visual;
+            //AddVisualChild(visual);
+            //InvalidateVisual();
+        }
+
+
+        public void DrawWaveform(int density = 5) {
+            var sw = Stopwatch.StartNew();
+            Debug.WriteLine($"WaveForm Start: {sw.ElapsedMilliseconds}");
             var visual = new DrawingVisual();
             using (DrawingContext dc = visual.RenderOpen()) {
-                Pen pen = new Pen(Brushes.Blue, 3);
-                for (int i = 0; i < waveformPoints.Count; i += blockSize) {
-                    var block = waveformPoints.Skip(i).Take(blockSize).ToArray();
+                Pen pen = new Pen(Brushes.Blue, 2);
+                if (ZoomFactor >= 2.4) {
+                    density = 1;
+                }
+                else if (ZoomFactor >= 2) {
+                    density = 2;
+                }
+                else if (ZoomFactor >= 1) {
+                    density = 5;
+                }
+                else if (ZoomFactor >= 0.5) {
+                    density = 10;
+                }
+                else {
+                    density = 20;
+                }
+
+                ///2
+                ///0.5
+                ///2.4
+                Debug.WriteLine($"WaveForm Started drawing points: {sw.ElapsedMilliseconds}");
+
+                for (int i = 0; i < waveformPoints.Count; i += density) {
+                    var block = waveformPoints.Skip(i).Take(density).ToArray();
                     if (block.Length == 0) continue;
-                    float blockMax = block.Max();
-                    float blockMin = block.Min();
-                    double maxHeight = blockMax * height;
-                    double minHeight = blockMin * height;
-                    double x = i;
+                    double maxHeight = block.Max() * height;
+                    double minHeight = block.Min() * height;
+                    double x = i * ZoomFactor;
+
                     dc.DrawLine(pen,
                         new Point(x, height / 2 - maxHeight / 2),
                         new Point(x, height / 2 + minHeight / 2));
                 }
-            }
+                Debug.WriteLine($"WaveForm Done drawing points: {sw.ElapsedMilliseconds}");
 
-            visuals["waveform"] = visual;
+            }
+            Debug.WriteLine($"WaveForm Started redrawing points: {sw.ElapsedMilliseconds}");
+            RedrawElement(visual, "waveform");
+            Debug.WriteLine($"WaveForm Ended redrawing points: {sw.ElapsedMilliseconds}");
+            sw.Stop();
+        }
+
+        private void RedrawElement(DrawingVisual visual, string name) {
+            if (visuals.ContainsKey(name)) {
+                var oldVisual = visuals[name];
+                RemoveVisualChild(oldVisual);
+                visuals.Remove(name);
+            }
+            visuals[name] = visual;
             AddVisualChild(visual);
-            AddLogicalChild(visual);
+            InvalidateVisual();
         }
 
         public void DrawTimeLine(double zoom = 1) {
@@ -244,11 +321,11 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
                 TimeSpan time = TimeSpan.Zero;
 
                 TimeSpan labelStep;
-                if (zoom >= 1.4)
+                if (ZoomFactor >= 1.4)
                     labelStep = TimeSpan.FromMilliseconds(500);
-                else if (zoom >= 1.2)
+                else if (ZoomFactor >= 1.2)
                     labelStep = TimeSpan.FromSeconds(1);
-                else if (zoom >= 0.7)
+                else if (ZoomFactor >= 0.7)
                     labelStep = TimeSpan.FromSeconds(5);
                 else
                     labelStep = TimeSpan.FromSeconds(10);
@@ -259,7 +336,7 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
                 for (int i = 0; i < waveformPoints.Count; i++) {
                     time += TimePerOnePoint;
                     if (i % labelInterval != 0) continue;
-                    double x = i * zoom;
+                    double x = i * ZoomFactor;
                     var formattedText = new FormattedText(
                         time.ToString(@"hh\:mm\:ss\.ffff"),
                         CultureInfo.InvariantCulture,
@@ -269,17 +346,34 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
                         Brushes.Black,
                         VisualTreeHelper.GetDpi(this).PixelsPerDip
                     );
+
                     double tx = x - formattedText.Width / 2;
                     double ty = 0;
                     dc.DrawText(formattedText, new Point(tx, ty));
 
-                    dc.DrawLine(pen, new Point(x, 20), new Point(x, Height));
+                    dc.DrawLine(pen, new Point(x, 20), new Point(x, this.height));
                 }
             }
 
-            visuals["timeline"] = visual;
-            AddVisualChild(visual);
-            AddLogicalChild(visual);
+            RedrawElement(visual, "timeline");
+        }
+        double current_offset_x = 0;
+        public void OffsetAllVisualsX(double offsetX) {
+            current_offset_x = offsetX;
+            Debug.WriteLine("offset: " + offsetX);
+            foreach (var kvp in visuals) {
+                //if (kvp.Key.Equals("selector")) {
+                //    Debug.WriteLine("newpos: " + (offsetX + selectedPoint));
+                //    kvp.Value.Transform = new TranslateTransform(offsetX + selectedPoint, 0);
+                //    continue;
+                //}
+                kvp.Value.Transform = new TranslateTransform(offsetX, 0);
+            }
+        }
+        public void ChangeScaleX(double newZoomFactor) {
+            ZoomFactor = newZoomFactor;
+            DrawWaveform();
+            DrawTimeLine();
         }
 
         protected override int VisualChildrenCount => visuals.Count;
@@ -289,8 +383,6 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
                 throw new ArgumentOutOfRangeException();
             return visuals.Values.ElementAt(index);
         }
-
-        // Дополнительно: метод для доступа к конкретному visual по ID
         public DrawingVisual? GetVisualById(string id) =>
             visuals.TryGetValue(id, out var vis) ? vis : null;
     }
@@ -357,7 +449,8 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
                 _Visual = new RefWfV(waveform, reader.TotalTime) { height = MainGrid.RowDefinitions[0].ActualHeight };
                 PreloadComponent(_Visual);
                 _Visual.DrawTimeLine();
-                _Visual.DrawWaveform(100);
+                _Visual.DrawWaveform();
+                SL_XPos.Maximum = waveform.Count;
                 //host.DrawWaveform(waveform, this.ActualHeight, TimeSpan.FromMilliseconds(reader.TotalTime.TotalMilliseconds / waveform.Count));
                 //tlHost.DrawTimeLine(waveform.Count, TimeSpan.FromMilliseconds(reader.TotalTime.TotalMilliseconds / waveform.Count), GetScaleTransform(host).ScaleX, this.ActualHeight);
             }
@@ -403,33 +496,33 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
         private Point origin;
         private Point start;
         private void Host_MouseDown(object sender, MouseButtonEventArgs e) {
-            var child = host;
-            if (e.RightButton == MouseButtonState.Pressed) {
-                if (child != null) {
-                    var st = GetScaleTransform(child);
-                    st.ScaleX = 1.0;
-                    st.ScaleY = 1.0;
-                    var tt = GetTranslateTransform(child);
-                    tt.X = 0.0;
-                    tt.Y = 0.0;
-                }
-            }
+            //var child = host;
+            //if (e.RightButton == MouseButtonState.Pressed) {
+            //    if (child != null) {
+            //        var st = GetScaleTransform(child);
+            //        st.ScaleX = 1.0;
+            //        st.ScaleY = 1.0;
+            //        var tt = GetTranslateTransform(child);
+            //        tt.X = 0.0;
+            //        tt.Y = 0.0;
+            //    }
+            //}
 
-            if (e.MiddleButton == MouseButtonState.Pressed) {
-                var tt = GetTranslateTransform(child);
-                Vector v = start - e.GetPosition(this);
-                tt.X = origin.X - v.X;
-                //tt.Y = origin.Y - v.Y;
-            }
+            //if (e.MiddleButton == MouseButtonState.Pressed) {
+            //    var tt = GetTranslateTransform(child);
+            //    Vector v = start - e.GetPosition(this);
+            //    tt.X = origin.X - v.X;
+            //    //tt.Y = origin.Y - v.Y;
+            //}
         }
 
         private void Host_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
-            var child = host;
-            var tt = GetTranslateTransform(child);
-            start = e.GetPosition(this);
-            origin = new Point(tt.X, tt.Y);
-            Cursor = Cursors.Hand;
-            child.CaptureMouse();
+            //var child = host;
+            //var tt = GetTranslateTransform(child);
+            //start = e.GetPosition(this);
+            //origin = new Point(tt.X, tt.Y);
+            //Cursor = Cursors.Hand;
+            //child.CaptureMouse();
         }
 
         private void Host_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
@@ -439,7 +532,6 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
                 Cursor = Cursors.Arrow;
             }
         }
-
 
         private void SL_YZoom_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
             if (!this.IsLoaded) return;
@@ -451,55 +543,30 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
 
         private void SL_XPos_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
             if (!this.IsLoaded) return;
-            var child = host;
-            var tt = GetTranslateTransform(host);
-            var st = GetScaleTransform(host);
-            ChangeScrollX(-e.NewValue);
-
-            host.ClampPan();
-        }
-
-        private void SL_XZoom_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
-            if (!this.IsLoaded) return;
-            ChangeScaleX(e.NewValue);
-            tlHost.DrawTimeLine(host.points, host.TimePerOnePoint, e.NewValue, this.ActualHeight);
-        }
-        private void ChangeScrollX(double newScroll) {
-            host.translateTransform.X = newScroll;
-            tlHost.translateTransform.X = newScroll;
-            Selwf.MoveLine(newScroll);
-            host.ClampPan();
-        }
-        private void ChangeScaleX(double newScale) {
-
-
-
-            // масштабируем только waveform
-            //var st = host.ScaleTransform;
-            //var tt = host.translateTransform;
-
-            //double oldScale = st.ScaleX;
-            //double center = host.ActualWidth / 2;
-            //double centerDataPos = (center - tt.X) / oldScale;
-
-            //st.ScaleX = newScale;
-            //tt.X = center - centerDataPos * newScale;
-            //tlHost.translateTransform.X = tt.X;
-            //SL_XPos.Maximum = host.points * newScale;
-            //Selwf.RecalcZoom(SL_XPos.Value, newScale);
+            _Visual.OffsetAllVisualsX(-e.NewValue);
             //host.ClampPan();
-            //tlHost.DrawTimeLine(host.points, host.TimePerOnePoint, newScale, ActualHeight);
         }
+
+
 
         private void MainGrid_MouseDown(object sender, MouseButtonEventArgs e) {
-            var grid = sender as Grid;
-            var pos = e.GetPosition(grid);
-            double column0Width = grid.ColumnDefinitions[0].ActualWidth;
-            double row0Height = grid.RowDefinitions[0].ActualHeight;
-            if (pos.X >= 0 && pos.X <= column0Width &&
-                pos.Y >= 0 && pos.Y <= row0Height) {
-                Selwf.OnMouseClicked(pos, SL_XPos.Value, row0Height);
-            }
+            //var grid = sender as Grid;
+            //var pos = e.GetPosition(grid);
+            //double column0Width = grid.ColumnDefinitions[0].ActualWidth;
+            //double row0Height = grid.RowDefinitions[0].ActualHeight;
+            //if (pos.X >= 0 && pos.X <= column0Width &&
+            //    pos.Y >= 0 && pos.Y <= row0Height) {
+            //    Selwf.OnMouseClicked(pos, SL_XPos.Value, row0Height);
+            //}
+            _Visual.RefWfV_MouseLeftButtonDown(sender, e);
+
+        }
+
+        private void SL_XZoom_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e) {
+            _Visual.ChangeScaleX(SL_XZoom.Value);
+            SL_XPos.Maximum = _Visual.pointCount * SL_XZoom.Value;
+            Debug.Write(SL_XZoom.Value + "\n");
+
         }
     }
 }
