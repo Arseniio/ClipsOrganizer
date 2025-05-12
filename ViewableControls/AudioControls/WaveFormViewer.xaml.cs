@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Globalization;
 using System.Linq;
 using System.Printing;
@@ -12,6 +13,8 @@ using System.Windows.Input;
 using System.Windows.Media;
 
 using NAudio.Wave;
+
+using Windows.ApplicationModel.Activation;
 
 namespace ClipsOrganizer.ViewableControls.AudioControls {
     /// <summary>
@@ -45,7 +48,35 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
 
 
     }
+    public class WavefromSelector : BaseVisualHost {
+        public double currentTime;
+        private Visual SelectorVisual = null;
+        public WavefromSelector() : base() {
 
+        }
+        public void OnMouseClicked(Point point, double rawScroll, double heigth) {
+            DrawLineOnClick(point.X + rawScroll, heigth);
+        }
+        private void DrawLineOnClick(double xPos, double heigth) {
+            if (SelectorVisual != null) {
+                _children.Remove(SelectorVisual);
+                SelectorVisual = null;
+            }
+            var visual = new DrawingVisual();
+            using (DrawingContext dc = visual.RenderOpen()) {
+                Pen pen = new Pen(Brushes.Aqua, 5);
+                dc.DrawLine(pen, new Point(xPos, 0), new Point(xPos, heigth));
+                SelectorVisual = visual;
+                _children.Add(SelectorVisual);
+            }
+        }
+        public void MoveLine(double xPos) {
+            this.translateTransform.X = xPos;
+        }
+        public void RecalcZoom(double xPos, double zoom) {
+            this.translateTransform.X = translateTransform.X * zoom;
+        }
+    }
     public class WaveformVisualHost : BaseVisualHost {
         private readonly List<DrawingVisual> visuals = new();
         public int ChildrenCount => visuals.Count;
@@ -108,11 +139,14 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
         public void DrawTimeLine(int points, TimeSpan timePerOnePoint, double zoom = 1, double Height = 100) {
             this.Points = points;
             this.TimePerOnePoint = timePerOnePoint;
-            var visual = new DrawingVisual();
             RemoveTimeLine();
+
+            var visual = new DrawingVisual();
             using (DrawingContext dc = visual.RenderOpen()) {
                 Pen pen = new Pen(Brushes.DarkRed, 1);
                 TimeSpan time = TimeSpan.Zero;
+
+                // выбираем шаг подписей исходя из зума
                 TimeSpan labelStep;
                 if (zoom >= 1.4)
                     labelStep = TimeSpan.FromMilliseconds(500);
@@ -120,33 +154,38 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
                     labelStep = TimeSpan.FromSeconds(1);
                 else if (zoom >= 0.7)
                     labelStep = TimeSpan.FromSeconds(5);
-                else labelStep = TimeSpan.FromSeconds(10);
+                else
+                    labelStep = TimeSpan.FromSeconds(10);
+
                 int labelInterval = (int)(labelStep.Ticks / timePerOnePoint.Ticks);
                 var typeface = new Typeface("Segoe UI");
+
                 for (int i = 0; i < points; i++) {
                     time += timePerOnePoint;
-                    if (i % labelInterval == 0) {
-                        var formattedText = new FormattedText(
-                            time.ToString(@"hh\:mm\:ss\.ffff"),
-                            CultureInfo.InvariantCulture,
-                            FlowDirection.LeftToRight,
-                            typeface,
-                            16,
-                            Brushes.Black,
-                            VisualTreeHelper.GetDpi(this).PixelsPerDip
-                        );
-                        double x = i - (formattedText.Width / 2);
-                        double y = 0;
-                        dc.DrawText(formattedText, new Point(x, y));
-                        dc.DrawLine(pen,
-                            new Point(i, 20),
-                            new Point(i, Height));
-                    }
+                    if (i % labelInterval != 0) continue;
+                    double x = i * zoom;
+
+                    var formattedText = new FormattedText(
+                        time.ToString(@"hh\:mm\:ss\.ffff"),
+                        CultureInfo.InvariantCulture,
+                        FlowDirection.LeftToRight,
+                        typeface,
+                        16,
+                        Brushes.Black,
+                        VisualTreeHelper.GetDpi(this).PixelsPerDip
+                    );
+                    double tx = x - formattedText.Width / 2;
+                    double ty = 0;
+                    dc.DrawText(formattedText, new Point(tx, ty));
+
+                    dc.DrawLine(pen, new Point(x, 20), new Point(x, Height));
                 }
             }
+            //visual.ContentBounds;
             timeLineVisual = visual;
             _children.Add(timeLineVisual);
         }
+
         public void RemoveTimeLine() {
             if (timeLineVisual != null) {
                 _children.Remove(timeLineVisual);
@@ -160,15 +199,18 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
         public int Resolution { get; set; }
         WaveformVisualHost host = null;
         TimelineVisualHost tlHost = null;
+        WavefromSelector Selwf = null;
+
         public int SamplesPerChunk = 5000;
 
-
         List<float> waveform = new List<float>();
-        private void PreloadComponent(FrameworkElement elem) {
-            elem.MouseLeftButtonDown += Host_MouseLeftButtonDown;
-            elem.MouseLeftButtonUp += Host_MouseLeftButtonUp;
-            elem.MouseDown += Host_MouseDown;
-            elem.MouseWheel += Host_MouseWheel;
+        private void PreloadComponent(FrameworkElement elem, bool overrideMouse = true) {
+            if (overrideMouse) {
+                elem.MouseLeftButtonDown += Host_MouseLeftButtonDown;
+                elem.MouseLeftButtonUp += Host_MouseLeftButtonUp;
+                elem.MouseDown += Host_MouseDown;
+                elem.MouseWheel += Host_MouseWheel;
+            }
             Grid.SetRow(elem, 0);
             Grid.SetColumn(elem, 0);
             elem.HorizontalAlignment = HorizontalAlignment.Stretch;
@@ -179,12 +221,15 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
             //elem.VerticalAlignment = VerticalAlignment.Center;
             MainGrid.Children.Add(elem);
         }
+
         public WaveFormViewer() {
             host = new WaveformVisualHost();
             tlHost = new TimelineVisualHost();
+            Selwf = new WavefromSelector();
             InitializeComponent();
             PreloadComponent(host);
             PreloadComponent(tlHost);
+            PreloadComponent(Selwf, false);
         }
         public void loadWaveForm() {
             waveform.Clear();
@@ -304,6 +349,7 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
             var tt = GetTranslateTransform(host);
             var st = GetScaleTransform(host);
             ChangeScrollX(-e.NewValue);
+
             host.ClampPan();
         }
 
@@ -315,48 +361,36 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
         private void ChangeScrollX(double newScroll) {
             host.translateTransform.X = newScroll;
             tlHost.translateTransform.X = newScroll;
+            Selwf.MoveLine(newScroll);
             host.ClampPan();
         }
-
-        //private void ChangeScaleX(double newScale) {
-        //    var tg = (TransformGroup)host.RenderTransform;
-        //    var st = (ScaleTransform)tg.Children.OfType<ScaleTransform>().First();
-        //    var tt = (TranslateTransform)tg.Children.OfType<TranslateTransform>().First();
-
-        //    double oldScale = st.ScaleX;
-        //    double center = host.ActualWidth / 2;
-
-        //    // Определяем позицию, на которую указывает центр экрана (в координатах данных)
-        //    double centerDataPos = (center - tt.X) / oldScale;
-
-        //    // Применяем новый масштаб
-        //    st.ScaleX = newScale;
-
-        //    // Обновляем трансляцию так, чтобы центр остался на том же месте данных
-        //    tt.X = center - centerDataPos * newScale;
-
-        //    SL_XPos.Maximum = host.points * newScale;
-        //    host.ClampPan();
-        //}
         private void ChangeScaleX(double newScale) {
+            // масштабируем только waveform
             var st = host.ScaleTransform;
             var tt = host.translateTransform;
+
             double oldScale = st.ScaleX;
             double center = host.ActualWidth / 2;
             double centerDataPos = (center - tt.X) / oldScale;
+
             st.ScaleX = newScale;
-            tlHost.ScaleTransform.ScaleX = newScale;
             tt.X = center - centerDataPos * newScale;
-            tlHost.translateTransform.X = center - centerDataPos * newScale;
+            tlHost.translateTransform.X = tt.X;
             SL_XPos.Maximum = host.points * newScale;
+            Selwf.RecalcZoom(SL_XPos.Value,newScale);
             host.ClampPan();
+            tlHost.DrawTimeLine(host.points, host.TimePerOnePoint, newScale, ActualHeight);
         }
-        //private void ChangeScaleX(double newScale) {
-        //    this.st = host.ScaleTransform;
-        //    tlHost.ScaleTransform.ScaleX = newScale;
-        //    host.ScaleTransform.ScaleX = newScale;
-        //    SL_XPos.Maximum = host.points * st.ScaleX;
-        //    host.ClampPan();
-        //}
+
+        private void MainGrid_MouseDown(object sender, MouseButtonEventArgs e) {
+            var grid = sender as Grid;
+            var pos = e.GetPosition(grid);
+            double column0Width = grid.ColumnDefinitions[0].ActualWidth;
+            double row0Height = grid.RowDefinitions[0].ActualHeight;
+            if (pos.X >= 0 && pos.X <= column0Width &&
+                pos.Y >= 0 && pos.Y <= row0Height) {
+                Selwf.OnMouseClicked(pos, SL_XPos.Value, row0Height);
+            }
+        }
     }
 }
