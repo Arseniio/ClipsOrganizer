@@ -1,12 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Diagnostics;
+using System.DirectoryServices;
 using System.Globalization;
 using System.Linq;
-using System.Printing;
-using System.Runtime.CompilerServices;
-using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
 
@@ -14,8 +11,6 @@ using System.Windows.Input;
 using System.Windows.Media;
 
 using NAudio.Wave;
-
-using Windows.ApplicationModel.Activation;
 
 namespace ClipsOrganizer.ViewableControls.AudioControls {
     /// <summary>
@@ -221,17 +216,37 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
         }
 
         public void RefWfV_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
+            double logicalX = GetLogicalX(e);
+            Log.Update($"Click on: , {TimePerOnePoint * (int)logicalX}");
+            selectedPoint = logicalX;
+            DrawSelector(logicalX);
+        }
+
+        private double GetLogicalX(MouseButtonEventArgs e) {
             var clickPoint = e.GetPosition(this);
 
             var waveformVisual = visuals["waveform"];
             var tt = waveformVisual.Transform as TranslateTransform ?? new TranslateTransform();
 
             double logicalX = (clickPoint.X - tt.X) / ZoomFactor;
-            Log.Update($"Click on: , {TimePerOnePoint * (int)logicalX}");
-            DrawSelector(logicalX);
+            return logicalX;
+        }
+        private double GetLogicalX(MouseEventArgs e) {
+            var clickPoint = e.GetPosition(this);
+
+            var waveformVisual = visuals["waveform"];
+            var tt = waveformVisual.Transform as TranslateTransform ?? new TranslateTransform();
+
+            double logicalX = (clickPoint.X - tt.X) / ZoomFactor;
+            return logicalX;
         }
 
+        public void OnDrag(MouseEventArgs e) {
+            double logicalX = GetLogicalX(e);
 
+            DrawFiller(selectedPoint, logicalX);
+            Debug.WriteLine($"Selected from {selectedPoint * TimePerOnePoint} to {logicalX * TimePerOnePoint} ");
+        }
 
         public void DrawSelector(double logicalX) {
             //if (visuals.TryGetValue("selector", out var old)) {
@@ -249,12 +264,22 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
                     new Point(screenX, this.height));
             }
             RedrawElement(visual, "selector");
-
-            //visuals["selector"] = visual;
-            //AddVisualChild(visual);
-            //InvalidateVisual();
         }
 
+        public void DrawFiller(double startPoint, double endPoint) {
+            var visual = new DrawingVisual();
+            var waveformVisual = visuals["waveform"];
+            visual.Transform = waveformVisual.Transform;
+            using (var dc = visual.RenderOpen()) {
+                var brush = new SolidColorBrush(Color.FromArgb(128, 100, 100, 100));
+                var pen = new Pen(Brushes.Transparent, 0);
+                var p1 = new Point(startPoint, height);
+                var p2 = new Point(endPoint, 0);
+                Debug.WriteLine($"{p1} : {p2}");
+                dc.DrawRectangle(brush, pen, new Rect(p1, p2));
+            }
+            RedrawElement(visual, "filler");
+        }
 
         public void DrawWaveform(int density = 5) {
             var sw = Stopwatch.StartNew();
@@ -289,7 +314,6 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
                     double maxHeight = block.Max() * height;
                     double minHeight = block.Min() * height;
                     double x = i * ZoomFactor;
-
                     dc.DrawLine(pen,
                         new Point(x, height / 2 - maxHeight / 2),
                         new Point(x, height / 2 + minHeight / 2));
@@ -328,7 +352,7 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
                 else if (ZoomFactor >= 0.7)
                     labelStep = TimeSpan.FromSeconds(5);
                 else
-                    labelStep = TimeSpan.FromSeconds(10);
+                    labelStep = TimeSpan.FromSeconds(5);
 
                 int labelInterval = (int)(labelStep.Ticks / TimePerOnePoint.Ticks);
                 var typeface = new Typeface("Segoe UI");
@@ -410,22 +434,15 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
             elem.HorizontalAlignment = HorizontalAlignment.Stretch;
             elem.VerticalAlignment = VerticalAlignment.Stretch;
             elem.Margin = new Thickness(0);
-            //elem.ClipToBounds = true;
-            //elem.HorizontalAlignment = HorizontalAlignment.Center;
-            //elem.VerticalAlignment = VerticalAlignment.Center;
             MainGrid.Children.Add(elem);
+            var rect = new Rect(0, 0, MainGrid.ColumnDefinitions[0].ActualWidth, MainGrid.RowDefinitions[0].ActualHeight);
+            _Visual.Clip = new RectangleGeometry(rect);
+
         }
 
         private RefWfV _Visual;
 
         public WaveFormViewer() {
-            //host = new WaveformVisualHost();
-            //tlHost = new TimelineVisualHost();
-            //Selwf = new WavefromSelector();
-            //InitializeComponent();
-            //PreloadComponent(host);
-            //PreloadComponent(tlHost);
-            //PreloadComponent(Selwf, false);
             InitializeComponent();
         }
         public void loadWaveForm() {
@@ -549,24 +566,47 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
 
 
 
-        private void MainGrid_MouseDown(object sender, MouseButtonEventArgs e) {
-            //var grid = sender as Grid;
-            //var pos = e.GetPosition(grid);
-            //double column0Width = grid.ColumnDefinitions[0].ActualWidth;
-            //double row0Height = grid.RowDefinitions[0].ActualHeight;
-            //if (pos.X >= 0 && pos.X <= column0Width &&
-            //    pos.Y >= 0 && pos.Y <= row0Height) {
-            //    Selwf.OnMouseClicked(pos, SL_XPos.Value, row0Height);
-            //}
-            _Visual.RefWfV_MouseLeftButtonDown(sender, e);
+        private Point? _mouseDownPosition = null;
+        private bool _dragTriggered = false;
 
+        private void MainGrid_MouseDown(object sender, MouseButtonEventArgs e) {
+            _mouseDownPosition = e.GetPosition(MainGrid);
+            _dragTriggered = false;
+            MainGrid.CaptureMouse();
+            _Visual.RefWfV_MouseLeftButtonDown(sender, e);
         }
+
+        private void MainGrid_MouseMove(object sender, MouseEventArgs e) {
+            if (_mouseDownPosition.HasValue) {
+                Point currentPos = e.GetPosition(MainGrid);
+                double dx = currentPos.X - _mouseDownPosition.Value.X;
+                double dy = currentPos.Y - _mouseDownPosition.Value.Y;
+                double distance = Math.Sqrt(dx * dx + dy * dy);
+                if (distance >= 50) {
+                    _dragTriggered = true;
+                    _Visual.OnDrag(e);
+                }
+            }
+        }
+
+        private void MainGrid_MouseUp(object sender, MouseButtonEventArgs e) {
+            _mouseDownPosition = null;
+            _dragTriggered = false;
+            MainGrid.ReleaseMouseCapture();
+        }
+
+
+
 
         private void SL_XZoom_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e) {
             _Visual.ChangeScaleX(SL_XZoom.Value);
             SL_XPos.Maximum = _Visual.pointCount * SL_XZoom.Value;
             Debug.Write(SL_XZoom.Value + "\n");
+            TB_zoomtext.Text = $"Zoom: {SL_XZoom.Value}";
+        }
 
+        private void MainGrid_SizeChanged(object sender, SizeChangedEventArgs e) {
+            _Visual.height = MainGrid.ActualHeight;
         }
     }
 }
