@@ -18,7 +18,6 @@
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>
-            <ColumnDefinition Width="40.909"/>
         </Grid.ColumnDefinitions>
         <!--<Canvas Name="WaveForm_canvas" MouseWheel="WaveForm_canvas_MouseWheel" Background="White" MouseLeftButtonDown="WaveForm_canvas_MouseLeftButtonDown" MouseLeftButtonUp="WaveForm_canvas_MouseLeftButtonUp" MouseDown="WaveForm_canvas_MouseDown">
             <Canvas.RenderTransform>
@@ -29,7 +28,6 @@
             </Canvas.RenderTransform>
         </Canvas>-->
         <Rectangle Grid.Column="0" Grid.Row="0" Panel.ZIndex="-10" Fill="White"/>
-        <Slider Name="SL_YZoom" Grid.Column="1" Orientation="Vertical" ValueChanged="SL_YZoom_ValueChanged" Maximum="3" Minimum="0.1" Value="1"/>
         <Slider Name="SL_XPos" Grid.Row="1" Orientation="Horizontal" ValueChanged="SL_XPos_ValueChanged" Value="1"/>
         <StackPanel Grid.Row="2" Orientation="Horizontal">
         <Slider Name="SL_XZoom" Grid.Row="2" Width="400" Margin="5 0" Thumb.DragCompleted="SL_XZoom_DragCompleted" HorizontalAlignment="Left" Orientation="Horizontal" Minimum="0.1" Maximum="3" Value="1"/>

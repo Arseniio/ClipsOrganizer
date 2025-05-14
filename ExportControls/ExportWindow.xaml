@@ -11,7 +11,7 @@
     <Grid>
         <Grid>
             <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="196" />
+                <ColumnDefinition Width="205" />
                 <ColumnDefinition />
             </Grid.ColumnDefinitions>
             <Grid>
@@ -20,11 +20,8 @@
                     <RowDefinition/>
                 </Grid.RowDefinitions>
                 <ListBox Name="LB_Menu" SelectionChanged="LB_Menu_SelectionChanged">
-                    <ListBoxItem IsEnabled="False" Tag="ExportLocal">Локальный экспорт?</ListBoxItem>
-                    <ListBoxItem Tag="CommonSettings">Общие настройки(чт... название)</ListBoxItem>
+                    <ListBoxItem Tag="CommonSettings">Стандартные настройки экспорта</ListBoxItem>
                     <ListBoxItem Tag="EncodeFiles">Перекодирование файлов</ListBoxItem>
-                    <ListBoxItem IsEnabled="False" Tag="UploadToCloud">Выгрузка на файлообменник</ListBoxItem>
-                    <ListBoxItem IsEnabled="False" Tag="CollectionSettings">Настройки коллекции</ListBoxItem>
                     <ListBoxItem Tag="FileSelection">Выбор коллекций для экспорта</ListBoxItem>
                     <ListBoxItem Tag="FilesQueue">Очередь экспорта</ListBoxItem>
                     <ListBoxItem Tag="GeneralSettings">Общие настройки</ListBoxItem>

@@ -287,25 +287,27 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
             var visual = new DrawingVisual();
             using (DrawingContext dc = visual.RenderOpen()) {
                 Pen pen = new Pen(Brushes.Blue, 2);
-                if (ZoomFactor >= 2.4) {
+                
+                // Новая логика масштабирования
+                if (ZoomFactor >= 3.0) {
                     density = 1;
                 }
-                else if (ZoomFactor >= 2) {
+                else if (ZoomFactor >= 2.0) {
                     density = 2;
                 }
-                else if (ZoomFactor >= 1) {
+                else if (ZoomFactor >= 1.0) {
                     density = 5;
                 }
                 else if (ZoomFactor >= 0.5) {
                     density = 10;
                 }
-                else {
+                else if (ZoomFactor >= 0.25) {
                     density = 20;
                 }
+                else {
+                    density = 40;
+                }
 
-                ///2
-                ///0.5
-                ///2.4
                 Debug.WriteLine($"WaveForm Started drawing points: {sw.ElapsedMilliseconds}");
 
                 for (int i = 0; i < waveformPoints.Count; i += density) {
@@ -319,7 +321,6 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
                         new Point(x, height / 2 + minHeight / 2));
                 }
                 Debug.WriteLine($"WaveForm Done drawing points: {sw.ElapsedMilliseconds}");
-
             }
             Debug.WriteLine($"WaveForm Started redrawing points: {sw.ElapsedMilliseconds}");
             RedrawElement(visual, "waveform");
@@ -344,13 +345,18 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
                 Pen pen = new Pen(Brushes.DarkRed, 1);
                 TimeSpan time = TimeSpan.Zero;
 
+                // Новая логика масштабирования временных меток
                 TimeSpan labelStep;
-                if (ZoomFactor >= 1.4)
+                if (ZoomFactor >= 3.0)
+                    labelStep = TimeSpan.FromMilliseconds(100);
+                else if (ZoomFactor >= 2.0)
+                    labelStep = TimeSpan.FromMilliseconds(250);
+                else if (ZoomFactor >= 1.0)
                     labelStep = TimeSpan.FromMilliseconds(500);
-                else if (ZoomFactor >= 1.2)
+                else if (ZoomFactor >= 0.5)
                     labelStep = TimeSpan.FromSeconds(1);
-                else if (ZoomFactor >= 0.7)
-                    labelStep = TimeSpan.FromSeconds(5);
+                else if (ZoomFactor >= 0.25)
+                    labelStep = TimeSpan.FromSeconds(2);
                 else
                     labelStep = TimeSpan.FromSeconds(5);
 
@@ -386,11 +392,6 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
             current_offset_x = offsetX;
             Debug.WriteLine("offset: " + offsetX);
             foreach (var kvp in visuals) {
-                //if (kvp.Key.Equals("selector")) {
-                //    Debug.WriteLine("newpos: " + (offsetX + selectedPoint));
-                //    kvp.Value.Transform = new TranslateTransform(offsetX + selectedPoint, 0);
-                //    continue;
-                //}
                 kvp.Value.Transform = new TranslateTransform(offsetX, 0);
             }
         }
@@ -422,13 +423,7 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
         public int SamplesPerChunk = 5000;
 
         List<float> waveform = new List<float>();
-        private void PreloadComponent(FrameworkElement elem, bool overrideMouse = true) {
-            if (overrideMouse) {
-                elem.MouseLeftButtonDown += Host_MouseLeftButtonDown;
-                elem.MouseLeftButtonUp += Host_MouseLeftButtonUp;
-                elem.MouseDown += Host_MouseDown;
-                elem.MouseWheel += Host_MouseWheel;
-            }
+        private void PreloadComponent(FrameworkElement elem) {
             Grid.SetRow(elem, 0);
             Grid.SetColumn(elem, 0);
             elem.HorizontalAlignment = HorizontalAlignment.Stretch;
@@ -478,100 +473,18 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
         public ScaleTransform st = null;
         private int samplesPerChunk = 500;
 
-        private void Host_MouseWheel(object sender, MouseWheelEventArgs e) {
-            var child = host;
-            if (child != null) {
-                st = GetScaleTransform(child);
-                var tt = GetTranslateTransform(child);
-
-                zoom = e.Delta > 0 ? .2 : -.2;
-                if (!(e.Delta > 0) && (st.ScaleX < .4))
-                    return;
-
-                Point relative = e.GetPosition(child);
-                double absoluteX;
-                double absoluteY;
-
-                absoluteX = relative.X * st.ScaleX + tt.X;
-
-                st.ScaleX += zoom;
-
-
-                tt.X = absoluteX - relative.X * st.ScaleX;
-                SL_XZoom.Value = st.ScaleX;
-            }
-        }
-        private TranslateTransform GetTranslateTransform(UIElement element) {
-            return (TranslateTransform)((TransformGroup)element.RenderTransform)
-              .Children.First(tr => tr is TranslateTransform);
-        }
-
-        private ScaleTransform GetScaleTransform(UIElement element) {
-            return (ScaleTransform)((TransformGroup)element.RenderTransform)
-              .Children.First(tr => tr is ScaleTransform);
-        }
-        private Point origin;
-        private Point start;
-        private void Host_MouseDown(object sender, MouseButtonEventArgs e) {
-            //var child = host;
-            //if (e.RightButton == MouseButtonState.Pressed) {
-            //    if (child != null) {
-            //        var st = GetScaleTransform(child);
-            //        st.ScaleX = 1.0;
-            //        st.ScaleY = 1.0;
-            //        var tt = GetTranslateTransform(child);
-            //        tt.X = 0.0;
-            //        tt.Y = 0.0;
-            //    }
-            //}
-
-            //if (e.MiddleButton == MouseButtonState.Pressed) {
-            //    var tt = GetTranslateTransform(child);
-            //    Vector v = start - e.GetPosition(this);
-            //    tt.X = origin.X - v.X;
-            //    //tt.Y = origin.Y - v.Y;
-            //}
-        }
-
-        private void Host_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
-            //var child = host;
-            //var tt = GetTranslateTransform(child);
-            //start = e.GetPosition(this);
-            //origin = new Point(tt.X, tt.Y);
-            //Cursor = Cursors.Hand;
-            //child.CaptureMouse();
-        }
-
-        private void Host_MouseLeftButtonUp(object sender, MouseButtonEventArgs e) {
-            var child = host;
-            if (child != null) {
-                child.ReleaseMouseCapture();
-                Cursor = Cursors.Arrow;
-            }
-        }
-
-        private void SL_YZoom_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
-            if (!this.IsLoaded) return;
-            var child = host;
-            var st = GetScaleTransform(host);
-            st.ScaleY = e.NewValue;
-
-        }
 
         private void SL_XPos_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
             if (!this.IsLoaded) return;
             _Visual.OffsetAllVisualsX(-e.NewValue);
-            //host.ClampPan();
         }
 
 
 
         private Point? _mouseDownPosition = null;
-        private bool _dragTriggered = false;
 
         private void MainGrid_MouseDown(object sender, MouseButtonEventArgs e) {
             _mouseDownPosition = e.GetPosition(MainGrid);
-            _dragTriggered = false;
             MainGrid.CaptureMouse();
             _Visual.RefWfV_MouseLeftButtonDown(sender, e);
         }
@@ -583,7 +496,6 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
                 double dy = currentPos.Y - _mouseDownPosition.Value.Y;
                 double distance = Math.Sqrt(dx * dx + dy * dy);
                 if (distance >= 50) {
-                    _dragTriggered = true;
                     _Visual.OnDrag(e);
                 }
             }
@@ -591,7 +503,6 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
 
         private void MainGrid_MouseUp(object sender, MouseButtonEventArgs e) {
             _mouseDownPosition = null;
-            _dragTriggered = false;
             MainGrid.ReleaseMouseCapture();
         }
 
