@@ -28,9 +28,10 @@ namespace ClipsOrganizer.ViewableControls.ImageControls {
             InitializeComponent();
             ExportInfo = exportInfo;
             DataContext = ExportInfo;
+            SL_quality.Value = GlobalSettings.Instance.DefaultImageExport.CompressionLevel;
+            CB_format.SelectedItem = exportInfo.OutputFormat;
             Btn_AddToQueue.Visibility = Visibility.Hidden;
             Btn_ExportNow.Visibility = Visibility.Hidden;
-            MessageBox.Show(GlobalSettings.Instance.DefaultImageExport.CompressionLevel.ToString());
         }
 
         private void ImageActions_Loaded(object sender, RoutedEventArgs e) {

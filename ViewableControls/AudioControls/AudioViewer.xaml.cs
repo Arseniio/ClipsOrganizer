@@ -24,20 +24,18 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
     public partial class AudioViewer : UserControl {
 
         public AudioViewer(Item LoadedFile) {
+            MediaPlayer = new MediaPlayer();
             InitializeComponent();
             WaveForm_Viewer.FilePath = LoadedFile.Path;
-
+            MediaPlayer.Open(new Uri(LoadedFile.Path));
             Loaded += AudioViewer_Loaded;
             Unloaded += AudioViewer_Unloaded;
-            DispatcherTimer dispatcherTimer = new DispatcherTimer();
-            dispatcherTimer.Tick += DispatcherTimer_Tick;
-            dispatcherTimer.Interval = TimeSpan.FromMilliseconds(200);
-            dispatcherTimer.Start();
         }
 
-        private void DispatcherTimer_Tick(object sender, EventArgs e) {
-            if (WaveForm_Viewer.st is not null && this.IsLoaded && WaveForm_Viewer.IsLoaded)
-                TB_zoom.Text = $"X: {WaveForm_Viewer.st.ScaleX} Y: {WaveForm_Viewer.st.ScaleY}";
+        private void _Visual_OnElementClicked(object sender, TimeSpan e) {
+            if (MediaPlayer != null) {
+                MediaPlayer.Position = e;
+            }
         }
 
         private void AudioViewer_Unloaded(object sender, RoutedEventArgs e) {
@@ -47,6 +45,7 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
         private void ViewableController_FileLoaded(object sender, FileLoadedEventArgs e) {
             WaveForm_Viewer.FilePath = e.Item.Path;
             WaveForm_Viewer.Resolution = 120;
+            MediaPlayer.Open(new Uri(e.Item.Path));
         }
 
         private void AudioViewer_Loaded(object sender, RoutedEventArgs e) {
@@ -59,6 +58,28 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
 
         private void TB_Samplerate_LostFocus(object sender, RoutedEventArgs e) {
             WaveForm_Viewer.SamplesPerChunk = int.Parse((sender as TextBox).Text);
+        }
+
+
+        MediaPlayer MediaPlayer;
+        private void Btn_Play_Click(object sender, RoutedEventArgs e) {
+            MediaPlayer.Play();
+            WaveForm_Viewer._Visual.SetupMediaPositionTracking(MediaPlayer);
+            WaveForm_Viewer._Visual.OnElementClicked += _Visual_OnElementClicked;
+        }
+
+        private void Btn_Stop_Click(object sender, RoutedEventArgs e) {
+            if (MediaPlayer.CanPause)
+                MediaPlayer.Pause();
+        }
+
+        private void SL_volume_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
+            if (this.IsLoaded)
+                MediaPlayer.Volume = (double)e.NewValue;
+        }
+
+        private void Btn_keyshortcuts_Click(object sender, RoutedEventArgs e) {
+
         }
     }
 }

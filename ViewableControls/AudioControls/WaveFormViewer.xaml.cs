@@ -9,6 +9,9 @@ using System.Windows.Controls;
 
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Threading;
+
+using ClipsOrganizer.Settings;
 
 using NAudio.Wave;
 
@@ -17,183 +20,6 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
     /// Логика взаимодействия для WaveFormViewer.xaml
     /// </summary>
     /// 
-
-    public abstract class BaseVisualHost : FrameworkElement {
-        private DrawingVisual _visual;
-        protected readonly VisualCollection _children;
-        public ScaleTransform ScaleTransform { get; set; }
-        public TranslateTransform translateTransform { get; set; }
-        protected BaseVisualHost() {
-            _children = new VisualCollection(this);
-            TransformGroup group = new TransformGroup();
-            ScaleTransform = new ScaleTransform();
-            group.Children.Add(ScaleTransform);
-            translateTransform = new TranslateTransform();
-            group.Children.Add(translateTransform);
-            this.RenderTransform = group;
-            this.RenderTransformOrigin = new Point(0, Application.Current.MainWindow.ActualHeight / 2);
-            _visual = new DrawingVisual();
-            _children.Add(_visual);
-        }
-        protected override int VisualChildrenCount => _children.Count;
-        protected override Visual GetVisualChild(int index) => _children[index];
-        public virtual void ClearVisuals() {
-            _children.Clear();
-        }
-
-
-
-    }
-    public class WavefromSelector : BaseVisualHost {
-        public double currentTime;
-        private Visual SelectorVisual = null;
-        public WavefromSelector() : base() {
-
-        }
-        public void OnMouseClicked(Point point, double rawScroll, double heigth) {
-            DrawLineOnClick(point.X + rawScroll, heigth);
-        }
-        private void DrawLineOnClick(double xPos, double heigth) {
-            if (SelectorVisual != null) {
-                _children.Remove(SelectorVisual);
-                SelectorVisual = null;
-            }
-            var visual = new DrawingVisual();
-            using (DrawingContext dc = visual.RenderOpen()) {
-                Pen pen = new Pen(Brushes.Aqua, 5);
-                dc.DrawLine(pen, new Point(xPos, 0), new Point(xPos, heigth));
-                SelectorVisual = visual;
-                _children.Add(SelectorVisual);
-            }
-        }
-        public void MoveLine(double xPos) {
-            this.translateTransform.X = xPos;
-        }
-        public void RecalcZoom(double xPos, double zoom) {
-            this.translateTransform.X = translateTransform.X * zoom;
-        }
-    }
-    public class WaveformVisualHost : BaseVisualHost {
-        private readonly List<DrawingVisual> visuals = new();
-        public int ChildrenCount => visuals.Count;
-        public TimeSpan TimePerOnePoint;
-        public int points = 0;
-        public WaveformVisualHost() : base() {
-
-        }
-        public void AddVisual(DrawingVisual visual) {
-            visuals.Add(visual);
-            _children.Add(visual);
-        }
-        public override void ClearVisuals() {
-            foreach (var visual in visuals) {
-                RemoveVisualChild(visual);
-                RemoveLogicalChild(visual);
-            }
-            visuals.Clear();
-            //base.ClearVisuals();
-        }
-        public void ClampPan() {
-            var tg = (TransformGroup)RenderTransform;
-            var st = (ScaleTransform)tg.Children.OfType<ScaleTransform>().First();
-            var tt = (TranslateTransform)tg.Children.OfType<TranslateTransform>().First();
-            double scaledWidth = points * st.ScaleX;
-            double viewport = ActualWidth;
-            double minX = viewport - scaledWidth;
-            if (minX > 0) minX = 0;
-            tt.X = Math.Min(0, Math.Max(tt.X, minX));
-        }
-        public void DrawWaveform(List<float> waveform, double height, TimeSpan TimePerOnePoint, int blockSize = 5) {
-            var visual = new DrawingVisual();
-            this.TimePerOnePoint = TimePerOnePoint;
-            int localPoints = 0;
-            using (DrawingContext dc = visual.RenderOpen()) {
-                Pen pen = new Pen(Brushes.Blue, 3);
-                for (localPoints = 0; localPoints < waveform.Count; localPoints += blockSize) {
-                    var block = waveform.Skip(localPoints).Take(blockSize).ToArray();
-                    if (block.Length == 0) continue;
-                    float blockMax = block.Max();
-                    float blockMin = block.Min();
-                    double maxHeight = blockMax * height;
-                    double minHeight = blockMin * height;
-                    double x = localPoints;
-                    dc.DrawLine(pen,
-                        new Point(x, height / 2 - maxHeight / 2),
-                        new Point(x, height / 2 + minHeight / 2));
-                }
-            }
-            points = localPoints;
-            AddVisual(visual);
-        }
-    }
-
-    public class TimelineVisualHost : BaseVisualHost {
-        private DrawingVisual timeLineVisual = null;
-        public TimeSpan TimePerOnePoint;
-        public int Points = 0;
-        public TimelineVisualHost() : base() { }
-        public void DrawTimeLine(int points, TimeSpan timePerOnePoint, double zoom = 1, double Height = 100) {
-            this.Points = points;
-            this.TimePerOnePoint = timePerOnePoint;
-            RemoveTimeLine();
-
-            var visual = new DrawingVisual();
-            using (DrawingContext dc = visual.RenderOpen()) {
-                Pen pen = new Pen(Brushes.DarkRed, 1);
-                TimeSpan time = TimeSpan.Zero;
-
-                // выбираем шаг подписей исходя из зума
-                TimeSpan labelStep;
-                if (zoom >= 1.4)
-                    labelStep = TimeSpan.FromMilliseconds(500);
-                else if (zoom >= 1.2)
-                    labelStep = TimeSpan.FromSeconds(1);
-                else if (zoom >= 0.7)
-                    labelStep = TimeSpan.FromSeconds(5);
-                else
-                    labelStep = TimeSpan.FromSeconds(10);
-
-                int labelInterval = (int)(labelStep.Ticks / timePerOnePoint.Ticks);
-                var typeface = new Typeface("Segoe UI");
-
-                for (int i = 0; i < points; i++) {
-                    time += timePerOnePoint;
-                    if (i % labelInterval != 0) continue;
-                    double x = i * zoom;
-
-                    var formattedText = new FormattedText(
-                        time.ToString(@"hh\:mm\:ss\.ffff"),
-                        CultureInfo.InvariantCulture,
-                        FlowDirection.LeftToRight,
-                        typeface,
-                        16,
-                        Brushes.Black,
-                        VisualTreeHelper.GetDpi(this).PixelsPerDip
-                    );
-                    double tx = x - formattedText.Width / 2;
-                    double ty = 0;
-                    dc.DrawText(formattedText, new Point(tx, ty));
-
-                    dc.DrawLine(pen, new Point(x, 20), new Point(x, Height));
-                }
-            }
-            //visual.ContentBounds;
-            timeLineVisual = visual;
-            _children.Add(timeLineVisual);
-        }
-
-        public void RemoveTimeLine() {
-            if (timeLineVisual != null) {
-                _children.Remove(timeLineVisual);
-                timeLineVisual = null;
-            }
-        }
-    }
-    public class MyVisualItem {
-        public DrawingVisual Visual { get; set; }
-        public string Id { get; set; } // фильтрация по нему
-    }
-
     public class RefWfV : FrameworkElement {
         private Dictionary<string, DrawingVisual> visuals = new();
 
@@ -201,7 +27,7 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
         public string filename { get; set; }
         public TimeSpan TotalTime { get; set; }
         public double ZoomFactor { get; set; } = 1.0;
-
+        public event EventHandler<TimeSpan> OnElementClicked;
         public int pointCount => waveformPoints.Count;
 
         private List<float> waveformPoints = new();
@@ -209,17 +35,40 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
         double selectedPoint = 0;
         private TimeSpan TimePerOnePoint => TotalTime / waveformPoints.Count;
 
-        public RefWfV(List<float> waveformPoints, TimeSpan TotalTime) {
-            this.waveformPoints = waveformPoints;
-            this.TotalTime = TotalTime;
+        public RefWfV() {
             this.MouseLeftButtonDown += RefWfV_MouseLeftButtonDown;
         }
+        public void LoadBasicInfo(List<float> waveformPoints, TimeSpan TotalTime) {
+            this.waveformPoints = waveformPoints;
+            this.TotalTime = TotalTime;
+        }
 
+        ~RefWfV() {
+            foreach (var visual in visuals.Values.ToList()) {
+                RemoveVisualChild(visual);
+            }
+            visuals.Clear();
+            InvalidateVisual();
+        }
         public void RefWfV_MouseLeftButtonDown(object sender, MouseButtonEventArgs e) {
             double logicalX = GetLogicalX(e);
             Log.Update($"Click on: , {TimePerOnePoint * (int)logicalX}");
             selectedPoint = logicalX;
+            OnElementClicked?.Invoke(this, TimePerOnePoint * (int)logicalX);
             DrawSelector(logicalX);
+        }
+        DispatcherTimer _positionTimer = new DispatcherTimer();
+        public void SetupMediaPositionTracking(MediaPlayer mediaPlayer) {
+            _positionTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(10)
+            };
+            _positionTimer.Tick += (s, e) =>
+            {
+                var position = mediaPlayer.Position;
+                DrawSelector(position / TimePerOnePoint);
+            };
+            _positionTimer.Start();
         }
 
         private double GetLogicalX(MouseButtonEventArgs e) {
@@ -287,7 +136,7 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
             var visual = new DrawingVisual();
             using (DrawingContext dc = visual.RenderOpen()) {
                 Pen pen = new Pen(Brushes.Blue, 2);
-                
+
                 // Новая логика масштабирования
                 if (ZoomFactor >= 3.0) {
                     density = 1;
@@ -400,6 +249,13 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
             DrawWaveform();
             DrawTimeLine();
         }
+        public void ClearAllElements() {
+            foreach (var visual in visuals.Values.ToList()) {
+                RemoveVisualChild(visual);
+            }
+            visuals.Clear();
+            InvalidateVisual();
+        }
 
         protected override int VisualChildrenCount => visuals.Count;
 
@@ -416,12 +272,7 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
     public partial class WaveFormViewer : UserControl {
         public string FilePath { get; set; }
         public int Resolution { get; set; }
-        WaveformVisualHost host = null;
-        TimelineVisualHost tlHost = null;
-        WavefromSelector Selwf = null;
-
         public int SamplesPerChunk = 5000;
-
         List<float> waveform = new List<float>();
         private void PreloadComponent(FrameworkElement elem) {
             Grid.SetRow(elem, 0);
@@ -435,15 +286,21 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
 
         }
 
-        private RefWfV _Visual;
+        public RefWfV _Visual;
+        private DispatcherTimer _positionTimer;
+
+
 
         public WaveFormViewer() {
             InitializeComponent();
+            MainGrid.Loaded += (s, e) =>
+            {
+                MainGrid.SizeChanged += MainGrid_SizeChanged;
+                _Visual = new RefWfV() { height = MainGrid.RowDefinitions[0].ActualHeight };
+            };
         }
         public void loadWaveForm() {
             waveform.Clear();
-            //host.ClearVisuals();
-            //WaveForm_canvas.Children.Clear();
             using (var reader = new AudioFileReader(FilePath)) {
                 int totalSeconds = (int)reader.TotalTime.TotalSeconds;
                 int totalSamples = reader.WaveFormat.SampleRate * totalSeconds;
@@ -458,16 +315,14 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
                         waveform.Add(max);
                     }
                 }
-                _Visual = new RefWfV(waveform, reader.TotalTime) { height = MainGrid.RowDefinitions[0].ActualHeight };
+                _Visual.LoadBasicInfo(waveform, reader.TotalTime);
+                _Visual.ClearAllElements();
+
                 PreloadComponent(_Visual);
                 _Visual.DrawTimeLine();
                 _Visual.DrawWaveform();
                 SL_XPos.Maximum = waveform.Count;
-                //host.DrawWaveform(waveform, this.ActualHeight, TimeSpan.FromMilliseconds(reader.TotalTime.TotalMilliseconds / waveform.Count));
-                //tlHost.DrawTimeLine(waveform.Count, TimeSpan.FromMilliseconds(reader.TotalTime.TotalMilliseconds / waveform.Count), GetScaleTransform(host).ScaleX, this.ActualHeight);
             }
-
-            //SL_XPos.Maximum = _Visual;
         }
         public double zoom;
         public ScaleTransform st = null;
@@ -517,7 +372,8 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
         }
 
         private void MainGrid_SizeChanged(object sender, SizeChangedEventArgs e) {
-            _Visual.height = MainGrid.ActualHeight;
+            if (_Visual != null)
+                _Visual.height = MainGrid.ActualHeight;
         }
     }
 }
