@@ -16,8 +16,6 @@
         </Grid.RowDefinitions>
         <StackPanel VerticalAlignment="Top" Orientation="Horizontal" Height="36" Margin="0,39,0,0">
             <Button Width="120" Margin="5 2" HorizontalAlignment="Left" Click="Button_Click" Content="Обновить"/>
-            <TextBlock Name="TB_zoom" Width="170" Margin="5 2" Text="Zoom:" VerticalAlignment="Center" HorizontalAlignment="Center"/>
-            <TextBox Name="TB_Samplerate" LostFocus="TB_Samplerate_LostFocus" Width="120" Margin="5 2" VerticalAlignment="Center" HorizontalAlignment="Center"/>
             <Button Width="140" Margin="5 2" HorizontalAlignment="Right" Click="Btn_ExportAudio_Click" Content="Экспорт аудио"/>
         </StackPanel>
         <wfv:WaveFormViewer Panel.ZIndex="-20" x:Name="WaveForm_Viewer" Grid.Row="1"/>
@@ -30,6 +28,7 @@
                     <materialDesign:PackIcon Kind="Pause" />
                 </Button>
                 <Slider TabIndex="3" Width="120" VerticalAlignment="Center" Minimum="0" Value="1" Name="SL_volume" ValueChanged="SL_volume_ValueChanged" Maximum="1"/>
+                <TextBlock Name="TB_length" Margin="10,0,0,0" VerticalAlignment="Center" d:Text="00:00:00 / 00:00:00" />
             </StackPanel>
 
             <Button Name="Btn_keyshortcuts" DockPanel.Dock="Right" HorizontalAlignment="Right" Style="{DynamicResource MaterialDesignFlatButton}" Click="Btn_keyshortcuts_Click">

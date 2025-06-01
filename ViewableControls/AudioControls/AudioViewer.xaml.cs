@@ -23,6 +23,8 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
     /// </summary>
     public partial class AudioViewer : UserControl {
 
+        private DispatcherTimer _positionTimer;
+
         public AudioViewer(Item LoadedFile) {
             MediaPlayer = new MediaPlayer();
             InitializeComponent();
@@ -30,6 +32,13 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
             MediaPlayer.Open(new Uri(LoadedFile.Path));
             Loaded += AudioViewer_Loaded;
             Unloaded += AudioViewer_Unloaded;
+            
+            // Инициализация таймера для обновления позиции
+            _positionTimer = new DispatcherTimer
+            {
+                Interval = TimeSpan.FromMilliseconds(100)
+            };
+            _positionTimer.Tick += PositionTimer_Tick;
         }
 
         private void _Visual_OnElementClicked(object sender, TimeSpan e) {
@@ -40,6 +49,7 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
 
         private void AudioViewer_Unloaded(object sender, RoutedEventArgs e) {
             ViewableController.FileLoaded -= ViewableController_FileLoaded;
+            _positionTimer.Stop();
         }
 
         private void ViewableController_FileLoaded(object sender, FileLoadedEventArgs e) {
@@ -60,17 +70,44 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
             WaveForm_Viewer.SamplesPerChunk = int.Parse((sender as TextBox).Text);
         }
 
+        private void PositionTimer_Tick(object sender, EventArgs e) {
+            if (MediaPlayer.NaturalDuration.HasTimeSpan) {
+                var position = MediaPlayer.Position;
+                var duration = MediaPlayer.NaturalDuration.TimeSpan;
+                TB_length.Text = $"{position:hh\\:mm\\:ss} / {duration:hh\\:mm\\:ss}";
+            }
+        }
+
+        private void SL_duration_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {
+            if (!this.IsLoaded || MediaPlayer == null) return;
+            if (MediaPlayer.NaturalDuration.HasTimeSpan) {
+                var duration = MediaPlayer.NaturalDuration.TimeSpan;
+                var newPosition = TimeSpan.FromSeconds(e.NewValue * duration.TotalSeconds);
+                MediaPlayer.Position = newPosition;
+            }
+        }
+
+        private void SL_duration_DragStarted(object sender, System.Windows.Controls.Primitives.DragStartedEventArgs e) {
+            _positionTimer.Stop();
+        }
+
+        private void SL_duration_DragCompleted(object sender, System.Windows.Controls.Primitives.DragCompletedEventArgs e) {
+            _positionTimer.Start();
+        }
 
         MediaPlayer MediaPlayer;
         private void Btn_Play_Click(object sender, RoutedEventArgs e) {
             MediaPlayer.Play();
             WaveForm_Viewer._Visual.SetupMediaPositionTracking(MediaPlayer);
             WaveForm_Viewer._Visual.OnElementClicked += _Visual_OnElementClicked;
+            _positionTimer.Start();
         }
 
         private void Btn_Stop_Click(object sender, RoutedEventArgs e) {
-            if (MediaPlayer.CanPause)
+            if (MediaPlayer.CanPause) {
                 MediaPlayer.Pause();
+                _positionTimer.Stop();
+            }
         }
 
         private void SL_volume_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e) {

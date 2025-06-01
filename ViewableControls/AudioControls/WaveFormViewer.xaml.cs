@@ -73,21 +73,21 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
 
         public double GetLogicalX(MouseButtonEventArgs e) {
             var clickPoint = e.GetPosition(this);
-
             var waveformVisual = visuals["waveform"];
             var tt = waveformVisual.Transform as TranslateTransform ?? new TranslateTransform();
-
+            
+            // Учитываем смещение и зум при расчете логической позиции
             double logicalX = (clickPoint.X - tt.X) / ZoomFactor;
-            return logicalX;
+            return Math.Max(0, Math.Min(logicalX, waveformPoints.Count - 1));
         }
         public double GetLogicalX(MouseEventArgs e) {
             var clickPoint = e.GetPosition(this);
-
             var waveformVisual = visuals["waveform"];
             var tt = waveformVisual.Transform as TranslateTransform ?? new TranslateTransform();
-
+            
+            // Учитываем смещение и зум при расчете логической позиции
             double logicalX = (clickPoint.X - tt.X) / ZoomFactor;
-            return logicalX;
+            return Math.Max(0, Math.Min(logicalX, waveformPoints.Count - 1));
         }
 
         public void OnDrag(MouseEventArgs e) {
@@ -98,15 +98,12 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
         }
 
         public void DrawSelector(double logicalX) {
-            //if (visuals.TryGetValue("selector", out var old)) {
-            //    RemoveVisualChild(old);
-            //    visuals.Remove("selector");
-            //}
             var visual = new DrawingVisual();
             var waveformVisual = visuals["waveform"];
             visual.Transform = waveformVisual.Transform;
             using (var dc = visual.RenderOpen()) {
                 var pen = new Pen(Brushes.DarkKhaki, 3);
+                // Учитываем зум при отрисовке селектора
                 double screenX = logicalX * ZoomFactor;
                 dc.DrawLine(pen,
                     new Point(screenX, 0),
@@ -122,8 +119,9 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
             using (var dc = visual.RenderOpen()) {
                 var brush = new SolidColorBrush(Color.FromArgb(128, 100, 100, 100));
                 var pen = new Pen(Brushes.Transparent, 0);
-                var p1 = new Point(startPoint, height);
-                var p2 = new Point(endPoint, 0);
+                // Учитываем зум при отрисовке выделения
+                var p1 = new Point(startPoint * ZoomFactor, height);
+                var p2 = new Point(endPoint * ZoomFactor, 0);
                 Debug.WriteLine($"{p1} : {p2}");
                 dc.DrawRectangle(brush, pen, new Rect(p1, p2));
             }
@@ -194,7 +192,7 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
                 Pen pen = new Pen(Brushes.DarkRed, 1);
                 TimeSpan time = TimeSpan.Zero;
 
-                // Новая логика масштабирования временных меток
+                // Улучшенная логика масштабирования временных меток
                 TimeSpan labelStep;
                 if (ZoomFactor >= 3.0)
                     labelStep = TimeSpan.FromMilliseconds(100);
@@ -211,10 +209,12 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
 
                 int labelInterval = (int)(labelStep.Ticks / TimePerOnePoint.Ticks);
                 var typeface = new Typeface("Segoe UI");
+                double lastTextEnd = 0;
 
                 for (int i = 0; i < waveformPoints.Count; i++) {
                     time += TimePerOnePoint;
                     if (i % labelInterval != 0) continue;
+                    
                     double x = i * ZoomFactor;
                     var formattedText = new FormattedText(
                         time.ToString(@"hh\:mm\:ss\.ffff"),
@@ -226,11 +226,14 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
                         VisualTreeHelper.GetDpi(this).PixelsPerDip
                     );
 
+                    // Проверяем, не перекрывается ли текст
                     double tx = x - formattedText.Width / 2;
-                    double ty = 0;
-                    dc.DrawText(formattedText, new Point(tx, ty));
-
-                    dc.DrawLine(pen, new Point(x, 20), new Point(x, this.height));
+                    if (tx > lastTextEnd) {
+                        double ty = 0;
+                        dc.DrawText(formattedText, new Point(tx, ty));
+                        dc.DrawLine(pen, new Point(x, 20), new Point(x, this.height));
+                        lastTextEnd = tx + formattedText.Width;
+                    }
                 }
             }
 
@@ -379,7 +382,6 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
             _Visual.ChangeScaleX(SL_XZoom.Value);
             SL_XPos.Maximum = _Visual.pointCount * SL_XZoom.Value;
             Debug.Write(SL_XZoom.Value + "\n");
-            TB_zoomtext.Text = $"Zoom: {SL_XZoom.Value}";
         }
 
         private void MainGrid_SizeChanged(object sender, SizeChangedEventArgs e) {
