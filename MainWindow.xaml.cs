@@ -421,13 +421,13 @@ namespace ClipsOrganizer {
         private void Btn_settings_Click(object sender, RoutedEventArgs e) {
             Window window = new SettingsWindow(GlobalSettings.Instance, CurrentProfile);
             window.ShowDialog();
-            if (!ProfileManager.LoadAllProfiles().Exists(p => p == CurrentProfile.ProfileName)) {
+            if (ProfileManager.LoadAllProfiles().Exists(p => p == CurrentProfile.ProfileName)) {
                 CurrentProfile = FileSerializer.ReadFile<Profile>($"./Profiles/{ProfileManager.LoadAllProfiles().First()}.json");
                 FileSerializer.WriteAndCreateBackupFile(CurrentProfile, CurrentProfile.ProfilePath);
                 UpdateItems();
             }
-            CB_Profile.SelectedItem = CurrentProfile.ProfileName;
             CB_Profile.ItemsSource = ProfileManager.LoadAllProfiles();
+            CB_Profile.SelectedItem = CurrentProfile.ProfileName;
         }
 
         public void UpdateItems() {

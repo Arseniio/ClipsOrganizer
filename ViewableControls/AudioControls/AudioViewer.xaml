@@ -18,6 +18,7 @@
             <Button Width="120" Margin="5 2" HorizontalAlignment="Left" Click="Button_Click" Content="Обновить"/>
             <TextBlock Name="TB_zoom" Width="170" Margin="5 2" Text="Zoom:" VerticalAlignment="Center" HorizontalAlignment="Center"/>
             <TextBox Name="TB_Samplerate" LostFocus="TB_Samplerate_LostFocus" Width="120" Margin="5 2" VerticalAlignment="Center" HorizontalAlignment="Center"/>
+            <Button Width="140" Margin="5 2" HorizontalAlignment="Right" Click="Btn_ExportAudio_Click" Content="Экспорт аудио"/>
         </StackPanel>
         <wfv:WaveFormViewer Panel.ZIndex="-20" x:Name="WaveForm_Viewer" Grid.Row="1"/>
         <DockPanel Grid.Row="2" VerticalAlignment="Top" Margin="10" Height="32">

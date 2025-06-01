@@ -17,6 +17,7 @@ using System.Runtime;
 using System.Diagnostics;
 using Microsoft.WindowsAPICodePack.Shell;
 using ClipsOrganizer.Model;
+using ClipsOrganizer.Classes;
 
 namespace ClipsOrganizer.Settings {
     [Serializable]
@@ -27,6 +28,8 @@ namespace ClipsOrganizer.Settings {
         public VideoCodec LastUsedCodec { get; set; }
         public string LastUsedQuality { get; set; }
         public string LastUsedEncoderPath { get; set; }
+        public ExportAudioFormat LastUsedAudioFormat { get; set; }
+        public int LastUsedAudioBitrate { get; set; }
         public bool OpenFolderAfterEncoding { get; set; }
         public Model.Sorts SortMethod { get; set; }
         // Image settings
@@ -44,6 +47,18 @@ namespace ClipsOrganizer.Settings {
             Codec = ImageFormat.JPEG,
             CompressionLevel = 50,
         };
+
+        public ExportFileInfoAudio DefaultAudioExport { get; set; } = new ExportFileInfoAudio
+        {
+            AudioSampleRate = 44100,
+            outputFormat = ExportAudioFormat.mp3,
+            AudioBitrate = 128,
+            AudioChannels = 2,
+            NormalizeAudio = true,
+            TrimStart = TimeSpan.Zero,
+            TrimEnd = TimeSpan.Zero
+        };
+
         public ExportFileInfoVideo DefaultVideoExport { get; set; } = new ExportFileInfoVideo
         {
             // Video Settings
@@ -112,10 +127,8 @@ namespace ClipsOrganizer.Settings {
             this.LastUsedCodec = ChangedSettings.LastUsedCodec;
             this.LastUsedEncoderPath = ChangedSettings.LastUsedEncoderPath;
             this.LastUsedQuality = ChangedSettings.LastUsedQuality;
+            this.LastUsedAudioFormat = ChangedSettings.LastUsedAudioFormat;
+            this.LastUsedAudioBitrate = ChangedSettings.LastUsedAudioBitrate;
         }
-
-
     }
-
-
 }

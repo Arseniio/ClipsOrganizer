@@ -12,9 +12,9 @@
         DragEnter="Window_DragEnter"
         Drop="Window_Drop"
         Style="{StaticResource MaterialDesignWindow}"
-    Title="ClipsOrganizer" Height="550" Width="1018" Closing="Window_Closing"
+        Icon="/icon/folder_multiple.png"
+        Title="ClipsOrganizer" Height="550" Width="1018" Closing="Window_Closing"
         KeyDown="Window_KeyDown">
-
     <Grid Name="MainGrid" >
         <Grid.RowDefinitions>
             <RowDefinition Height="22.35"/>

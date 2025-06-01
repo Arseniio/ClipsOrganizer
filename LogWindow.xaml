@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ClipsOrganizer"
         mc:Ignorable="d"
+        Icon="/icon/description.png"
         MinHeight="130" MinWidth="505"
         Title="Окно лога" Height="525" Width="505">
     <Grid>

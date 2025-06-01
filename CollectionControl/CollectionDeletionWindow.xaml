@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ClipsOrganizer"
         mc:Ignorable="d"
+        Icon="/icon/folder_delete.png"
         Title="Удаление коллекции" Height="188" Width="390"
         FontSize="22px">
     <Grid>

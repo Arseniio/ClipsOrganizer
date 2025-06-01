@@ -66,6 +66,7 @@ namespace ClipsOrganizer.SettingsControls {
                 return;
             }
             FileSerializer.WriteAndCreateBackupFile(currentProfile, currentProfile.ProfilePath);
+
             LB_Profiles.ItemsSource = ProfileManager.LoadAllProfiles();
         }
     }

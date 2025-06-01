@@ -81,5 +81,14 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
         private void Btn_keyshortcuts_Click(object sender, RoutedEventArgs e) {
 
         }
+
+        private void Btn_ExportAudio_Click(object sender, RoutedEventArgs e)
+        {
+            var trimStart = WaveForm_Viewer.TrimStart ?? TimeSpan.Zero;
+            var trimEnd = WaveForm_Viewer.TrimEnd ?? TimeSpan.Zero;
+            var audioPath = WaveForm_Viewer.FilePath;
+            var wnd = new ClipsOrganizer.AudioRendererWindow(new Uri(audioPath), trimStart, trimEnd);
+            wnd.Show();
+        }
     }
 }

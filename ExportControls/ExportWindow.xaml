@@ -6,6 +6,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:ClipsOrganizer"
         mc:Ignorable="d"
+        Icon="/icon/file_upload.png"
         Closed="Window_Closed"
         Title="Окно экспорта" Height="460" Width="900">
     <Grid>

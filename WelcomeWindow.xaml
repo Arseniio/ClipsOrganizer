@@ -7,6 +7,7 @@
         xmlns:local="clr-namespace:ClipsOrganizer"
         xmlns:conv="clr-namespace:ClipsOrganizer.Converter"
         mc:Ignorable="d"
+        Icon="/icon/home.png"
         Title="Первоначальная настройка" Height="400" Width="600" WindowStyle="ToolWindow">
     <Window.Resources>
         <conv:BoolToVisibilityConverter x:Key="BoolToVisibility"/>

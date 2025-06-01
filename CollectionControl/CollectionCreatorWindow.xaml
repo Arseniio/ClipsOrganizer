@@ -6,6 +6,7 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:local="clr-namespace:ClipsOrganizer"
         mc:Ignorable="d"
+        Icon="/icon/create_new_folder.png"
         Title="Создание/редактирование коллекции" Height="300" Width="411"
         ResizeMode="NoResize"
         FontSize="20px">

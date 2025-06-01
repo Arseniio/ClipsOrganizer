@@ -32,8 +32,8 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
 
         private List<float> waveformPoints = new();
 
-        double selectedPoint = 0;
-        private TimeSpan TimePerOnePoint => TotalTime / waveformPoints.Count;
+        public double selectedPoint = 0;
+        public TimeSpan TimePerOnePoint => TotalTime / waveformPoints.Count;
 
         public RefWfV() {
             this.MouseLeftButtonDown += RefWfV_MouseLeftButtonDown;
@@ -71,7 +71,7 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
             _positionTimer.Start();
         }
 
-        private double GetLogicalX(MouseButtonEventArgs e) {
+        public double GetLogicalX(MouseButtonEventArgs e) {
             var clickPoint = e.GetPosition(this);
 
             var waveformVisual = visuals["waveform"];
@@ -80,7 +80,7 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
             double logicalX = (clickPoint.X - tt.X) / ZoomFactor;
             return logicalX;
         }
-        private double GetLogicalX(MouseEventArgs e) {
+        public double GetLogicalX(MouseEventArgs e) {
             var clickPoint = e.GetPosition(this);
 
             var waveformVisual = visuals["waveform"];
@@ -274,6 +274,8 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
         public int Resolution { get; set; }
         public int SamplesPerChunk = 5000;
         List<float> waveform = new List<float>();
+        public TimeSpan? TrimStart { get; set; }
+        public TimeSpan? TrimEnd { get; set; }
         private void PreloadComponent(FrameworkElement elem) {
             Grid.SetRow(elem, 0);
             Grid.SetColumn(elem, 0);
@@ -352,6 +354,15 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
                 double distance = Math.Sqrt(dx * dx + dy * dy);
                 if (distance >= 50) {
                     _Visual.OnDrag(e);
+                    // Устанавливаем значения выделения
+                    double start = _Visual.selectedPoint;
+                    double end = _Visual.GetLogicalX(e);
+                    if (_Visual.TotalTime != TimeSpan.Zero && _Visual.pointCount > 0) {
+                        var t1 = TimeSpan.FromTicks((long)(_Visual.TimePerOnePoint.Ticks * Math.Min(start, end)));
+                        var t2 = TimeSpan.FromTicks((long)(_Visual.TimePerOnePoint.Ticks * Math.Max(start, end)));
+                        TrimStart = t1;
+                        TrimEnd = t2;
+                    }
                 }
             }
         }

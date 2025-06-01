@@ -32,6 +32,17 @@
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
   </PropertyGroup>
   <ItemGroup>
+    <None Remove="icon\audiotrack.png" />
+    <None Remove="icon\create_new_folder.png" />
+    <None Remove="icon\description.png" />
+    <None Remove="icon\file_upload.png" />
+    <None Remove="icon\folder_delete.png" />
+    <None Remove="icon\folder_multiple.png" />
+    <None Remove="icon\home.png" />
+    <None Remove="icon\settings.png" />
+    <None Remove="icon\videocam.png" />
+  </ItemGroup>
+  <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
 
@@ -55,6 +66,32 @@
     <PackageReference Include="MouseKeyHook" Version="5.7.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Xabe.FFmpeg" Version="6.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <Resource Include="icon\create_new_folder.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="icon\description.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="icon\file_upload.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="icon\folder_delete.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="icon\folder_multiple.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="icon\home.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="icon\settings.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
+    <Resource Include="icon\videocam.png">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Resource>
   </ItemGroup>
   <Import Project="packages\MaterialDesignThemes.5.1.0\build\MaterialDesignThemes.targets" Condition="Exists('packages\MaterialDesignThemes.5.1.0\build\MaterialDesignThemes.targets')" />
 </Project>
