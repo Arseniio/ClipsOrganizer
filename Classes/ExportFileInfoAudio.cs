@@ -19,6 +19,24 @@ namespace ClipsOrganizer.Classes {
         public TimeSpan TrimStart { get; set; }
         public TimeSpan TrimEnd { get; set; }
 
+        public async Task<string> GetAudioParams() {
+            var sb = new StringBuilder();
+            sb.AppendLine("🎵 Параметры аудио файла");
+            sb.AppendLine($"   • Формат: {outputFormat}");
+            sb.AppendLine($"   • Битрейт: {AudioBitrate} kbps");
+            sb.AppendLine($"   • Частота дискретизации: {AudioSampleRate} Hz");
+            sb.AppendLine($"   • Каналы: {AudioChannels}");
+            sb.AppendLine($"   • Нормализация: {(NormalizeAudio ? "Включена" : "Выключена")}");
+            
+            if (TrimStart != TimeSpan.Zero || TrimEnd != TimeSpan.Zero) {
+                sb.AppendLine("🎧 Обрезка аудио");
+                sb.AppendLine($"   • Начало: {TrimStart:hh\\:mm\\:ss\\.fff}");
+                sb.AppendLine($"   • Конец: {TrimEnd:hh\\:mm\\:ss\\.fff}");
+                sb.AppendLine($"   • Длительность: {(TrimEnd - TrimStart):hh\\:mm\\:ss\\.fff}");
+            }
+
+            return sb.ToString();
+        }
     }
     public enum ExportAudioFormat {
         mp3,

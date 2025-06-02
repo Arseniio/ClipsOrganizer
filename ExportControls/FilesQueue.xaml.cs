@@ -1,4 +1,5 @@
-﻿using ClipsOrganizer.Model;
+﻿using ClipsOrganizer.Classes;
+using ClipsOrganizer.Model;
 using ClipsOrganizer.Settings;
 using ClipsOrganizer.ViewableControls.ImageControls;
 using ClipsOrganizer.ViewableControls.VideoControls;
@@ -91,6 +92,35 @@ namespace ClipsOrganizer.ExportControls {
                 }
 
                 UC_Queue_Actions.Content = new ImageActions(selectedImage);
+            }
+            else if (LB_Queue.SelectedItem is ExportFileInfoAudio selectedAudio) {
+                var formattedText = await selectedAudio.GetAudioParams();
+                TB_Data.Inlines.Clear();
+
+                foreach (var line in formattedText.Split(new[] { Environment.NewLine }, StringSplitOptions.None)) {
+                    if (line.Contains("🎵") || line.Contains("🔊") || line.Contains("🎧")) {
+                        TB_Data.Inlines.Add(new Run(line)
+                        {
+                            FontWeight = FontWeights.Bold,
+                            Foreground = (Brush)FindResource("MaterialDesignBody")
+                        });
+                    }
+                    else if (line.StartsWith("   ") || line.StartsWith("   •") || line.StartsWith("   ◈")) {
+                        TB_Data.Inlines.Add(new Run(line)
+                        {
+                            Foreground = (Brush)FindResource("MaterialDesignBody")
+                        });
+                    }
+                    else {
+                        TB_Data.Inlines.Add(new Run(line)
+                        {
+                            Foreground = (Brush)FindResource("MaterialDesignBodyLight")
+                        });
+                    }
+                    TB_Data.Inlines.Add(new LineBreak());
+                }
+
+                //UC_Queue_Actions.Content = new AudioActions(selectedAudio);
             }
         }
         private CancellationTokenSource cancellationToken = new CancellationTokenSource();

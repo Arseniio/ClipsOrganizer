@@ -1,4 +1,5 @@
-﻿using ClipsOrganizer.Model;
+﻿using ClipsOrganizer.Classes;
+using ClipsOrganizer.Model;
 using ClipsOrganizer.Profiles;
 using ClipsOrganizer.Settings;
 
@@ -235,6 +236,61 @@ namespace ClipsOrganizer {
 
         public void Dispose() {
             GC.SuppressFinalize(this);
+        }
+
+        public async Task<bool> StartAudioEncodingAsync(
+            ExportFileInfoAudio audioInfo,
+            string outputPath,
+            CancellationToken cancellationToken) {
+            try {
+                var mediaInfo = await FFmpeg.GetMediaInfo(audioInfo.Path);
+                var audioStream = mediaInfo.AudioStreams.FirstOrDefault();
+                TimeSpan duration = audioInfo.TrimStart != TimeSpan.Zero && audioInfo.TrimEnd != TimeSpan.Zero
+                    ? audioInfo.TrimEnd - audioInfo.TrimStart
+                    : mediaInfo.Duration;
+
+                IConversion conversion = FFmpeg.Conversions.New()
+                    .SetPreset(ConversionPreset.VeryFast)
+                    .SetOutput(outputPath)
+                    .SetOverwriteOutput(true);
+
+                if (audioInfo.TrimStart != TimeSpan.Zero)
+                    conversion.SetSeek(audioInfo.TrimStart);
+
+                if (audioInfo.TrimEnd != TimeSpan.Zero && audioInfo.TrimStart != TimeSpan.Zero)
+                    conversion.AddParameter($"-to {audioInfo.TrimEnd:hh\\:mm\\:ss\\.fff}");
+
+                if (audioStream != null) {
+                    var stream = audioStream
+                        .SetCodec(audioInfo.outputFormat switch {
+                            ExportAudioFormat.mp3 => Xabe.FFmpeg.AudioCodec.mp3,
+                            ExportAudioFormat.wav => Xabe.FFmpeg.AudioCodec.pcm_s16le,
+                            _ => Xabe.FFmpeg.AudioCodec.mp3
+                        })
+                        .SetBitrate(audioInfo.AudioBitrate * 1000)
+                        .SetSampleRate(audioInfo.AudioSampleRate)
+                        .SetChannels(audioInfo.AudioChannels);
+
+                    conversion.AddStream(stream);
+
+                    if (audioInfo.NormalizeAudio) {
+                        conversion.AddParameter("-af loudnorm=I=-16:TP=-1.5:LRA=11");
+                    }
+                }
+
+                conversion.OnProgress += (sender, args) =>
+                {
+                    double progress = args.Duration.TotalSeconds / duration.TotalSeconds * 100;
+                    OnEncodeProgressChanged?.Invoke((int)progress);
+                };
+
+                await conversion.Start(cancellationToken: cancellationToken);
+                return true;
+            }
+            catch (ConversionException ex) {
+                Log.Update(ex.Message.ToString());
+                return false;
+            }
         }
     }
 }

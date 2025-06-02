@@ -182,6 +182,7 @@ namespace ClipsOrganizer {
 
             ExportFileInfoAudio exportInfo = new ExportFileInfoAudio {
                 Path = AudioPath.LocalPath,
+                Name = Path.GetFileName(AudioPath.LocalPath),
                 OutputPath = getNextFileName(Path.GetDirectoryName(AudioPath.LocalPath)),
                 AudioBitrate = bitrate,
                 AudioSampleRate = sampleRate,
@@ -192,8 +193,30 @@ namespace ClipsOrganizer {
                 TrimEnd = isTrimmed ? endTime : TimeSpan.Zero
             };
 
-            // TODO: Здесь будет реализация экспорта аудио
-            Log.Update("Функция экспорта аудио будет реализована позже.");
+            try {
+                Btn_Export.IsEnabled = false;
+                var ffmpegManager = GlobalSettings.Instance.FFmpegInit();
+                bool success = await ffmpegManager.StartAudioEncodingAsync(exportInfo, exportInfo.OutputPath, CancellationToken.None);
+                
+                if (success) {
+                    Log.Update($"Аудио успешно экспортировано: {Path.GetFileName(exportInfo.OutputPath)}");
+                    if (CB_OpenFolderAfterEncoding.IsChecked ?? false) {
+                        System.Diagnostics.Process.Start("explorer.exe", Path.GetDirectoryName(exportInfo.OutputPath));
+                    }
+                }
+                else {
+                    Log.Update($"Ошибка при экспорте аудио: {Path.GetFileName(AudioPath.LocalPath)}");
+                }
+            }
+            catch (Exception ex) {
+                Log.Update($"Ошибка при экспорте аудио: {ex.Message}");
+                MessageBox.Show($"Произошла ошибка при экспорте: {ex.Message}", "Ошибка", MessageBoxButton.OK, MessageBoxImage.Error);
+            }
+            finally {
+                Btn_Export.IsEnabled = true;
+            }
+
+            this.Close();
         }
 
         public void AudioRendererWindow_SliderSelectionChanged(TimeSpan start, TimeSpan? end) {

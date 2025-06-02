@@ -12,6 +12,7 @@ using System.Threading;
 using System.Windows;
 using ImageMagick;
 using SharpCompress.Common;
+using ClipsOrganizer.Classes;
 
 namespace ClipsOrganizer.Settings {
 
@@ -177,6 +178,9 @@ namespace ClipsOrganizer.Settings {
                 else if (fileInfo is ExportFileInfoImage imageInfo) {
                     return await ExportImageFile(imageInfo, destinationPath, cancellationToken);
                 }
+                else if (fileInfo is ExportFileInfoAudio audioInfo) {
+                    return await ExportAudioFile(audioInfo, destinationPath, cancellationToken);
+                }
                 else {
                     ExportGenericFile(fileInfo, destinationPath, cancellationToken);
                 }
@@ -310,6 +314,30 @@ namespace ClipsOrganizer.Settings {
                     Log.Update($"Ошибка при экспорте изображения: {ex.Message}");
                     return false;
                 }
+        }
+
+        private async Task<bool> ExportAudioFile(ExportFileInfoAudio audioInfo, string destinationPath, CancellationToken cancellationToken) {
+            Log.Update($"Начало экспорта аудио: {Path.GetFileName(audioInfo.Path)}");
+
+            try {
+                var ffmpegManager = GlobalSettings.Instance.FFmpegInit();
+                string outputPath = Path.Combine(destinationPath, audioInfo.Name);
+
+                bool success = await ffmpegManager.StartAudioEncodingAsync(audioInfo, outputPath, cancellationToken);
+                
+                if (success) {
+                    Log.Update($"Аудио успешно экспортировано: {Path.GetFileName(outputPath)}");
+                }
+                else {
+                    Log.Update($"Ошибка при экспорте аудио: {Path.GetFileName(audioInfo.Path)}");
+                }
+
+                return success;
+            }
+            catch (Exception ex) {
+                Log.Update($"Ошибка при экспорте аудио: {ex.Message}");
+                return false;
+            }
         }
 
         private async Task<bool> ExportGenericFile(ExportFileInfoBase fileInfo, string destinationPath, CancellationToken cancellationToken) {
