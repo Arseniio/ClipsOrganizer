@@ -6,7 +6,7 @@
         xmlns:local="clr-namespace:ClipsOrganizer"
         mc:Ignorable="d"
         Icon="/icon/settings.png"
-        Title="SettingsWindow" Height="450" Width="800" Closing="Window_Closing">
+        Title="Окно настроек" Height="450" Width="800" Closing="Window_Closing">
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="200" />

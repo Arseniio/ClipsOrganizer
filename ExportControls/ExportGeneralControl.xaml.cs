@@ -26,14 +26,14 @@ namespace ClipsOrganizer.ExportControls {
         public ExportGeneralControl() {
             InitializeComponent();
             DataContext = GlobalSettings.Instance.ExportSettings;
-            SL_ExportFileNameTepmlate.IsEnabled = SL_FileNameTemplate.IsEnabled = GlobalSettings.Instance.ExportSettings.UseRegex;
+            //SL_ExportFileNameTepmlate.IsEnabled = SL_FileNameTemplate.IsEnabled = GlobalSettings.Instance.ExportSettings.UseRegex;
         }
 
         private void CB_UseRegex_CheckedChanged(object sender, RoutedEventArgs e) {
-            if (sender is CheckBox checkBox) {
-                SL_FileNameTemplate.IsEnabled = checkBox.IsChecked == true;
-                SL_ExportFileNameTepmlate.IsEnabled = checkBox.IsChecked == true;
-            }
+            //if (sender is CheckBox checkBox) {
+            //    SL_FileNameTemplate.IsEnabled = checkBox.IsChecked == true;
+            //    SL_ExportFileNameTepmlate.IsEnabled = checkBox.IsChecked == true;
+            //}
 
         }
 
@@ -60,9 +60,9 @@ namespace ClipsOrganizer.ExportControls {
         }
 
         private void CB_EnableLogging_CheckedChanged(object sender, RoutedEventArgs e) {
-            if (sender is CheckBox checkBox) {
-                SP_LogPath.IsEnabled = checkBox.IsChecked == true;
-            }
+            //if (sender is CheckBox checkBox) {
+            //    SP_LogPath.IsEnabled = checkBox.IsChecked == true;
+            //}
         }
         private void TB_TargetFolder_PreviewKeyUp(object sender, KeyEventArgs e) {
             InputValidator.IsFolderExists((sender as TextBox).Text, sender);

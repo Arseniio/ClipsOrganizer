@@ -45,9 +45,10 @@
 
             <UniformGrid Grid.Row="1" Rows="1">
                 <UniformGrid.Resources>
-                    <Style TargetType="Button" >
+                    <Style TargetType="Button" BasedOn="{StaticResource MaterialDesignRaisedButton}">
                         <Setter Property="Margin" Value="5 2 5 2" />
-                        <Setter Property="Width" Value="125"/>
+                        <Setter Property="Width" Value="160"/>
+                        <Setter Property="Padding" Value="10 0"/>
                     </Style>
                 </UniformGrid.Resources>
                 <Button Content="Добавить профиль" Name="Btn_AddProfile" Click="Btn_AddProfile_Click"/>

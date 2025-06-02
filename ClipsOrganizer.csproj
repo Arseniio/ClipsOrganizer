@@ -32,6 +32,12 @@
     <CheckForOverflowUnderflow>False</CheckForOverflowUnderflow>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="obj124\**" />
+    <EmbeddedResource Remove="obj124\**" />
+    <None Remove="obj124\**" />
+    <Page Remove="obj124\**" />
+  </ItemGroup>
+  <ItemGroup>
     <None Remove="icon\audiotrack.png" />
     <None Remove="icon\create_new_folder.png" />
     <None Remove="icon\description.png" />
