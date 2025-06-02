@@ -1,6 +1,7 @@
 ﻿using ClipsOrganizer.Classes;
 using ClipsOrganizer.Model;
 using ClipsOrganizer.Settings;
+using ClipsOrganizer.ViewableControls.AudioControls;
 using ClipsOrganizer.ViewableControls.ImageControls;
 using ClipsOrganizer.ViewableControls.VideoControls;
 using System;
@@ -120,7 +121,8 @@ namespace ClipsOrganizer.ExportControls {
                     TB_Data.Inlines.Add(new LineBreak());
                 }
 
-                //UC_Queue_Actions.Content = new AudioActions(selectedAudio);
+                UC_Queue_Actions.Content = new AudioActions(selectedAudio);
+                UC_Queue_Actions.DataContext = selectedAudio;
             }
         }
         private CancellationTokenSource cancellationToken = new CancellationTokenSource();

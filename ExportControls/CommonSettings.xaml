@@ -168,6 +168,49 @@
                     </Grid>
                 </ScrollViewer>
             </TabItem>
+            <TabItem Name="TI_Audio" Header="Аудио">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+                    <Grid>
+                        <StackPanel>
+                            <!-- Audio Format Settings -->
+                            <GroupBox Header="Настройки формата" materialDesign:GroupBoxAssist.HeaderPadding="8" Margin="0 0 0 10">
+                                <StackPanel>
+                                    <ComboBox Name="CB_AudioFormat" 
+                                            materialDesign:HintAssist.Hint="Формат аудио"
+                                            SelectedItem="{Binding outputFormat}"
+                                            Style="{StaticResource MaterialDesignFloatingHintComboBox}"
+                                            Margin="0 0 0 10"/>
+
+                                    <TextBox materialDesign:HintAssist.Hint="Битрейт (kbps)"
+                                           Text="{Binding AudioBitrate}"
+                                           Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                           Margin="0 0 0 10"
+                                           LostFocus="ValidateNumberInput"
+                                           TextChanged="ValidateNumberInput"/>
+
+                                    <TextBox materialDesign:HintAssist.Hint="Частота дискретизации (Hz)"
+                                           Text="{Binding AudioSampleRate}"
+                                           Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                           Margin="0 0 0 10"
+                                           LostFocus="ValidateNumberInput"
+                                           TextChanged="ValidateNumberInput"/>
+
+                                    <TextBox materialDesign:HintAssist.Hint="Количество каналов"
+                                           Text="{Binding AudioChannels}"
+                                           Style="{StaticResource MaterialDesignFloatingHintTextBox}"
+                                           Margin="0 0 0 10"
+                                           LostFocus="ValidateNumberInput"
+                                           TextChanged="ValidateNumberInput"/>
+
+                                    <CheckBox Content="Нормализация звука"
+                                            IsChecked="{Binding NormalizeAudio}"
+                                            Margin="0 0 0 10"/>
+                                </StackPanel>
+                            </GroupBox>
+                        </StackPanel>
+                    </Grid>
+                </ScrollViewer>
+            </TabItem>
         </TabControl>
     </Grid>
 </UserControl>

@@ -323,10 +323,18 @@ namespace ClipsOrganizer.Settings {
                 var ffmpegManager = GlobalSettings.Instance.FFmpegInit();
                 string outputPath = Path.Combine(destinationPath, audioInfo.Name);
 
+                // Проверяем, нужно ли обрезать файл
+                if (audioInfo.TrimStart > TimeSpan.Zero || audioInfo.TrimEnd > TimeSpan.Zero) {
+                    Log.Update($"Обрезка аудио: начало {audioInfo.TrimStart}, конец {audioInfo.TrimEnd}");
+                }
+
                 bool success = await ffmpegManager.StartAudioEncodingAsync(audioInfo, outputPath, cancellationToken);
                 
                 if (success) {
                     Log.Update($"Аудио успешно экспортировано: {Path.GetFileName(outputPath)}");
+                    if (GlobalSettings.Instance.OpenFolderAfterEncoding) {
+                        System.Diagnostics.Process.Start("explorer.exe", Path.GetDirectoryName(outputPath));
+                    }
                 }
                 else {
                     Log.Update($"Ошибка при экспорте аудио: {Path.GetFileName(audioInfo.Path)}");

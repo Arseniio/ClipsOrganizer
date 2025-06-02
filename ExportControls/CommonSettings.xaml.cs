@@ -1,4 +1,5 @@
-﻿using ClipsOrganizer.Model;
+﻿using ClipsOrganizer.Classes;
+using ClipsOrganizer.Model;
 using ClipsOrganizer.Settings;
 using DataValidation;
 using System;
@@ -27,17 +28,19 @@ namespace ClipsOrganizer.ExportControls {
     public partial class CommonSettings : UserControl {
         public ExportFileInfoVideo defaultExportVideo = GlobalSettings.Instance.DefaultVideoExport;
         public ExportFileInfoImage defaultExportImage = GlobalSettings.Instance.DefaultImageExport;
+        public ExportFileInfoAudio defaultExportAudio = GlobalSettings.Instance.DefaultAudioExport;
         public CommonSettings() {
             InitializeComponent();
-            CB_codec.ItemsSource = Enum.GetValues(typeof(VideoCodec)).Cast<VideoCodec>();
+            CB_codec.ItemsSource = Enum.GetValues(typeof(VideoCodec));
+            CB_AudioFormat.ItemsSource = Enum.GetValues(typeof(ExportAudioFormat));
+            ResolutionComboBox.ItemsSource = Enum.GetValues(typeof(ResolutionType));
+            AudioCodecComboBox.ItemsSource = Enum.GetValues(typeof(AudioCodec));
             ResolutionComboBox.SelectionChanged += (s, e) =>
             {
                 CustomResolutionPanel.Visibility = defaultExportVideo.Resolution == ResolutionType.Custom
                     ? Visibility.Visible
                     : Visibility.Collapsed;
             };
-            ResolutionComboBox.ItemsSource = Enum.GetValues(typeof(ResolutionType)).Cast<ResolutionType>();
-            AudioCodecComboBox.ItemsSource = Enum.GetValues(typeof(AudioCodec)).Cast<AudioCodec>();
             AudioCodecComboBox.SelectedIndex = 0;
         }
 
@@ -59,12 +62,15 @@ namespace ClipsOrganizer.ExportControls {
                 {
                     "TI_Video" => defaultExportVideo,
                     "TI_Image" => defaultExportImage,
+                    "TI_Audio" => defaultExportAudio,
                     _ => fe.DataContext
                 };
                 if (ti.Name == "TI_Image") {
                     CB_format.SelectedItem = defaultExportImage.OutputFormat;
-                    CB_format.SelectedItem = defaultExportImage.OutputFormat;
                     SL_quality.Value = defaultExportImage.CompressionLevel;
+                }
+                else if (ti.Name == "TI_Audio") {
+                    CB_AudioFormat.SelectedItem = defaultExportAudio.outputFormat;
                 }
             }
         }

@@ -245,6 +245,12 @@ namespace ClipsOrganizer {
             try {
                 var mediaInfo = await FFmpeg.GetMediaInfo(audioInfo.Path);
                 var audioStream = mediaInfo.AudioStreams.FirstOrDefault();
+                
+                if (audioInfo.TrimStart >= audioInfo.TrimEnd && audioInfo.TrimEnd > TimeSpan.Zero) {
+                    Log.Update("Ошибка: время начала обрезки должно быть меньше времени конца обрезки");
+                    return false;
+                }
+
                 TimeSpan duration = audioInfo.TrimStart != TimeSpan.Zero && audioInfo.TrimEnd != TimeSpan.Zero
                     ? audioInfo.TrimEnd - audioInfo.TrimStart
                     : mediaInfo.Duration;
@@ -254,22 +260,29 @@ namespace ClipsOrganizer {
                     .SetOutput(outputPath)
                     .SetOverwriteOutput(true);
 
-                if (audioInfo.TrimStart != TimeSpan.Zero)
+                if (audioInfo.TrimStart > TimeSpan.Zero) {
                     conversion.SetSeek(audioInfo.TrimStart);
+                }
 
-                if (audioInfo.TrimEnd != TimeSpan.Zero && audioInfo.TrimStart != TimeSpan.Zero)
+                if (audioInfo.TrimEnd > TimeSpan.Zero) {
                     conversion.AddParameter($"-to {audioInfo.TrimEnd:hh\\:mm\\:ss\\.fff}");
+                }
 
                 if (audioStream != null) {
-                    var stream = audioStream
-                        .SetCodec(audioInfo.outputFormat switch {
-                            ExportAudioFormat.mp3 => Xabe.FFmpeg.AudioCodec.mp3,
-                            ExportAudioFormat.wav => Xabe.FFmpeg.AudioCodec.pcm_s16le,
-                            _ => Xabe.FFmpeg.AudioCodec.mp3
-                        })
-                        .SetBitrate(audioInfo.AudioBitrate * 1000)
-                        .SetSampleRate(audioInfo.AudioSampleRate)
-                        .SetChannels(audioInfo.AudioChannels);
+                    var stream = audioStream;
+                    
+                    switch (audioInfo.outputFormat) {
+                        case ExportAudioFormat.mp3:
+                            stream = stream.SetCodec(Xabe.FFmpeg.AudioCodec.mp3)
+                                         .SetBitrate(audioInfo.AudioBitrate * 1000);
+                            break;
+                        case ExportAudioFormat.wav:
+                            stream = stream.SetCodec(Xabe.FFmpeg.AudioCodec.pcm_s16le);
+                            break;
+                    }
+
+                    stream = stream.SetSampleRate(audioInfo.AudioSampleRate)
+                                 .SetChannels(audioInfo.AudioChannels);
 
                     conversion.AddStream(stream);
 

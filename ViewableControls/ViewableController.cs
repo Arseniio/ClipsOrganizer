@@ -37,6 +37,7 @@ namespace ClipsOrganizer.ViewableControls {
         public static VideoViewer VideoViewerInstance;
         public static VideoActions VideoActionsInstance;
         public static AudioViewer AudioViewerInstance;
+        public static AudioActions AudioActionsInstance;
         public static ImageViewer ImageViewerInstance;
         public static ImageData ImageViewerDataInstance;
         public static ImageActions ImageViewerActionsInstance;
@@ -60,7 +61,9 @@ namespace ClipsOrganizer.ViewableControls {
                 case SupportedFileTypes.Audio:
                     if (MainWindowCC.Content is not AudioViewer) {
                         AudioViewerInstance = new AudioViewer(filePath);
+                        AudioActionsInstance = new AudioActions(filePath);
                         MainWindowCC.Content = AudioViewerInstance;
+                        MainwindowCC_FileActions.Content = AudioActionsInstance;
                     }
                     break;
                 case SupportedFileTypes.Image:
