@@ -93,8 +93,10 @@ namespace ClipsOrganizer.ViewableControls {
         }
 
         public static void PassKeyStroke(KeyEventArgs e) {
-            if (MainWindowCC.Content is VideoViewer)
-                ((VideoViewer)MainWindowCC.Content).HandleKeyStroke(e);
+            if (MainWindowCC.Content is VideoViewer videoViewer)
+                videoViewer.HandleKeyStroke(e);
+            else if (MainWindowCC.Content is AudioViewer audioViewer)
+                audioViewer.HandleKeyStroke(e);
         }
         public static class FileTypeDetector {
             public static SupportedFileTypes DetectFileType(string filePath) {

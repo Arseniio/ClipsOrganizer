@@ -195,5 +195,21 @@ namespace ClipsOrganizer {
             // TODO: Здесь будет реализация экспорта аудио
             Log.Update("Функция экспорта аудио будет реализована позже.");
         }
+
+        public void AudioRendererWindow_SliderSelectionChanged(TimeSpan start, TimeSpan? end) {
+            if (start != TimeSpan.Zero) {
+                TB_Crop_From.Text = start.ToString(@"hh\:mm\:ss\.fff");
+            }
+            if (end.HasValue) {
+                TB_Crop_To.Text = end.Value.ToString(@"hh\:mm\:ss\.fff");
+            }
+            UpdateLength();
+        }
+
+        public void AudioRendererWindow_ChangeSelectedFile(Uri newFile) {
+            this.AudioPath = newFile;
+            // Обновляем имя файла в заголовке окна
+            this.Title = $"Экспорт аудио - {System.IO.Path.GetFileName(newFile.LocalPath)}";
+        }
     }
 } 

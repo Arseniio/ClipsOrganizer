@@ -24,6 +24,12 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
     public partial class AudioViewer : UserControl {
 
         private DispatcherTimer _positionTimer;
+        private TimeSpan StartTime = TimeSpan.Zero;
+        private TimeSpan EndTime = TimeSpan.Zero;
+        private bool IsPlaying = true;
+        public event Action<TimeSpan, TimeSpan?> SliderSelectionChanged;
+        public event Action<Uri> UpdateFilename;
+        MainWindow Owner = null;
 
         public AudioViewer(Item LoadedFile) {
             MediaPlayer = new MediaPlayer();
@@ -116,7 +122,83 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
         }
 
         private void Btn_keyshortcuts_Click(object sender, RoutedEventArgs e) {
+            string hotkeysInfo =
+                "Горячие клавиши панели управления:\n\n" +
+                "Стрелка влево – перемотка назад на 1 секунду\n" +
+                "Стрелка вправо – перемотка вперед на 1 секунду\n" +
+                "Ctrl + Стрелка вверх – увеличение громкости\n" +
+                "Ctrl + Стрелка вниз – уменьшение громкости\n" +
+                "S – очистка выделения\n" +
+                "C – установка точки начала обрезки\n" +
+                "E – установка точки завершения обрезки\n" +
+                "Shift + C – обрезка от текущего момента до конца аудио\n" +
+                "Пробел – переключение воспроизведения (пауза/проигрывание)";
+            MessageBox.Show(hotkeysInfo, "Горячие клавиши", MessageBoxButton.OK, MessageBoxImage.Information);
+        }
 
+        public void HandleKeyStroke(KeyEventArgs e) {
+            if (e.Key == Key.Left && !Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) {
+                var step = TimeSpan.FromSeconds(1);
+                MediaPlayer.Position = MediaPlayer.Position - step;
+                Log.Update($"Перемотка назад: {MediaPlayer.Position.TotalMilliseconds} мс");
+            }
+            else if (e.Key == Key.Right && !Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) {
+                var step = TimeSpan.FromSeconds(1);
+                MediaPlayer.Position = MediaPlayer.Position + step;
+                Log.Update($"Перемотка вперед: {MediaPlayer.Position.TotalMilliseconds} мс");
+            }
+            else if (e.Key == Key.Up && Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) {
+                double stepVolume = 0.1;
+                MediaPlayer.Volume = Math.Min(MediaPlayer.Volume + stepVolume, 1.0);
+                SL_volume.Value = MediaPlayer.Volume;
+                Log.Update("Громкость увеличена");
+            }
+            else if (e.Key == Key.Down && Keyboard.Modifiers.HasFlag(ModifierKeys.Control)) {
+                double stepVolume = 0.1;
+                MediaPlayer.Volume = Math.Max(MediaPlayer.Volume - stepVolume, 0.0);
+                SL_volume.Value = MediaPlayer.Volume;
+                Log.Update("Громкость уменьшена");
+            }
+
+            #region Clips encoding binds
+            if (e.Key == Key.S) {
+                RemoveSelection();
+            }
+            if (e.Key == Key.C) {
+                StartTime = MediaPlayer.Position;
+                Log.Update(string.Format("Обрезка с {0}", StartTime.TotalMilliseconds));
+                SliderSelectionChanged?.Invoke(StartTime, null);
+                if (EndTime != TimeSpan.Zero && App.Current.MainWindow.OwnedWindows.Count == 0) {
+                    OpenAudioRendererWindow(StartTime, EndTime);
+                }
+            }
+            if (e.Key == Key.E) {
+                EndTime = MediaPlayer.Position;
+                Log.Update(string.Format("Обрезка до {0}", MediaPlayer.Position.TotalMilliseconds));
+                if (StartTime != TimeSpan.Zero && App.Current.MainWindow.OwnedWindows.Count == 0) {
+                    OpenAudioRendererWindow(StartTime, EndTime);
+                }
+                else {
+                    SliderSelectionChanged?.Invoke(StartTime, EndTime);
+                }
+            }
+            if (e.Key == Key.C && Keyboard.Modifiers.HasFlag(ModifierKeys.Shift)) {
+                Log.Update(string.Format("Обрезка с {0} до конца", StartTime.TotalMilliseconds));
+                if (Application.Current.MainWindow.OwnedWindows.Count == 0) {
+                    OpenAudioRendererWindow(MediaPlayer.Position, MediaPlayer.NaturalDuration.TimeSpan);
+                }
+            }
+            if (e.Key == Key.Space) SwapPlaying();
+
+            void OpenAudioRendererWindow(TimeSpan? StartTime, TimeSpan? EndTime) {
+                AudioRendererWindow rendererwindow = new AudioRendererWindow(MediaPlayer.Source, StartTime, EndTime) { Owner = Owner };
+                MediaPlayer.Pause();
+                IsPlaying = false;
+                SliderSelectionChanged += rendererwindow.AudioRendererWindow_SliderSelectionChanged;
+                UpdateFilename += rendererwindow.AudioRendererWindow_ChangeSelectedFile;
+                rendererwindow.Show();
+            }
+            #endregion
         }
 
         private void Btn_ExportAudio_Click(object sender, RoutedEventArgs e)
@@ -126,6 +208,24 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
             var audioPath = WaveForm_Viewer.FilePath;
             var wnd = new ClipsOrganizer.AudioRendererWindow(new Uri(audioPath), trimStart, trimEnd);
             wnd.Show();
+        }
+
+        private void RemoveSelection() {
+            StartTime = TimeSpan.Zero;
+            EndTime = TimeSpan.Zero;
+            SliderSelectionChanged?.Invoke(TimeSpan.Zero, null);
+        }
+
+        private void SwapPlaying() {
+            Log.Update($"{IsPlaying} -> {!IsPlaying}");
+            if (!IsPlaying) {
+                IsPlaying = true;
+                MediaPlayer.Play();
+            }
+            else {
+                IsPlaying = false;
+                MediaPlayer.Pause();
+            }
         }
     }
 }
