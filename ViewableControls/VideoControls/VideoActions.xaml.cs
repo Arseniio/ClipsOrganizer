@@ -81,6 +81,8 @@ namespace ClipsOrganizer.ViewableControls.VideoControls {
             ViewableController.FileLoaded -= ViewableController_FileLoaded;
         }
         public void ViewableController_FileLoaded(object sender, FileLoadedEventArgs e) {
+            if (e.FileType != SupportedFileTypes.Video) return;
+            
             if (e.Item != null) {
                 ExportInfo = new ExportFileInfoVideo(e.Item);
                 DataContext = ExportInfo;

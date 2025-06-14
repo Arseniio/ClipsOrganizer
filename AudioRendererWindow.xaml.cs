@@ -79,6 +79,7 @@ namespace ClipsOrganizer {
                 var length = endTime - startTime;
                 TB_Length.Text = length.ToString(@"hh\:mm\:ss\.fff");
             }
+
         }
 
         private bool _isDragging = false;
@@ -229,10 +230,6 @@ namespace ClipsOrganizer {
             UpdateLength();
         }
 
-        public void AudioRendererWindow_ChangeSelectedFile(Uri newFile) {
-            this.AudioPath = newFile;
-            // Обновляем имя файла в заголовке окна
-            this.Title = $"Экспорт аудио - {System.IO.Path.GetFileName(newFile.LocalPath)}";
-        }
+
     }
 } 

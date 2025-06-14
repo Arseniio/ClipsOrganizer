@@ -46,6 +46,8 @@ namespace ClipsOrganizer.ViewableControls.ImageControls {
         }
 
         private void ViewableController_FileLoaded(object sender, FileLoadedEventArgs e) {
+            if (e.FileType != SupportedFileTypes.Image) return;
+            
             if (File.Exists(e.Item.Path)) {
                 ExtractMetadata(e.Item.Path);
             }

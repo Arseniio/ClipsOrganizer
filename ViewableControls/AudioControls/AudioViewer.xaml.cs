@@ -38,13 +38,18 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
             MediaPlayer.Open(new Uri(LoadedFile.Path));
             Loaded += AudioViewer_Loaded;
             Unloaded += AudioViewer_Unloaded;
-            
+
             // Инициализация таймера для обновления позиции
             _positionTimer = new DispatcherTimer
             {
                 Interval = TimeSpan.FromMilliseconds(100)
             };
             _positionTimer.Tick += PositionTimer_Tick;
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                WaveForm_Viewer._Visual.SetupMediaPositionTracking(MediaPlayer);
+                WaveForm_Viewer._Visual.OnElementClicked += _Visual_OnElementClicked;
+            }), DispatcherPriority.Loaded);
         }
 
         private void _Visual_OnElementClicked(object sender, TimeSpan e) {
@@ -59,6 +64,8 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
         }
 
         private void ViewableController_FileLoaded(object sender, FileLoadedEventArgs e) {
+            if (e.FileType != SupportedFileTypes.Audio) return;
+            
             WaveForm_Viewer.FilePath = e.Item.Path;
             WaveForm_Viewer.Resolution = 120;
             MediaPlayer.Open(new Uri(e.Item.Path));
@@ -104,8 +111,7 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
         MediaPlayer MediaPlayer;
         private void Btn_Play_Click(object sender, RoutedEventArgs e) {
             MediaPlayer.Play();
-            WaveForm_Viewer._Visual.SetupMediaPositionTracking(MediaPlayer);
-            WaveForm_Viewer._Visual.OnElementClicked += _Visual_OnElementClicked;
+
             _positionTimer.Start();
         }
 
@@ -189,20 +195,25 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
                 }
             }
             if (e.Key == Key.Space) SwapPlaying();
+            var end = (EndTime == TimeSpan.Zero || EndTime == null)
+                ? MediaPlayer.Position
+                : EndTime;
+
+            this.WaveForm_Viewer._Visual.DrawFiller(
+                WaveForm_Viewer._Visual.GetLogicalX(StartTime),
+                WaveForm_Viewer._Visual.GetLogicalX(end));
 
             void OpenAudioRendererWindow(TimeSpan? StartTime, TimeSpan? EndTime) {
                 AudioRendererWindow rendererwindow = new AudioRendererWindow(MediaPlayer.Source, StartTime, EndTime) { Owner = Owner };
                 MediaPlayer.Pause();
                 IsPlaying = false;
                 SliderSelectionChanged += rendererwindow.AudioRendererWindow_SliderSelectionChanged;
-                UpdateFilename += rendererwindow.AudioRendererWindow_ChangeSelectedFile;
                 rendererwindow.Show();
             }
             #endregion
         }
 
-        private void Btn_ExportAudio_Click(object sender, RoutedEventArgs e)
-        {
+        private void Btn_ExportAudio_Click(object sender, RoutedEventArgs e) {
             var trimStart = WaveForm_Viewer.TrimStart ?? TimeSpan.Zero;
             var trimEnd = WaveForm_Viewer.TrimEnd ?? TimeSpan.Zero;
             var audioPath = WaveForm_Viewer.FilePath;

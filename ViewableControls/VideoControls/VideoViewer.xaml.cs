@@ -1,5 +1,6 @@
 ﻿using ClipsOrganizer.FileUtils;
 using ClipsOrganizer.Settings;
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -46,7 +47,7 @@ namespace ClipsOrganizer.ViewableControls {
         }
 
         private void ViewableController_FileLoaded(object sender, FileLoadedEventArgs e) {
-            if (ViewableController.FileTypeDetector.DetectFileType(e.Item.Path) != SupportedFileTypes.Video) return;
+            if (e.FileType != SupportedFileTypes.Video) return;
 
             Owner = Window.GetWindow(this) as MainWindow;
             RemoveSelection();

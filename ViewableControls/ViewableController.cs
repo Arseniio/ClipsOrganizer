@@ -24,8 +24,10 @@ namespace ClipsOrganizer.ViewableControls {
     }
     public class FileLoadedEventArgs : EventArgs {
         public Item Item { get; }
+        public SupportedFileTypes FileType { get; private set; }
         public FileLoadedEventArgs(Item filePath) {
             Item = filePath;
+            FileType = ViewableController.FileTypeDetector.DetectFileType(filePath.Path);
         }
     }
 

@@ -33,7 +33,8 @@ namespace ClipsOrganizer.ViewableControls {
         }
 
         private void ViewableController_FileLoaded(object sender, FileLoadedEventArgs e) {
-            if (ViewableController.FileTypeDetector.DetectFileType(e.Item.Path) != SupportedFileTypes.Image) return;
+            if (e.FileType != SupportedFileTypes.Image) return;
+            
             BitmapImage bitmap = new BitmapImage(new Uri(e.Item.Path));
             Img_Displayed.Source = bitmap;
             Img_Border.Background = (SolidColorBrush)new BrushConverter().ConvertFromString(GlobalSettings.Instance.ImageBackgroundColor);

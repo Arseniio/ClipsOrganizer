@@ -43,6 +43,8 @@ namespace ClipsOrganizer.ViewableControls.ImageControls {
         }
 
         public void ViewableController_FileLoaded(object sender, FileLoadedEventArgs e) {
+            if (e.FileType != SupportedFileTypes.Image) return;
+            
             if (e.Item != null) {
                 ExportInfo = new ExportFileInfoImage(e.Item);
                 DataContext = ExportInfo;

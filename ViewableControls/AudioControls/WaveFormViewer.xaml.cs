@@ -75,7 +75,7 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
             var clickPoint = e.GetPosition(this);
             var waveformVisual = visuals["waveform"];
             var tt = waveformVisual.Transform as TranslateTransform ?? new TranslateTransform();
-            
+
             // Учитываем смещение и зум при расчете логической позиции
             double logicalX = (clickPoint.X - tt.X) / ZoomFactor;
             return Math.Max(0, Math.Min(logicalX, waveformPoints.Count - 1));
@@ -84,9 +84,13 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
             var clickPoint = e.GetPosition(this);
             var waveformVisual = visuals["waveform"];
             var tt = waveformVisual.Transform as TranslateTransform ?? new TranslateTransform();
-            
-            // Учитываем смещение и зум при расчете логической позиции
             double logicalX = (clickPoint.X - tt.X) / ZoomFactor;
+            return Math.Max(0, Math.Min(logicalX, waveformPoints.Count - 1));
+        }
+        public double GetLogicalX(TimeSpan e) {
+            var waveformVisual = visuals["waveform"];
+            var tt = waveformVisual.Transform as TranslateTransform ?? new TranslateTransform();
+            double logicalX = (e / TimePerOnePoint) / ZoomFactor;
             return Math.Max(0, Math.Min(logicalX, waveformPoints.Count - 1));
         }
 
@@ -103,7 +107,6 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
             visual.Transform = waveformVisual.Transform;
             using (var dc = visual.RenderOpen()) {
                 var pen = new Pen(Brushes.DarkKhaki, 3);
-                // Учитываем зум при отрисовке селектора
                 double screenX = logicalX * ZoomFactor;
                 dc.DrawLine(pen,
                     new Point(screenX, 0),
@@ -122,6 +125,9 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
                 // Учитываем зум при отрисовке выделения
                 var p1 = new Point(startPoint * ZoomFactor, height);
                 var p2 = new Point(endPoint * ZoomFactor, 0);
+                //if (endPoint == 0) {
+
+                //}
                 Debug.WriteLine($"{p1} : {p2}");
                 dc.DrawRectangle(brush, pen, new Rect(p1, p2));
             }
@@ -214,7 +220,7 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
                 for (int i = 0; i < waveformPoints.Count; i++) {
                     time += TimePerOnePoint;
                     if (i % labelInterval != 0) continue;
-                    
+
                     double x = i * ZoomFactor;
                     var formattedText = new FormattedText(
                         time.ToString(@"hh\:mm\:ss\.ffff"),
@@ -302,10 +308,12 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
             {
                 MainGrid.SizeChanged += MainGrid_SizeChanged;
                 _Visual = new RefWfV() { height = MainGrid.RowDefinitions[0].ActualHeight };
+                this.loadWaveForm();
             };
         }
         public void loadWaveForm() {
             waveform.Clear();
+            
             using (var reader = new AudioFileReader(FilePath)) {
                 int totalSeconds = (int)reader.TotalTime.TotalSeconds;
                 int totalSamples = reader.WaveFormat.SampleRate * totalSeconds;
