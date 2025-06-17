@@ -422,7 +422,12 @@ namespace ClipsOrganizer {
             Window window = new SettingsWindow(GlobalSettings.Instance, CurrentProfile);
             window.ShowDialog();
             if (ProfileManager.LoadAllProfiles().Exists(p => p == CurrentProfile.ProfileName)) {
-                CurrentProfile = FileSerializer.ReadFile<Profile>($"./Profiles/{ProfileManager.LoadAllProfiles().First()}.json");
+                CurrentProfile = FileSerializer.ReadFile<Profile>($"./Profiles/{ProfileManager.LoadAllProfiles().Find(p => p == CurrentProfile.ProfileName)}.json");
+                FileSerializer.WriteAndCreateBackupFile(CurrentProfile, CurrentProfile.ProfilePath);
+                UpdateItems();
+            }
+            else {
+                CurrentProfile = FileSerializer.ReadFile<Profile>($"./Profiles/{ProfileManager.LoadAllProfiles().FirstOrDefault()}.json");
                 FileSerializer.WriteAndCreateBackupFile(CurrentProfile, CurrentProfile.ProfilePath);
                 UpdateItems();
             }

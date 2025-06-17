@@ -23,37 +23,12 @@ namespace ClipsOrganizer {
         HEVC_NVENC,
         H264_x264,
         H265_x265,
-        NE_H264_AMF,
-        NE_HEVC_AMF,
-        NE_H264_QuickSync,
-        NE_HEVC_QuickSync,
-        NE_VP8,
-        NE_VP9,
-        NE_AV1,
-        NE_MPEG4_Xvid,
-        NE_GIF,
-        NE_WebP,
-        NE_APNG
     }
     public enum ImageFormat {
         Unknown = 0,
         JPEG,          // .jpg, .jpeg
         PNG,           // .png
-        BMP,           // .bmp
-        GIF,           // .gif
-        TIFF,          // .tiff, .tif
-        WEBP,          // .webp
-        HEIF,          // .heif, .heic
-        AVIF,          // .avif
-        RAW,           // Общий RAW-формат
-        DNG,           // .dng (Digital Negative)
-        CR2,           // .cr2 (Canon RAW)
-        NEF,           // .nef (Nikon RAW)
-        ARW,           // .arw (Sony RAW)
-        ORF,           // .orf (Olympus RAW)
-        RW2,           // .rw2 (Panasonic RAW)
-        PSD,           // .psd (Photoshop)
-        EXR            // .exr (OpenEXR)
+
     }
 
     public class FFmpegManager : IDisposable {
@@ -188,7 +163,9 @@ namespace ClipsOrganizer {
                         Model.AudioCodec.FLAC => Xabe.FFmpeg.AudioCodec.flac,
                         _ => Xabe.FFmpeg.AudioCodec.aac
                     }));
-
+                if (infoVideo.NormalizeAudio) {
+                    conversion.AddParameter("-af loudnorm=I=-16:TP=-1.5:LRA=11");
+                }
                 conversion.OnProgress += (sender, args) =>
                 {
                     double progress = args.Duration.TotalSeconds / duration.TotalSeconds * 100;
@@ -245,7 +222,7 @@ namespace ClipsOrganizer {
             try {
                 var mediaInfo = await FFmpeg.GetMediaInfo(audioInfo.Path);
                 var audioStream = mediaInfo.AudioStreams.FirstOrDefault();
-                
+
                 if (audioInfo.TrimStart >= audioInfo.TrimEnd && audioInfo.TrimEnd > TimeSpan.Zero) {
                     Log.Update("Ошибка: время начала обрезки должно быть меньше времени конца обрезки");
                     return false;
@@ -270,7 +247,7 @@ namespace ClipsOrganizer {
 
                 if (audioStream != null) {
                     var stream = audioStream;
-                    
+
                     switch (audioInfo.outputFormat) {
                         case ExportAudioFormat.mp3:
                             stream = stream.SetCodec(Xabe.FFmpeg.AudioCodec.mp3)

@@ -235,85 +235,63 @@ namespace ClipsOrganizer.Settings {
         private async Task<bool> ExportImageFile(ExportFileInfoImage imageInfo, string destinationPath, CancellationToken cancellationToken) {
             Log.Update($"Начало экспорта изображения: {Path.GetFileName(imageInfo.Path)}");
             if (!imageInfo.ProcessExport) {
-                File.Copy(imageInfo.Path, destinationPath + "/" + imageInfo.Name,true);
+                File.Copy(imageInfo.Path, destinationPath + "/" + imageInfo.Name, true);
                 Log.Update($"Изображение успешно экспортировано без перекодирования: {imageInfo.Name}");
                 return true;
             }
-                try {
-                    await Task.Run(() =>
-                    {
-                        using (var image = new MagickImage(imageInfo.Path)) {
-                            if (!string.IsNullOrEmpty(imageInfo.ColorProfile)) {
-                                switch (imageInfo.ColorProfile) {
-                                    case "sRGB":
-                                        image.SetProfile(ColorProfile.SRGB);
-                                        break;
-                                    case "Adobe RGB":
-                                        image.SetProfile(ColorProfile.AdobeRGB1998);
-                                        break;
-                                }
-                            }
-                            if (imageInfo.ExportWidth > 0 && imageInfo.ExportHeight > 0) {
-                                if (image.Width != imageInfo.ExportWidth || image.Height != imageInfo.ExportHeight) {
-                                    var size = new MagickGeometry((uint)imageInfo.ExportWidth, (uint)imageInfo.ExportHeight);
-                                    size.IgnoreAspectRatio = false;
-                                    image.Resize(size);
-                                }
-                            }
-                            MagickFormat outputFormat = MagickFormat.Jpeg;
-                            switch (imageInfo.Codec) {
-                                case ImageFormat.JPEG:
-                                    outputFormat = MagickFormat.Jpeg;
-                                    imageInfo.OutputFormat = "jpeg";
-                                    image.Quality = (uint)imageInfo.CompressionLevel;
+            try {
+                await Task.Run(() =>
+                {
+                    using (var image = new MagickImage(imageInfo.Path)) {
+                        if (!string.IsNullOrEmpty(imageInfo.ColorProfile)) {
+                            switch (imageInfo.ColorProfile) {
+                                case "sRGB":
+                                    image.SetProfile(ColorProfile.SRGB);
                                     break;
-                                case ImageFormat.PNG:
-                                    outputFormat = MagickFormat.Png;
-                                    imageInfo.OutputFormat = "png";
-                                    image.Quality = (uint)imageInfo.CompressionLevel;
-                                    break;
-                                case ImageFormat.GIF:
-                                    outputFormat = MagickFormat.Gif;
-                                    break;
-                                case ImageFormat.WEBP:
-                                    outputFormat = MagickFormat.WebP;
-                                    image.Quality = (uint)imageInfo.CompressionLevel;
-                                    break;
-                                case ImageFormat.TIFF:
-                                    outputFormat = MagickFormat.Tiff;
-                                    break;
-                                case ImageFormat.HEIF:
-                                    outputFormat = MagickFormat.Heif;
-                                    image.Quality = (uint)imageInfo.CompressionLevel;
-                                    break;
-                                case ImageFormat.AVIF:
-                                    outputFormat = MagickFormat.Avif;
-                                    image.Quality = (uint)imageInfo.CompressionLevel;
-                                    break;
-                                case ImageFormat.BMP:
-                                    outputFormat = MagickFormat.Bmp;
-                                    break;
-                                default:
-                                    // По умолчанию используем JPEG
-                                    outputFormat = MagickFormat.Jpeg;
-                                    image.Quality = (uint)imageInfo.CompressionLevel;
+                                case "Adobe RGB":
+                                    image.SetProfile(ColorProfile.AdobeRGB1998);
                                     break;
                             }
-
-                            if (!imageInfo.PreserveMetadata) {
-                                image.Strip();
-                            }
-                            image.Write($"{destinationPath}/{Path.GetFileNameWithoutExtension(imageInfo.Name)}.{outputFormat}", outputFormat);
                         }
-                    }, cancellationToken);
-                    Log.Update($"Изображение успешно экспортировано: {imageInfo.Name}");
+                        if (imageInfo.ExportWidth > 0 && imageInfo.ExportHeight > 0) {
+                            if (image.Width != imageInfo.ExportWidth || image.Height != imageInfo.ExportHeight) {
+                                var size = new MagickGeometry((uint)imageInfo.ExportWidth, (uint)imageInfo.ExportHeight);
+                                size.IgnoreAspectRatio = false;
+                                image.Resize(size);
+                            }
+                        }
+                        MagickFormat outputFormat = MagickFormat.Jpeg;
+                        switch (imageInfo.Codec) {
+                            case ImageFormat.JPEG:
+                                outputFormat = MagickFormat.Jpeg;
+                                imageInfo.OutputFormat = "jpeg";
+                                image.Quality = (uint)imageInfo.CompressionLevel;
+                                break;
+                            case ImageFormat.PNG:
+                                outputFormat = MagickFormat.Png;
+                                imageInfo.OutputFormat = "png";
+                                image.Quality = (uint)imageInfo.CompressionLevel;
+                                break;
+                            default:
+                                // По умолчанию используем JPEG
+                                outputFormat = MagickFormat.Jpeg;
+                                image.Quality = (uint)imageInfo.CompressionLevel;
+                                break;
+                        }
+                        if (!imageInfo.PreserveMetadata) {
+                            image.Strip();
+                        }
+                        image.Write($"{destinationPath}/{Path.GetFileNameWithoutExtension(imageInfo.Name)}.{outputFormat}", outputFormat);
+                    }
+                }, cancellationToken);
+                Log.Update($"Изображение успешно экспортировано: {imageInfo.Name}");
 
-                    return true;
-                }
-                catch (Exception ex) {
-                    Log.Update($"Ошибка при экспорте изображения: {ex.Message}");
-                    return false;
-                }
+                return true;
+            }
+            catch (Exception ex) {
+                Log.Update($"Ошибка при экспорте изображения: {ex.Message}");
+                return false;
+            }
         }
 
         private async Task<bool> ExportAudioFile(ExportFileInfoAudio audioInfo, string destinationPath, CancellationToken cancellationToken) {
@@ -329,7 +307,7 @@ namespace ClipsOrganizer.Settings {
                 }
 
                 bool success = await ffmpegManager.StartAudioEncodingAsync(audioInfo, outputPath, cancellationToken);
-                
+
                 if (success) {
                     Log.Update($"Аудио успешно экспортировано: {Path.GetFileName(outputPath)}");
                     if (GlobalSettings.Instance.OpenFolderAfterEncoding) {

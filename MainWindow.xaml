@@ -12,7 +12,7 @@
         DragEnter="Window_DragEnter"
         Drop="Window_Drop"
         Style="{StaticResource MaterialDesignWindow}"
-        Icon="/icon/folder_multiple.png"
+        Icon="/icon/folder_multiple_result.ico"
         Title="ClipsOrganizer" Height="550" Width="1018" Closing="Window_Closing"
         KeyDown="Window_KeyDown">
     <Grid Name="MainGrid" >

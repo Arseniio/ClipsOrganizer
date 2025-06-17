@@ -44,6 +44,7 @@
     <None Remove="icon\file_upload.png" />
     <None Remove="icon\folder_delete.png" />
     <None Remove="icon\folder_multiple.png" />
+    <None Remove="icon\folder_multiple_result.ico" />
     <None Remove="icon\home.png" />
     <None Remove="icon\settings.png" />
     <None Remove="icon\videocam.png" />
@@ -92,8 +93,11 @@
     <Resource Include="icon\folder_multiple.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Resource>
+    <Resource Include="icon\folder_multiple_result.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Resource>
     <Resource Include="icon\home.png">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Resource>
     <Resource Include="icon\settings.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>

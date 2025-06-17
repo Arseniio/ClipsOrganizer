@@ -396,5 +396,7 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
             if (_Visual != null)
                 _Visual.height = MainGrid.ActualHeight;
         }
+
+
     }
 }

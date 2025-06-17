@@ -65,9 +65,35 @@ namespace ClipsOrganizer.ViewableControls.AudioControls {
 
         private void ViewableController_FileLoaded(object sender, FileLoadedEventArgs e) {
             if (e.FileType != SupportedFileTypes.Audio) return;
-            
+
+            // Удаляем старый WaveForm_Viewer
+            if (WaveForm_Viewer != null) {
+                WaveForm_Viewer._Visual.OnElementClicked -= _Visual_OnElementClicked;
+                WaveForm_Viewer = null;
+            }
+
+            // Создаем новый WaveForm_Viewer
+            WaveForm_Viewer = new WaveFormViewer();
             WaveForm_Viewer.FilePath = e.Item.Path;
             WaveForm_Viewer.Resolution = 120;
+
+            // Находим контейнер и добавляем новый WaveForm_Viewer
+            var container = this.FindName("WaveFormContainer") as Grid;
+            if (container != null) {
+                container.Children.Clear();
+                container.Children.Add(WaveForm_Viewer);
+                Grid.SetRow(WaveForm_Viewer, 1);
+                Panel.SetZIndex(WaveForm_Viewer, -20);
+            }
+
+            // Настраиваем отслеживание позиции и обработчики событий
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                WaveForm_Viewer._Visual.SetupMediaPositionTracking(MediaPlayer);
+                WaveForm_Viewer._Visual.OnElementClicked += _Visual_OnElementClicked;
+            }), DispatcherPriority.Loaded);
+
+            // Открываем новый файл в MediaPlayer
             MediaPlayer.Open(new Uri(e.Item.Path));
         }
 

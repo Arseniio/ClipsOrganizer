@@ -29,9 +29,9 @@
             <TextBlock Text="Формат:" VerticalAlignment="Center"/>
             <ComboBox x:Name="CB_format" Width="100" Margin="5,0,0,0"
                 SelectedValuePath="Tag"
-                SelectedValue="{Binding OutputFormat, Mode=TwoWay}">
-                <ComboBoxItem Tag=".jpg" Content="JPEG"/>
-                <ComboBoxItem Tag=".png" Content="PNG"/>
+                SelectedValue="{Binding Codec, Mode=TwoWay}">
+                <ComboBoxItem Tag="JPEG" Content="JPEG"/>
+                <ComboBoxItem Tag="PNG" Content="PNG"/>
             </ComboBox>
         </StackPanel>
 
